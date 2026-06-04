@@ -1,0 +1,12 @@
+// POST-Rec application styles — entry point.
+// Foundation loads design tokens and shared primitives first.
+@use "./foundation";
+@use "./navbar";
+@use "./profile";
+@use "./auth";
+@use "./layout-mobile";
+@use "./runs";
+@use "./ideas";
+@use "./insights";
+@use "./language";
+@use "./transparency";

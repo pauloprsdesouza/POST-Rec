@@ -1,0 +1,74 @@
+// Profile hub tabs, consent flow, setup banner.
+
+.profile-hub__tabs .nav-link {
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: var(--postrec-muted);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  margin-bottom: -1px;
+  padding: 0.625rem 1rem;
+}
+
+.profile-hub__tabs .nav-link.active {
+  background: transparent;
+  border-bottom-color: var(--postrec-primary);
+  color: var(--postrec-primary);
+}
+
+.profile-section + .profile-section {
+  margin-top: 1.5rem;
+}
+
+.learning-summary {
+  color: var(--postrec-muted);
+}
+// ── Consent ─────────────────────────────────────────────
+
+.consent-panel__list {
+  color: var(--postrec-muted);
+  line-height: 1.7;
+  margin-bottom: 0;
+  padding-left: 1.25rem;
+}
+
+.consent-panel__checks {
+  color: var(--postrec-muted);
+  font-size: 0.875rem;
+  padding-left: 1.25rem;
+}
+
+.consent-checks {
+  background: var(--postrec-surface-muted);
+  border: 1px solid var(--postrec-border);
+  border-radius: var(--postrec-radius-sm);
+  padding: 1rem 1.25rem;
+}
+
+.consent-checks__item {
+  margin-bottom: 0.75rem;
+}
+
+.consent-checks__item:last-child {
+  margin-bottom: 0;
+}
+
+.consent-card {
+  box-shadow: var(--postrec-shadow-lg);
+}
+
+.setup-banner {
+  border: none;
+  border-radius: var(--postrec-radius-sm);
+}
+
+.profile-hub__tabs {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.profile-hub__tabs .nav-item {
+  flex-shrink: 0;
+}

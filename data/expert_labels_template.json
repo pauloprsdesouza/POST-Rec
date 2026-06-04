@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "study_id": "postrec-fggv-pilot",
+  "scale": {
+    "expert_originality": "1-7 Likert, blind",
+    "expert_feasibility": "1-7 Likert, blind",
+    "already_done": "boolean — expert believes idea exists in literature"
+  },
+  "ratings": [
+    {
+      "topic_id": "graph-recsys",
+      "recommendation_id": "uuid-or-slug",
+      "method": "m_fggv",
+      "facet_novelty_index": 72.5,
+      "fggv_score": 68.0,
+      "expert_originality": null,
+      "expert_feasibility": null,
+      "already_done": null,
+      "reviewer_id": null,
+      "notes": ""
+    }
+  ]
+}

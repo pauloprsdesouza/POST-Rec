@@ -1,0 +1,153 @@
+{
+  "version": 2,
+  "topics": [
+    {
+      "id": "graph-recsys",
+      "research_area": "Recommender Systems",
+      "seed_topics": ["graph neural networks", "collaborative filtering"],
+      "gap_matrix": {
+        "gaps": [
+          {
+            "gap": "Scalable subgraph training for large-scale GNN recommenders",
+            "supporting_limitations": ["scalability remains unclear"],
+            "suggested_direction": "Localized subgraph sampling with benchmark evaluation"
+          }
+        ]
+      },
+      "papers": [
+        {"title": "LightGCN 2020", "year": 2020, "tier": "seminal", "abstract": "Graph convolution for recommendation."},
+        {"title": "Recent GNN Rec 2025", "year": 2025, "tier": "sota_recent", "abstract": "However scalability remains unclear. Future work on benchmarks."}
+      ],
+      "good_proposal": {
+        "title": "Scalable subgraph GNN recommender",
+        "sota_summary": "Recent GNN methods dominate but struggle at scale.",
+        "novelty_delta": "We extend LightGCN with localized subgraph training.",
+        "facet_deltas": {
+          "problem": "Large-scale graph recommendation under memory constraints",
+          "method": "Localized subgraph mini-batch training for GNN encoders",
+          "data": "Million-edge public recommender benchmarks",
+          "evaluation": "Throughput, NDCG, and memory footprint ablations"
+        },
+        "aligned_gaps": ["Scalable subgraph training for large-scale GNN recommenders"],
+        "closest_prior_work": "LightGCN 2020",
+        "sota_anchors": [{"title": "Recent GNN Rec 2025", "year": 2025}],
+        "evidence_papers": [{"title": "Recent GNN Rec 2025", "year": 2025}],
+        "scores": {"novelty": 75, "relevance": 80, "evidence": 70, "feasibility": 72, "trend": 68, "publication_potential": 70, "strategic_fit": 65}
+      },
+      "weak_proposal": {
+        "title": "Repeat LightGCN",
+        "sota_summary": "",
+        "novelty_delta": "",
+        "facet_deltas": {
+          "problem": "Graph convolution for recommendation",
+          "method": "Graph convolution for recommendation",
+          "data": "standard benchmarks in domain",
+          "evaluation": "standard domain metrics"
+        },
+        "aligned_gaps": [],
+        "closest_prior_work": "",
+        "sota_anchors": [],
+        "evidence_papers": [{"title": "Unknown Paper", "year": 2024}],
+        "scores": {"novelty": 40, "relevance": 50, "evidence": 30, "feasibility": 60, "trend": 40, "publication_potential": 35, "strategic_fit": 40}
+      }
+    },
+    {
+      "id": "llm-clinical",
+      "research_area": "Clinical NLP",
+      "seed_topics": ["large language models", "clinical notes"],
+      "gap_matrix": {
+        "gaps": [
+          {
+            "gap": "Auditable LLM reasoning on longitudinal EHR timelines",
+            "supporting_limitations": ["interpretability remains unclear"],
+            "suggested_direction": "Structured evidence chains with clinician-in-the-loop evaluation"
+          }
+        ]
+      },
+      "papers": [
+        {"title": "Clinical BERT 2019", "year": 2019, "tier": "seminal", "abstract": "Transformer for clinical text classification."},
+        {"title": "LLM EHR 2025", "year": 2025, "tier": "sota_recent", "abstract": "However interpretability remains unclear. Future work on longitudinal benchmarks."}
+      ],
+      "good_proposal": {
+        "title": "Auditable timeline LLM for EHR",
+        "sota_summary": "LLMs on clinical notes lack auditable longitudinal reasoning.",
+        "novelty_delta": "Evidence-chain decoding over patient timelines vs single-note LLM baselines.",
+        "facet_deltas": {
+          "problem": "Longitudinal diagnosis support with citation to note spans",
+          "method": "Retrieval-grounded chain-of-evidence generation over EHR events",
+          "data": "MIMIC-IV timeline splits with de-identified span labels",
+          "evaluation": "Clinician auditability score and F1 on temporal relations"
+        },
+        "aligned_gaps": ["Auditable LLM reasoning on longitudinal EHR timelines"],
+        "closest_prior_work": "LLM EHR 2025",
+        "sota_anchors": [{"title": "LLM EHR 2025", "year": 2025}],
+        "evidence_papers": [{"title": "LLM EHR 2025", "year": 2025}],
+        "scores": {"novelty": 78, "relevance": 82, "evidence": 72, "feasibility": 65, "trend": 80, "publication_potential": 75, "strategic_fit": 70}
+      },
+      "weak_proposal": {
+        "title": "Apply Clinical BERT again",
+        "sota_summary": "",
+        "novelty_delta": "",
+        "facet_deltas": {
+          "problem": "Clinical text classification",
+          "method": "Transformer for clinical text classification",
+          "data": "MIMIC",
+          "evaluation": "accuracy"
+        },
+        "aligned_gaps": [],
+        "sota_anchors": [],
+        "evidence_papers": [{"title": "Unknown Clinical", "year": 2024}],
+        "scores": {"novelty": 38, "relevance": 48, "evidence": 28, "feasibility": 62, "trend": 42, "publication_potential": 34, "strategic_fit": 38}
+      }
+    },
+    {
+      "id": "federated-vision",
+      "research_area": "Computer Vision",
+      "seed_topics": ["federated learning", "medical imaging"],
+      "gap_matrix": {
+        "gaps": [
+          {
+            "gap": "Heterogeneous client architectures in federated segmentation",
+            "supporting_limitations": ["communication cost remains high"],
+            "suggested_direction": "Architecture-adaptive aggregation with slice-level metrics"
+          }
+        ]
+      },
+      "papers": [
+        {"title": "FedAvg Seg 2021", "year": 2021, "tier": "seminal", "abstract": "Federated learning for image segmentation."},
+        {"title": "Hetero Fed 2025", "year": 2025, "tier": "sota_recent", "abstract": "However communication cost remains high. Future work on heterogeneous clients."}
+      ],
+      "good_proposal": {
+        "title": "Architecture-adaptive federated segmentation",
+        "sota_summary": "Federated segmentation assumes homogeneous encoders across hospitals.",
+        "novelty_delta": "Adaptive aggregation heads per client architecture family.",
+        "facet_deltas": {
+          "problem": "Multi-site MRI segmentation with heterogeneous GPU/encoder stacks",
+          "method": "Family-specific adapter banks with shared latent distillation",
+          "data": "Federated BraTS-style multi-hospital benchmark",
+          "evaluation": "Dice, communication rounds, and fairness across client families"
+        },
+        "aligned_gaps": ["Heterogeneous client architectures in federated segmentation"],
+        "closest_prior_work": "Hetero Fed 2025",
+        "sota_anchors": [{"title": "Hetero Fed 2025", "year": 2025}],
+        "evidence_papers": [{"title": "Hetero Fed 2025", "year": 2025}],
+        "scores": {"novelty": 76, "relevance": 79, "evidence": 71, "feasibility": 70, "trend": 74, "publication_potential": 72, "strategic_fit": 68}
+      },
+      "weak_proposal": {
+        "title": "More FedAvg",
+        "sota_summary": "",
+        "novelty_delta": "",
+        "facet_deltas": {
+          "problem": "Federated learning for image segmentation",
+          "method": "Federated learning for image segmentation",
+          "data": "medical imaging dataset",
+          "evaluation": "Dice"
+        },
+        "aligned_gaps": [],
+        "sota_anchors": [],
+        "evidence_papers": [{"title": "Unknown Fed", "year": 2023}],
+        "scores": {"novelty": 42, "relevance": 52, "evidence": 32, "feasibility": 58, "trend": 45, "publication_potential": 36, "strategic_fit": 42}
+      }
+    }
+  ]
+}

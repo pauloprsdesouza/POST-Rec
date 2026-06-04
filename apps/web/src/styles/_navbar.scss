@@ -1,0 +1,120 @@
+// Top navigation, brand, user menu, API status pill.
+
+.app-navbar {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  min-height: var(--postrec-nav-height);
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+}
+
+.app-brand__mark {
+  align-items: center;
+  background: var(--postrec-primary);
+  border-radius: 0.5rem;
+  color: #fff;
+  display: inline-flex;
+  font-size: 0.875rem;
+  font-weight: 700;
+  height: 1.75rem;
+  justify-content: center;
+  width: 1.75rem;
+}
+
+.app-brand__text {
+  color: #f8fafc;
+}
+
+.app-nav .nav-link {
+  border-radius: var(--postrec-radius-sm);
+  color: rgba(255, 255, 255, 0.75) !important;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  margin-inline: 0.125rem;
+  padding: 0.4rem 0.75rem !important;
+  transition: background 0.15s, color 0.15s;
+}
+
+.app-nav .nav-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff !important;
+}
+
+.app-nav .nav-link.active {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff !important;
+}
+
+.app-nav__secondary {
+  opacity: 0.85;
+}
+
+.app-nav__divider {
+  background: rgba(255, 255, 255, 0.2);
+  height: 1.25rem;
+  margin: 0 0.5rem;
+  width: 1px;
+}
+
+.api-pill {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  height: 0.5rem;
+  width: 0.5rem;
+}
+
+.api-pill--online {
+  background: #4ade80;
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+}
+
+.api-pill--offline {
+  background: #f87171;
+}
+
+.user-dropdown__toggle {
+  align-items: center;
+  color: #fff !important;
+  display: flex !important;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem !important;
+}
+
+.user-dropdown__toggle::after {
+  margin-left: 0.25rem;
+}
+
+.user-dropdown__avatar {
+  align-items: center;
+  background: var(--postrec-primary);
+  border-radius: 50%;
+  color: #fff;
+  display: inline-flex;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  height: 2rem;
+  justify-content: center;
+  width: 2rem;
+}
+
+.user-dropdown__name {
+  color: #f1f5f9;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.user-dropdown__menu {
+  border: 1px solid var(--postrec-border);
+  border-radius: var(--postrec-radius);
+  min-width: 220px;
+  padding: 0.375rem;
+}
+
+.user-dropdown__header {
+  padding: 0.5rem 0.75rem;
+}

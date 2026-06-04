@@ -1,0 +1,36 @@
+# POST-Rec application services only.
+# Infrastructure (Postgres/pgvector, Redis, RabbitMQ, MinIO) runs in portainer-stack @ 192.168.10.13
+services:
+  api:
+    build: .
+    command: uvicorn apps.api.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+
+  worker:
+    build: .
+    command: celery -A apps.api.workers.celery_app worker --loglevel=INFO -Q postrec.recommendation.default,postrec.recommendation.retrieval,postrec.recommendation.embedding,postrec.recommendation.ranking,postrec.recommendation.llm,postrec.recommendation.export,postrec.validation.metrics
+    env_file: .env
+    volumes:
+      - .:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

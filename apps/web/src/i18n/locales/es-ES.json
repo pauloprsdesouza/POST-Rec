@@ -1,0 +1,582 @@
+{
+  "common": {
+    "appName": "POST-Rec",
+    "loading": "Cargando…",
+    "loadingRuns": "Cargando ejecuciones…",
+    "loadingInsights": "Cargando métricas…",
+    "loadingRun": "Cargando ejecución…",
+    "loadingIdeas": "Cargando ideas…",
+    "loadingProfile": "Cargando perfil…",
+    "loadingPreferences": "Cargando preferencias…",
+    "researcher": "Investigador/a",
+    "newRun": "Nueva ejecución",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "viewDetails": "Ver detalles →",
+    "apiOnline": "API en línea",
+    "apiOffline": "API desconectada",
+    "apiChecking": "Comprobando API…",
+    "metricsUnavailable": "Métricas no disponibles.",
+    "couldNotLoadMetrics": "No se pudieron cargar las métricas",
+    "couldNotLoadRuns": "No se pudieron cargar las ejecuciones",
+    "couldNotLoadRecommendations": "No se pudieron cargar las recomendaciones",
+    "runNotFound": "Ejecución no encontrada.",
+    "failedToLoadRun": "No se pudo cargar la ejecución",
+    "refreshing": "Actualizando…",
+    "noTopics": "Sin temas",
+    "untitled": "Sin título",
+    "unknown": "Desconocido",
+    "open": "Abrir",
+    "abstract": "Resumen",
+    "citations": "{{count}} citas",
+    "yes": "Sí",
+    "maybe": "Tal vez",
+    "no": "No"
+  },
+  "nav": {
+    "mainNavigation": "Navegación principal",
+    "newRun": "Nueva ejecución",
+    "runs": "Ejecuciones",
+    "insights": "Métricas",
+    "howItWorks": "Cómo funciona",
+    "profile": "Perfil",
+    "new": "Nueva",
+    "completeSetup": "Completar configuración",
+    "account": "Cuenta",
+    "researchProfile": "Perfil de investigación",
+    "preferences": "Preferencias",
+    "consent": "Consentimiento",
+    "signOut": "Cerrar sesión",
+    "language": "Idioma"
+  },
+  "locale": {
+    "en-US": "English (US)",
+    "es-ES": "Español",
+    "pt-BR": "Português (Brasil)"
+  },
+  "setup": {
+    "title": "Configuración:",
+    "consentMessage": "Acepta el consentimiento de participación para continuar.",
+    "profileMessage": "Completa tu perfil de investigación para generar recomendaciones.",
+    "reviewConsent": "Revisar consentimiento",
+    "completeProfile": "Completar perfil"
+  },
+  "auth": {
+    "eyebrow": "Plataforma de descubrimiento científico",
+    "heroTitle": "Ideas de investigación con respaldo en evidencia",
+    "heroSubtitle": "Inicia sesión con tu correo. Los códigos de un solo uso y las notificaciones de ejecución se envían por WhatsApp cuando está activado.",
+    "feature1": "Ideas de investigación respaldadas por artículos reales",
+    "feature2": "Recuperación personalizada que aprende de tu feedback",
+    "feature3": "Inicio de sesión seguro con códigos de un solo uso por WhatsApp",
+    "signIn": "Iniciar sesión",
+    "createAccount": "Crear cuenta",
+    "fullName": "Nombre completo",
+    "fullNamePlaceholder": "María García",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "tu@universidad.edu",
+    "whatsappNumber": "Número de WhatsApp",
+    "whatsappPlaceholder": "+34 612 345 678",
+    "whatsappHint": "Incluye el código de país. Se usa para códigos de acceso y alertas opcionales de ejecución.",
+    "whatsappOptIn": "Enviar OTP y notificaciones de ejecución por WhatsApp",
+    "signInHint": "Introduce el correo vinculado a tu cuenta. Enviamos un código de un solo uso a tu WhatsApp guardado cuando las notificaciones están activadas.",
+    "sendSignInCode": "Enviar código de acceso",
+    "createAccountAndSend": "Crear cuenta y enviar código",
+    "sending": "Enviando…",
+    "newHere": "¿Eres nuevo/a?",
+    "createAnAccount": "Crea una cuenta",
+    "withContactDetails": "con tu nombre, correo y número de WhatsApp.",
+    "alreadyRegistered": "¿Ya tienes cuenta?",
+    "signInWithEmail": "Inicia sesión con tu correo",
+    "codeSentFor": "Código enviado para <strong>{{email}}</strong>",
+    "codeSentToWhatsapp": "a WhatsApp <strong>{{phone}}</strong>",
+    "changePhoneLater": "Puedes cambiar tu teléfono o preferencias de WhatsApp más tarde en Perfil.",
+    "verificationCode": "Código de verificación",
+    "codePlaceholder": "Código de 6 dígitos",
+    "verifying": "Verificando…",
+    "verifyAndContinue": "Verificar y continuar",
+    "resendCode": "Reenviar código",
+    "devModeCode": "Modo desarrollo: tu código es <strong>{{code}}</strong>",
+    "errorSendCode": "No se pudo enviar el código de verificación.",
+    "errorVerify": "La verificación falló.",
+    "errorResend": "No se pudo reenviar el código."
+  },
+  "consent": {
+    "pageTitle": "Configuración inicial",
+    "pageSubtitle": "Lee y acepta antes de usar POST-Rec. No volverás a ver esto — siempre está disponible en tu perfil.",
+    "intro": "POST-Rec es una <strong>herramienta experimental de investigación</strong>. Al continuar reconoces que:",
+    "acceptAndContinue": "Aceptar y continuar",
+    "errorSave": "No se pudo guardar el consentimiento.",
+    "panelTitle": "Consentimiento de participación",
+    "accepted": "Aceptado",
+    "pending": "Pendiente",
+    "panelIntro": "POST-Rec es una <strong>herramienta experimental de investigación</strong>. Al participar reconoces que:",
+    "acceptedOn": "Aceptado el {{date}}",
+    "version": "Versión {{version}}",
+    "agreedTo": "Aceptaste:",
+    "summary": [
+      "Las recomendaciones son generadas por IA y pueden ser incompletas o incorrectas",
+      "Todos los resultados requieren revisión humana antes de cualquier uso académico",
+      "Puedes dejar de participar en cualquier momento"
+    ],
+    "checkboxes": [
+      "Acepto participar en este estudio exploratorio.",
+      "Entiendo que el sistema es experimental.",
+      "Entiendo que las recomendaciones deben ser revisadas por una persona.",
+      "Entiendo que puedo retirarme en cualquier momento."
+    ]
+  },
+  "profile": {
+    "title": "Tu perfil",
+    "subtitle": "Datos de cuenta, perfil de investigación y preferencias de recomendación en un solo lugar.",
+    "tabAccount": "Cuenta",
+    "tabResearch": "Investigación",
+    "tabPreferences": "Preferencias",
+    "tabConsent": "Consentimiento",
+    "fullName": "Nombre completo",
+    "email": "Correo electrónico",
+    "whatsappNumber": "Número de WhatsApp",
+    "whatsappHint": "Incluye el código de país. Se usa para códigos de acceso.",
+    "whatsappOptIn": "Recibir OTP y notificaciones de ejecución por WhatsApp",
+    "saveAccount": "Guardar cuenta",
+    "accountSaved": "Cuenta guardada.",
+    "errorSaveAccount": "No se pudieron guardar los datos de la cuenta.",
+    "learnedTopicsHint": "{{count}} tema(s) aprendido(s) de tu feedback mejoran las próximas ejecuciones.",
+    "researchArea": "Área principal de investigación",
+    "researchAreaPlaceholder": "p. ej. Sistemas de recomendación y LLM",
+    "academicLevel": "Nivel académico",
+    "experience": "Experiencia",
+    "experienceAi": "IA",
+    "experienceRecsys": "Sistemas de recomendación",
+    "experienceWriting": "Redacción científica",
+    "goalLabel": "¿Qué esperas de POST-Rec?",
+    "goalPlaceholder": "Encontrar ideas de investigación accionables que pueda convertir en un artículo.",
+    "saveResearchProfile": "Guardar perfil de investigación",
+    "startRun": "Iniciar ejecución",
+    "researchProfileSaved": "Perfil de investigación guardado.",
+    "researchAreaRequired": "El área de investigación es obligatoria.",
+    "errorSaveProfile": "No se pudo guardar el perfil.",
+    "preferencesIntro": "Estos valores prellenan el formulario de nueva ejecución. Puedes ajustarlos en cada ejecución.",
+    "savePreferences": "Guardar preferencias",
+    "preferencesSaved": "Preferencias guardadas. Las nuevas ejecuciones usarán estos valores predeterminados.",
+    "errorSavePreferences": "No se pudieron guardar las preferencias.",
+    "learnedFromReviews": "Aprendido de tus revisiones",
+    "preferredTechniques": "Técnicas preferidas:",
+    "learnedTopics": "Temas aprendidos:",
+    "avoidedTopics": "Evitados:"
+  },
+  "preferences": {
+    "researchArea": "Área de investigación",
+    "researchAreaPlaceholder": "p. ej. Sistemas de recomendación y LLM",
+    "seedTopics": "Temas semilla predeterminados",
+    "seedTopicsPlaceholder": "Un tema por línea",
+    "seedTopicsHint": "Se prellenan al iniciar una nueva ejecución. Un tema por línea.",
+    "expectedOutput": "Resultado esperado",
+    "defaultExpectedOutput": "Ideas que puedan convertirse en un artículo real usando conjuntos de datos públicos.",
+    "defaultDepth": "Profundidad predeterminada",
+    "avoidRealUserExperiments": "Evitar experimentos con usuarios reales",
+    "depthShallow": "Superficial — visión general rápida",
+    "depthMedium": "Media — equilibrada",
+    "depthDeep": "Profunda — planes detallados"
+  },
+  "newRun": {
+    "title": "Nueva ejecución",
+    "subtitle": "Define los temas de esta ejecución. Los valores predeterminados vienen de tu perfil — ajústalos si hace falta.",
+    "seedTopicRequired": "Añade al menos un tema semilla.",
+    "errorStart": "No se pudo iniciar la ejecución.",
+    "starting": "Iniciando ejecución…",
+    "generate": "Generar recomendaciones",
+    "learnedTopicsNote": "Tu perfil incluye {{count}} tema(s) aprendido(s) de feedback anterior.",
+    "runMode": {
+      "label": "Modo de generación",
+      "quick": {
+        "label": "Rápido",
+        "hint": "Generación en una pasada con campos SOTA y verificación de novedad."
+      },
+      "sota": {
+        "label": "Basado en SOTA",
+        "hint": "Pipeline completo: panorama → matriz de brechas → propuestas con crítico estricto."
+      },
+      "exploratory": {
+        "label": "Exploratorio",
+        "hint": "Pipeline multi-etapa con mayor peso en novedad e ideas más amplias."
+      },
+      "fggv": {
+        "label": "FGGV (Facet-Grounded)",
+        "hint": "Método propuesto: verificación de novedad por faceta, alineación con brechas y selección diversa."
+      }
+    }
+  },
+  "runs": {
+    "title": "Ejecuciones",
+    "subtitleEmpty": "Inicia una ejecución para obtener ideas de investigación respaldadas por artículos reales.",
+    "subtitleStats": "{{total}} en total · {{active}} en curso · {{completed}} listas para revisar",
+    "noRunsTitle": "Aún no hay ejecuciones",
+    "noRunsDescription": "Crea tu primera ejecución: buscaremos artículos, analizaremos brechas y sugeriremos ideas para tu investigación.",
+    "startRun": "Iniciar ejecución",
+    "sectionInProgress": "En curso",
+    "sectionReady": "Listas para revisar",
+    "sectionOther": "Otras",
+    "sectionOtherCount": "Otras ({{count}})",
+    "ideasReady": "{{count}} ideas listas",
+    "ideasReadyUnknown": "Revisar ideas",
+    "trackProgress": "Seguir progreso →",
+    "backToRuns": "← Ejecuciones",
+    "noRecommendations": "No hay recomendaciones para esta ejecución.",
+    "allSources": "Todos los artículos fuente ({{count}})",
+    "outcomeIncomplete": "Sin ideas generadas",
+    "completedWithoutIdeas": "Esta ejecución terminó pero no se guardaron recomendaciones. Puedes iniciar una nueva con otros temas.",
+    "noIdeasGenerated": "Finalizó sin ideas"
+  },
+  "ideas": {
+    "generatedIdeas": "Ideas generadas",
+    "countOfTotal": "{{current}} de {{total}}",
+    "ideaNumber": "Idea {{number}}",
+    "swipeHint": "Desliza para ver ideas",
+    "goToIdea": "Ir a la idea {{number}}",
+    "score": "Puntuación {{value}}",
+    "rateIdea": "Valorar esta idea",
+    "yourFeedback": "Tu feedback",
+    "feedbackHint": "Las valoraciones mejoran tu próxima ejecución.",
+    "feedbackSaved": "Guardado · alineación {{score}}",
+    "feedbackError": "No se pudo guardar el feedback.",
+    "summary": "Resumen",
+    "methodPlan": "Método y plan",
+    "evidence": "Evidencia ({{count}})",
+    "researchGap": "Brecha de investigación",
+    "researchQuestion": "Pregunta de investigación",
+    "hypothesis": "Hipótesis",
+    "contribution": "Contribución esperada",
+    "relatedWork": "Trabajo relacionado",
+    "proposedMethod": "Método propuesto",
+    "experimentalPlan": "Plan experimental",
+    "datasets": "Conjuntos de datos",
+    "metrics": "Métricas",
+    "risks": "Riesgos",
+    "useInPaper": "¿Usar en un artículo?",
+    "decision": "Decisión",
+    "comments": "Comentarios",
+    "submitFeedback": "Enviar feedback",
+    "saving": "Guardando…",
+    "yes": "Sí",
+    "maybe": "Tal vez",
+    "no": "No",
+    "approved": "Aprobada",
+    "rejected": "Rechazada",
+    "needsRevision": "Necesita revisión",
+    "saveDecision": "Guardar",
+    "sourcesCount": "{{count}} fuentes",
+    "relevance": "Relevancia",
+    "clarity": "Claridad",
+    "feasibilityLabel": "Viabilidad",
+    "originality": "Originalidad",
+    "confidence": {
+      "low": "Confianza baja",
+      "medium": "Confianza media",
+      "high": "Confianza alta"
+    },
+    "scoreNames": {
+      "relevance": "Relevancia",
+      "clarity": "Claridad",
+      "feasibility": "Viabilidad",
+      "originality": "Originalidad",
+      "trust": "Confianza",
+      "usefulness": "Utilidad",
+      "novelty": "Novedad",
+      "impact": "Impacto"
+    },
+    "sotaVerification": {
+      "title": "Verificación SOTA",
+      "sotaSummary": "SOTA actual",
+      "noveltyDelta": "Delta de novedad",
+      "closestPriorWork": "Trabajo previo más cercano",
+      "sotaAnchors": "Anclas SOTA",
+      "sotaFit": "Ajuste SOTA",
+      "noveltyVerified": "Novedad verificada",
+      "criticPassed": "Crítico aprobado",
+      "criticReview": "Revisión del crítico",
+      "differentiationRationale": "Justificación de diferenciación",
+      "embeddingDistance": "Similitud máxima con fuentes (menor es mejor)",
+      "recencyGap": "Brecha de recencia",
+      "validationIssues": "Problemas de validación",
+      "fggvScore": "Puntuación FGGV",
+      "facetNoveltyIndex": "Índice de novedad por faceta",
+      "gapAlignmentScore": "Alineación con brechas",
+      "facetDeltas": "Deltas por faceta",
+      "alignedGaps": "Brechas alineadas"
+    },
+    "refinement": {
+      "title": "Necesita refinamiento",
+      "subtitle": "{{count}} idea(s) se guardaron pero no pasaron la validación SOTA/novedad.",
+      "badge": "Necesita refinamiento"
+    }
+  },
+  "evidence": {
+    "supportingArticles": "Artículos de apoyo",
+    "noArticles": "No hay artículos de apoyo citados para esta recomendación.",
+    "articlesCited": "{{count}} artículo(s) citado(s) como evidencia.",
+    "catalogUnavailable": "Catálogo de fuentes no disponible para esta ejecución.",
+    "papersUsed": "{{count}} artículos filtrados por relevancia usados como contexto.",
+    "doi": "DOI"
+  },
+  "insights": {
+    "title": "Métricas",
+    "subtitle": "Métricas agregadas de validación de todas las sesiones POST-Rec.",
+    "quality": "Calidad",
+    "trustFeasibility": "Confianza y viabilidad",
+    "activity": "Actividad",
+    "avgEas": "Alineación media (EAS)",
+    "approvalRate": "Tasa de aprobación",
+    "wouldUseRate": "Tasa de uso",
+    "failureRate": "Tasa de fallos",
+    "completionRate": "Tasa de finalización",
+    "avgTrust": "Confianza media",
+    "avgFeasibility": "Viabilidad media",
+    "avgUsefulness": "Utilidad media",
+    "sotaQuality": "Calidad SOTA",
+    "sotaAnchorRate": "Tasa de anclas SOTA",
+    "refinementRate": "Tasa de refinamiento",
+    "avgNoveltyVerified": "Novedad verificada media",
+    "avgSotaFit": "Ajuste SOTA medio",
+    "totalRuns": "Ejecuciones totales",
+    "totalFeedback": "Feedback total",
+    "emptyHint": "Las métricas aparecen cuando los participantes envían feedback sobre recomendaciones."
+  },
+  "survey": {
+    "title": "Feedback de sesión",
+    "subtitle": "Ayúdanos a mejorar POST-Rec con una breve encuesta final.",
+    "expectationsMet": "¿Los resultados cumplieron tus expectativas? ({{score}})",
+    "wouldUseInPaper": "¿Usarías alguna recomendación en un artículo real?",
+    "wouldUseAgain": "Volvería a usar POST-Rec",
+    "wouldRecommend": "Lo recomendaría a un colega",
+    "whatHelped": "¿Qué ayudó más?",
+    "whatImprove": "¿Qué se podría mejorar?",
+    "additionalComments": "Comentarios adicionales",
+    "submitting": "Enviando…",
+    "submit": "Enviar encuesta",
+    "thankYou": "Gracias — tu feedback fue registrado.",
+    "errorSubmit": "No se pudo enviar la encuesta."
+  },
+  "status": {
+    "ready": "Listo para revisar",
+    "in_progress": "En progreso",
+    "incomplete": "Sin ideas",
+    "queued": "En cola",
+    "started": "Iniciada",
+    "searching_papers": "Buscando artículos",
+    "normalizing_documents": "Normalizando",
+    "deduplicating_documents": "Deduplicando",
+    "generating_embeddings": "Generando embeddings",
+    "ranking_candidates": "Clasificando",
+    "generating_recommendations": "Generando",
+    "validating_output": "Validando",
+    "completed": "Completada",
+    "failed": "Fallida",
+    "cancelled": "Cancelada",
+    "cost_limit_exceeded": "Límite de coste",
+    "failed_schema_validation": "Error de esquema"
+  },
+  "progress": {
+    "step": "Paso: {{step}}",
+    "progressLabel": "Progreso",
+    "estCost": "Coste est.",
+    "updating": "Actualizando cada pocos segundos…",
+    "liveUpdates": "Actualizaciones en vivo",
+    "activityLog": "Registro de actividad",
+    "readyLoading": "Recomendaciones listas — cargando abajo…",
+    "recoverableHint": "Las advertencias temporales son normales mientras se buscan fuentes. La ejecución continúa automáticamente."
+  },
+  "usage": {
+    "title": "Uso de la ejecución",
+    "summary": "Uso de la ejecución · {{cost}}",
+    "estimatedNote": "Coste estimado de la API Gemini según tokens usados.",
+    "totalCost": "Coste total est.",
+    "inputTokens": "Tokens de entrada",
+    "outputTokens": "Tokens de salida",
+    "avgPerIdea": "Media por idea",
+    "breakdown": "Desglose de costes",
+    "lineTokens": "{{input}} entrada · {{output}} salida · {{total}} total",
+    "sharedGenerationNote": "Las ideas se generan en una sola llamada LLM compartida; el coste por idea es un promedio estimado.",
+    "operations": {
+      "embedding": "Embeddings de artículos",
+      "generation": "Generación de ideas"
+    }
+  },
+  "enums": {
+    "academicLevel": {
+      "Undergraduate": "Grado universitario",
+      "Masters": "Máster",
+      "PhD": "Doctorado",
+      "Professor": "Profesor/a",
+      "Industry": "Industria"
+    },
+    "experience": {
+      "None": "Ninguna",
+      "Basic": "Básica",
+      "Intermediate": "Intermedia",
+      "Advanced": "Avanzada"
+    },
+    "sources": {
+      "openalex": "OpenAlex",
+      "arxiv": "arXiv",
+      "semantic_scholar": "Semantic Scholar",
+      "crossref": "Crossref",
+      "unknown": "Desconocido"
+    }
+  },
+  "transparency": {
+    "title": "Cómo funciona POST-Rec",
+    "subtitle": "Descripción formal de recuperación, puntuación, generación y retroalimentación — para que entiendas exactamente cómo se producen las recomendaciones.",
+    "tocLabel": "En esta página",
+    "sections": {
+      "overview": "Resumen",
+      "pipeline": "Pipeline de extremo a extremo",
+      "inputs": "Entradas y perfil",
+      "retrieval": "Recuperación bibliográfica",
+      "relevance": "Puntuación de relevancia",
+      "embeddings": "Embeddings de documentos",
+      "generation": "Generación de ideas (LLM)",
+      "ideaScores": "Dimensiones por idea",
+      "finalScore": "Puntuación final",
+      "feedback": "Bucle de retroalimentación",
+      "limitations": "Limitaciones y transparencia"
+    },
+    "overview": {
+      "p1": "POST-Rec es un recomendador de investigación basado en literatura. Cada ejecución combina fuentes bibliográficas abiertas, filtrado determinista de relevancia y un modelo de lenguaje (LLM) restringido a citar solo artículos recuperados.",
+      "p2": "El sistema separa tres capas:",
+      "bullet1": "Recuperación y ranking de relevancia deterministas (ecuaciones abajo)",
+      "bullet2": "Síntesis LLM de ideas estructuradas con puntuaciones multidimensionales",
+      "bullet3": "Aprendizaje en bucle cerrado a partir de tus valoraciones (Expectation Alignment Score)"
+    },
+    "pipeline": {
+      "intro": "Cada ejecución sigue el mismo pipeline ordenado. Los eventos de progreso en la UI corresponden a estas etapas.",
+      "steps": {
+        "expectation": {
+          "title": "Expectativa y creación",
+          "body": "Tus temas, área, profundidad y restricciones se almacenan como UserExpectation vinculada a la ejecución."
+        },
+        "retrieval": {
+          "title": "Búsqueda multi-fuente",
+          "body": "Consultas en paralelo a OpenAlex, arXiv, Semantic Scholar y Crossref."
+        },
+        "relevance": {
+          "title": "Filtrado por relevancia",
+          "body": "Cada artículo recibe una puntuación determinista; los que quedan por debajo del umbral se descartan."
+        },
+        "dedup": {
+          "title": "Normalización y deduplicación",
+          "body": "Títulos, DOI y hashes se normalizan; documentos duplicados se fusionan."
+        },
+        "embedding": {
+          "title": "Embedding",
+          "body": "Los artículos retenidos se embedden con el modelo Gemini configurado."
+        },
+        "generation": {
+          "title": "Generación estructurada",
+          "body": "Un LLM produce JSON citando solo artículos recuperados, con puntuaciones por dimensión."
+        },
+        "validation": {
+          "title": "Validación",
+          "body": "La salida se parsea y valida; las ejecuciones fallidas se marcan sin ideas parciales."
+        },
+        "ranking": {
+          "title": "Ranking y visualización",
+          "body": "Las ideas se guardan con puntuación final y se muestran ordenadas de mayor a menor."
+        }
+      }
+    },
+    "inputs": {
+      "p1": "Una ejecución se parametriza con:",
+      "seedTopics": "Temas semilla — frases de búsqueda principales",
+      "researchArea": "Área de investigación — contexto del campo",
+      "expectedOutput": "Salida esperada — p. ej. ideas para congreso",
+      "depth": "Profundidad deseada — exploración rápida o exhaustiva",
+      "constraints": "Restricciones — p. ej. evitar experimentos con usuarios reales",
+      "profile": "Con perfil de investigación, temas aprendidos y técnicas preferidas expanden el conjunto de tokens Q:",
+      "expansionCaption": "Conjunto de temas expandido para la recuperación"
+    },
+    "retrieval": {
+      "p1": "POST-Rec consulta estos catálogos abiertos:",
+      "p2": "Los resultados se fusionan, normalizan (título, resumen, DOI, año, citas) y puntúan. Solo los mejor rankeados pasan a la generación."
+    },
+    "relevance": {
+      "intro": "Antes de cualquier LLM, cada artículo p se puntúa por solapamiento léxico entre tus tokens Q y el texto del artículo.",
+      "overlapCaption": "Ratio de solapamiento de tokens (sin stopwords, tokens > 2 caracteres)",
+      "tokenNote": "Q se construye de temas semilla ∪ área ∪ temas aprendidos; temas evitados añaden penalización p_avoid.",
+      "scoreCaption": "Puntuación de relevancia s_rel ∈ [0, 1]",
+      "ifAvoidedOverlap": "cuando tokens evitados solapan el cuerpo del artículo",
+      "filter": "Artículos con s_rel < {{min}} se filtran antes de la generación.",
+      "weakCap": "Si el solapamiento en título y cuerpo es muy bajo, la puntuación se limita a {{cap}}."
+    },
+    "embeddings": {
+      "p1": "Cada documento retenido d se embedde a partir de título y resumen:",
+      "formulaCaption": "Vector de embedding del documento d",
+      "p2": "Los embeddings se persisten para deduplicación y costes; la generación usa los mejores artículos como contexto textual (título, año, DOI)."
+    },
+    "generation": {
+      "p1": "El LLM recibe tus campos de expectativa y hasta 30 artículos. Reglas del sistema:",
+      "rule1": "Solo evidencia — sin DOI, autores o artículos inventados",
+      "rule2": "Salida JSON estructurada según el esquema de recomendación",
+      "rule3": "Cada idea enlaza artículos con explicación why_relevant",
+      "p2": "La temperatura favorece propuestas diversas pero fundamentadas. Uso de tokens y coste estimado se registran por ejecución."
+    },
+    "ideaScores": {
+      "intro": "Cada idea incluye siete dimensiones s_i ∈ [0, 100], asignadas por el LLM durante la generación:",
+      "llmNote": "Estas puntuaciones son juicios del modelo basados en la evidencia — no reglas manuales. El ranking final usa la fórmula ponderada abajo."
+    },
+    "dimensions": {
+      "relevance": "Relevancia",
+      "novelty": "Novedad",
+      "evidence": "Fuerza de evidencia",
+      "feasibility": "Factibilidad",
+      "trend": "Alineación con tendencias",
+      "publication_potential": "Potencial de publicación",
+      "strategic_fit": "Ajuste estratégico"
+    },
+    "dimensionDesc": {
+      "relevance": "Alineación con temas semilla y área",
+      "novelty": "Distancia de líneas saturadas en la evidencia",
+      "evidence": "Calidad y directitud de los artículos de apoyo",
+      "feasibility": "Ejecutabilidad con datos y métodos públicos",
+      "trend": "Encaje con momentum reciente en la literatura",
+      "publication_potential": "Probabilidad de contribución publicable",
+      "strategic_fit": "Coincidencia con objetivos y restricciones"
+    },
+    "finalScore": {
+      "intro": "La puntuación mostrada (0–100) es una combinación lineal ponderada. Los pesos coinciden con compute_final_ranking_score del backend:",
+      "formulaCaption": "Puntuación final de ranking (pesos suman 1)",
+      "display": "Si el LLM omite final_score, el backend lo recalcula con los mismos pesos (p. ej. relevancia al {{weight}}).",
+      "sort": "Las recomendaciones se ordenan por final_score descendente en UI y API."
+    },
+    "feedback": {
+      "intro": "Al valorar una idea, POST-Rec calcula un Expectation Alignment Score (EAS) en escala 1–5:",
+      "easCaption": "Expectation Alignment Score (EAS)",
+      "wouldUse": "El campo would-use-in-paper se mapea a W:",
+      "wouldUseYes": "Sí → W = {{score}}",
+      "wouldUseMaybe": "Tal vez → W = {{score}}",
+      "wouldUseNo": "No → W = {{score}}",
+      "profileLoop": "Feedback positivo añade técnicas y títulos a temas aprendidos; negativo añade temas evitados — influyendo Q y p_avoid en futuras ejecuciones."
+    },
+    "feedbackDims": {
+      "usefulness": "Utilidad",
+      "relevance": "Relevancia",
+      "clarity": "Claridad",
+      "feasibility": "Factibilidad",
+      "trust": "Confianza",
+      "would_use": "Usaría en un artículo"
+    },
+    "weights": {
+      "dimension": "Dimensión",
+      "weight": "Peso"
+    },
+    "limitations": {
+      "l1": "Las salidas LLM son probabilísticas — entradas idénticas pueden dar ideas distintas.",
+      "l2": "Las puntuaciones por dimensión son estimaciones del modelo, no métricas empíricas.",
+      "l3": "La recuperación es léxica — artículos semánticamente relevantes pueden perderse.",
+      "l4": "El conteo de citas sesga ligeramente hacia trabajo muy citado.",
+      "l5": "Los costes API son aproximados; ve el panel de uso en ejecuciones completadas."
+    }
+  }
+}
