@@ -119,6 +119,10 @@ copy .env.docker.example .env
 
 Stop everything: `docker compose down`. Remove data volumes: `docker compose down -v`.
 
+### GitHub automation
+
+Branch prefixes (`feature/`, `bug/`, `hotfix/`, etc.) open pull requests automatically. Bumping `version` in `pyproject.toml` on `main` creates release tags (`v0.1.0`). See [.github/README.md](.github/README.md).
+
 **Verify the stack** (after `docker compose up`):
 
 ```powershell
