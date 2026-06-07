@@ -40,6 +40,10 @@ class EvolutionService:
             with httpx.Client(timeout=30.0) as client:
                 response = client.post(url, json=payload, headers=headers)
                 response.raise_for_status()
+                body = response.json() if response.content else {}
+                if isinstance(body, dict) and body.get("status") is False:
+                    message = body.get("message") or body.get("error") or "send rejected"
+                    raise EvolutionError(str(message))
         except httpx.HTTPStatusError as exc:
             detail = exc.response.text[:300]
             logger.error(
@@ -48,6 +52,10 @@ class EvolutionService:
                 status_code=exc.response.status_code,
                 detail=detail,
             )
+            if exc.response.status_code == 400 and "exists" in detail.lower():
+                raise EvolutionError(
+                    "WhatsApp number not found. Include country code (e.g. +55 79 99973-3237)."
+                ) from exc
             raise EvolutionError(f"Evolution API error: {exc.response.status_code}") from exc
         except httpx.RequestError as exc:
             logger.error("evolution_send_unreachable", phone_number=phone_number, error=str(exc))

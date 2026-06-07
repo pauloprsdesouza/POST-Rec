@@ -44,6 +44,8 @@ Seed topics: {seed_topics}
 Expected output: {expected_output}
 Desired depth: {desired_depth}
 Constraints: {constraints}
+User expectations:
+{user_expectations}
 
 SOTA landscape:
 {sota_landscape_json}

@@ -21,7 +21,7 @@ export function LanguageSwitcher({ variant = "inline" }: LanguageSwitcherProps) 
         >
           {current.split("-")[0].toUpperCase()}
         </Dropdown.Toggle>
-        <Dropdown.Menu className="language-switcher__menu shadow">
+        <Dropdown.Menu className="language-switcher__menu">
           {SUPPORTED_LOCALES.map((locale) => (
             <Dropdown.Item
               key={locale}

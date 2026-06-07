@@ -4,12 +4,18 @@ import { useTranslation } from "react-i18next";
 import type { Recommendation, SotaAnchor } from "@/shared/types/api";
 import type { SourceDocument } from "@/shared/types/api";
 
+import { ScoreBar } from "./ScoreBar";
 interface SotaVerificationPanelProps {
   recommendation: Recommendation;
   sources?: SourceDocument[];
+  blind?: boolean;
 }
 
-export function SotaVerificationPanel({ recommendation, sources = [] }: SotaVerificationPanelProps) {
+export function SotaVerificationPanel({
+  recommendation,
+  sources = [],
+  blind = false,
+}: SotaVerificationPanelProps) {
   const { t } = useTranslation();
 
   const hasSotaContent =
@@ -17,11 +23,10 @@ export function SotaVerificationPanel({ recommendation, sources = [] }: SotaVeri
     recommendation.novelty_delta ||
     recommendation.closest_prior_work ||
     recommendation.differentiation_score_rationale ||
-    recommendation.facet_deltas ||
+    (!blind && recommendation.facet_deltas) ||
     recommendation.sota_fit != null ||
     recommendation.novelty_verified != null ||
-    recommendation.facet_novelty_index != null ||
-    recommendation.gap_alignment_score != null ||
+    (!blind && recommendation.facet_novelty_index != null) ||
     recommendation.embedding_distance != null;
 
   if (!hasSotaContent) {
@@ -35,7 +40,7 @@ export function SotaVerificationPanel({ recommendation, sources = [] }: SotaVeri
   return (
     <div className="sota-panel">
       <div className="sota-panel__header">
-        <h3 className="h6 mb-0">{t("ideas.sotaVerification.title")}</h3>
+        <h3 className="sota-panel__title">{t("ideas.sotaVerification.title")}</h3>
         <div className="sota-panel__badges">
           {recommendation.critic_accepted != null ? (
             <Badge bg={recommendation.critic_accepted ? "success" : "warning"}>
@@ -74,29 +79,29 @@ export function SotaVerificationPanel({ recommendation, sources = [] }: SotaVeri
 
       {(recommendation.sota_fit != null ||
         recommendation.novelty_verified != null ||
-        recommendation.facet_novelty_index != null ||
-        recommendation.gap_alignment_score != null ||
-        recommendation.fggv_score != null ||
+        (!blind && recommendation.facet_novelty_index != null) ||
+        (!blind && recommendation.gap_alignment_score != null) ||
+        (!blind && recommendation.fggv_score != null) ||
         recommendation.embedding_distance != null ||
         recommendation.recency_gap != null) && (
         <div className="sota-panel__metrics">
-          {recommendation.fggv_score != null ? (
+          {!blind && recommendation.fggv_score != null ? (
             <MetricBar label={t("ideas.sotaVerification.fggvScore")} value={recommendation.fggv_score} />
           ) : null}
-          {recommendation.facet_novelty_index != null ? (
+          {!blind && recommendation.facet_novelty_index != null ? (
             <MetricBar
               label={t("ideas.sotaVerification.facetNoveltyIndex")}
               value={recommendation.facet_novelty_index}
             />
           ) : null}
-          {recommendation.scores?.false_novel_facet_count != null ? (
-            <div className="sota-panel__metric-note text-secondary small">
+          {!blind && recommendation.scores?.false_novel_facet_count != null ? (
+            <div className="sota-panel__metric-note">
               {t("ideas.sotaVerification.falseNovelFacets", {
                 count: recommendation.scores.false_novel_facet_count,
               })}
             </div>
           ) : null}
-          {recommendation.gap_alignment_score != null ? (
+          {!blind && recommendation.gap_alignment_score != null ? (
             <MetricBar
               label={t("ideas.sotaVerification.gapAlignmentScore")}
               value={recommendation.gap_alignment_score}
@@ -135,7 +140,7 @@ export function SotaVerificationPanel({ recommendation, sources = [] }: SotaVeri
         </div>
       ) : null}
 
-      {recommendation.facet_deltas ? (
+      {!blind && recommendation.facet_deltas ? (
         <div className="sota-panel__facets">
           <div className="idea-block__label">{t("ideas.sotaVerification.facetDeltas")}</div>
           <ul className="idea-block__list">
@@ -150,7 +155,7 @@ export function SotaVerificationPanel({ recommendation, sources = [] }: SotaVeri
         </div>
       ) : null}
 
-      {recommendation.aligned_gaps?.length ? (
+      {!blind && recommendation.aligned_gaps?.length ? (
         <div className="sota-panel__gaps">
           <div className="idea-block__label">{t("ideas.sotaVerification.alignedGaps")}</div>
           <ul className="idea-block__list">
@@ -195,17 +200,7 @@ function MetricBar({
   value: number;
   invert?: boolean;
 }) {
-  const display = invert ? Math.max(0, 100 - value) : value;
-  return (
-    <div className="idea-scores__item">
-      <div className="idea-scores__label">
-        {label} <strong>{Math.round(display)}</strong>
-      </div>
-      <div className="progress idea-scores__bar">
-        <div className="progress-bar" style={{ width: `${Math.min(display, 100)}%` }} />
-      </div>
-    </div>
-  );
+  return <ScoreBar label={label} value={value} invert={invert} />;
 }
 
 function AnchorItem({

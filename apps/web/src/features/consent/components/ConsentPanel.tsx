@@ -26,13 +26,13 @@ export function ConsentPanel({ status, readOnly = true }: ConsentPanelProps) {
   return (
     <div className="consent-panel">
       <div className="d-flex align-items-center gap-2 mb-3">
-        <h6 className="mb-0 fw-semibold">{t("consent.panelTitle")}</h6>
+        <h2 className="consent-panel__title">{t("consent.panelTitle")}</h2>
         <Badge bg={accepted ? "success" : "secondary"}>
           {accepted ? t("consent.accepted") : t("consent.pending")}
         </Badge>
       </div>
 
-      <p className="text-secondary">
+      <p className="consent-panel__intro">
         <Trans i18nKey="consent.panelIntro" components={{ strong: <strong /> }} />
       </p>
       <ul className="consent-panel__list">
@@ -44,9 +44,9 @@ export function ConsentPanel({ status, readOnly = true }: ConsentPanelProps) {
       {readOnly && accepted ? (
         <div className="consent-panel__meta">
           {acceptedDate ? (
-            <p className="small text-secondary mb-1">{t("consent.acceptedOn", { date: acceptedDate })}</p>
+            <p>{t("consent.acceptedOn", { date: acceptedDate })}</p>
           ) : null}
-          <p className="small text-secondary mb-0">
+          <p className="mb-0">
             {t("consent.version", { version: status?.consent_version ?? CONSENT_VERSION })}
           </p>
         </div>
@@ -54,7 +54,7 @@ export function ConsentPanel({ status, readOnly = true }: ConsentPanelProps) {
 
       {!readOnly ? (
         <div className="mt-3">
-          <p className="small fw-semibold mb-2">{t("consent.agreedTo")}</p>
+          <p className="consent-panel__checks-title">{t("consent.agreedTo")}</p>
           <ul className="consent-panel__checks mb-0">
             {checkboxes.map((label) => (
               <li key={label}>{label}</li>

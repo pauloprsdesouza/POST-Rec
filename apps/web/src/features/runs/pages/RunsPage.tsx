@@ -1,353 +1,154 @@
-import { useState } from "react";
-
-import { Alert } from "react-bootstrap";
-
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, Navigate } from "react-router-dom";
 
-import { useTranslation } from "react-i18next";
-
-
-
 import { RunListCard } from "@/features/runs/components/RunListCard";
-
-import { EmptyState } from "@/shared/ui/EmptyState";
-
+import { RunSection } from "@/features/runs/components/RunSection";
+import { RunsEmptyHero } from "@/features/runs/components/RunsEmptyHero";
+import { RunsListSkeleton } from "@/features/runs/components/RunsListSkeleton";
+import { RunsStatsStrip, type RunsFilter } from "@/features/runs/components/RunsStatsStrip";
 import { PageHeader } from "@/shared/ui/PageHeader";
-
-import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
-
+import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { useAuth } from "@/features/auth/context/AuthContext";
-
 import { useRuns } from "@/features/runs/context/RunsContext";
-
 import type { RecommendationRun } from "@/shared/types/api";
-
 import { groupRuns } from "@/features/runs/utils/runs";
 
-
-
-const SECTION_STORAGE_PREFIX = "postrec.runs.section.";
-
-
-
-function readSectionOpen(sectionId: string, defaultOpen: boolean): boolean {
-
-  try {
-
-    const stored = sessionStorage.getItem(`${SECTION_STORAGE_PREFIX}${sectionId}`);
-
-    if (stored === "true") {
-
-      return true;
-
-    }
-
-    if (stored === "false") {
-
-      return false;
-
-    }
-
-  } catch {
-
-    // ignore
-
+function filterRuns(
+  filter: RunsFilter,
+  groups: ReturnType<typeof groupRuns>,
+): { completed: RecommendationRun[]; active: RecommendationRun[]; other: RecommendationRun[] } {
+  if (filter === "ready") {
+    return { completed: groups.completed, active: [], other: [] };
   }
-
-  return defaultOpen;
-
-}
-
-
-
-function writeSectionOpen(sectionId: string, open: boolean): void {
-
-  try {
-
-    sessionStorage.setItem(`${SECTION_STORAGE_PREFIX}${sectionId}`, String(open));
-
-  } catch {
-
-    // ignore
-
+  if (filter === "active") {
+    return { completed: [], active: groups.active, other: [] };
   }
-
+  return groups;
 }
-
-
-
-function CollapsibleRunSection({
-
-  sectionId,
-
-  title,
-
-  runs,
-
-  defaultOpen = true,
-
-}: {
-
-  sectionId: string;
-
-  title: string;
-
-  runs: RecommendationRun[];
-
-  defaultOpen?: boolean;
-
-}) {
-
-  const [open, setOpen] = useState(() => readSectionOpen(sectionId, defaultOpen));
-
-
-
-  if (!runs.length) {
-
-    return null;
-
-  }
-
-
-
-  const toggle = () => {
-
-    setOpen((value) => {
-
-      const next = !value;
-
-      writeSectionOpen(sectionId, next);
-
-      return next;
-
-    });
-
-  };
-
-
-
-  return (
-
-    <section className={`run-section run-section--collapsible ${open ? "run-section--open" : ""}`}>
-
-      <button
-
-        type="button"
-
-        className="run-section__toggle"
-
-        aria-expanded={open}
-
-        onClick={toggle}
-
-      >
-
-        <span className="run-section__heading">{title}</span>
-
-        <span className="run-section__count">{runs.length}</span>
-
-        <span className="run-section__chevron" aria-hidden>
-
-          {open ? "−" : "+"}
-
-        </span>
-
-      </button>
-
-      {open ? (
-
-        <div className="run-section__list">
-
-          {runs.map((run) => (
-
-            <RunListCard key={run.id} run={run} recommendationCount={run.recommendation_count} />
-
-          ))}
-
-        </div>
-
-      ) : null}
-
-    </section>
-
-  );
-
-}
-
-
 
 export function RunsPage() {
-
   const { t } = useTranslation();
-
   const { accessToken } = useAuth();
-
   const { runs, loaded, loading, error } = useRuns();
+  const [filter, setFilter] = useState<RunsFilter>("all");
 
-
+  const groups = useMemo(() => groupRuns(runs), [runs]);
+  const { active, completed, other } = useMemo(() => filterRuns(filter, groups), [filter, groups]);
 
   if (!accessToken) {
-
     return null;
-
   }
-
-
 
   if (!loaded && loading) {
-
-    return <LoadingSpinner label={t("common.loadingRuns")} />;
-
+    return (
+      <div className="page-shell page-shell--list runs-page">
+        <RunsListSkeleton />
+      </div>
+    );
   }
-
-
 
   if (error && !runs.length) {
-
-    return <Alert variant="danger">{error}</Alert>;
-
+    return (
+      <div className="page-shell page-shell--list runs-page">
+        <InlineAlert variant="danger">{error}</InlineAlert>
+      </div>
+    );
   }
-
-
 
   if (!runs.length) {
-
     return (
-
-      <div className="page-shell">
-
-        <PageHeader title={t("runs.title")} subtitle={t("runs.subtitleEmpty")} />
-
-        <EmptyState
-
-          title={t("runs.noRunsTitle")}
-
-          description={t("runs.noRunsDescription")}
-
-          action={
-
-            <Link to="/runs/new" className="btn btn-primary btn-lg w-100 w-sm-auto">
-
-              {t("runs.startRun")}
-
-            </Link>
-
-          }
-
-        />
-
+      <div className="page-shell page-shell--list runs-page">
+        <RunsEmptyHero />
       </div>
-
     );
-
   }
-
-
-
-  const { active, completed, other } = groupRuns(runs);
-
-
 
   return (
+    <div className="page-shell page-shell--list runs-page">
+      <div className="page-stack">
+        <header className="page-stack__block">
+          <PageHeader
+            title={t("runs.title")}
+            subtitle={t("runs.subtitleStats", {
+              total: runs.length,
+              active: groups.active.length,
+              completed: groups.completed.length,
+            })}
+            action={
+              <Link to="/runs/new" className="btn btn-primary">
+                {t("common.newRun")}
+              </Link>
+            }
+          />
+          <RunsStatsStrip
+            total={runs.length}
+            active={groups.active.length}
+            ready={groups.completed.length}
+            filter={filter}
+            onFilterChange={setFilter}
+          />
+        </header>
 
-    <div className="page-shell">
+        {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
 
-      <PageHeader
+        {filter === "ready" && completed.length === 0 ? (
+          <p className="inline-meta runs-page__empty-filter">{t("runs.filterEmptyReady")}</p>
+        ) : null}
+        {filter === "active" && active.length === 0 ? (
+          <p className="inline-meta runs-page__empty-filter">{t("runs.filterEmptyActive")}</p>
+        ) : null}
 
-        title={t("runs.title")}
+        <div className="page-stack page-stack--tight">
+          <RunSection
+            title={t("runs.sectionReady")}
+            description={t("runs.sectionReadyDesc")}
+            count={completed.length}
+            variant="ready"
+          >
+            {completed.map((run) => (
+              <RunListCard key={run.id} run={run} recommendationCount={run.recommendation_count} />
+            ))}
+          </RunSection>
 
-        subtitle={t("runs.subtitleStats", {
+          <RunSection
+            title={t("runs.sectionInProgress")}
+            description={t("runs.sectionInProgressDesc")}
+            count={active.length}
+            variant="in_progress"
+          >
+            {active.map((run) => (
+              <RunListCard key={run.id} run={run} recommendationCount={run.recommendation_count} />
+            ))}
+          </RunSection>
 
-          total: runs.length,
+          <RunSection
+            title={t("runs.sectionOtherCount", { count: other.length })}
+            description={t("runs.sectionOtherDesc")}
+            count={other.length}
+            variant="other"
+          >
+            {other.map((run) => (
+              <RunListCard key={run.id} run={run} recommendationCount={run.recommendation_count} />
+            ))}
+          </RunSection>
+        </div>
+      </div>
 
-          active: active.length,
-
-          completed: completed.length,
-
-        })}
-
-        action={
-
-          <Link to="/runs/new" className="btn btn-primary">
-
-            {t("common.newRun")}
-
-          </Link>
-
-        }
-
-      />
-
-
-
-      {error ? <Alert variant="danger">{error}</Alert> : null}
-
-
-
-      <CollapsibleRunSection
-
-        sectionId="in_progress"
-
-        title={t("runs.sectionInProgress")}
-
-        runs={active}
-
-        defaultOpen
-
-      />
-
-      <CollapsibleRunSection
-
-        sectionId="ready"
-
-        title={t("runs.sectionReady")}
-
-        runs={completed}
-
-        defaultOpen
-
-      />
-
-
-
-      {other.length > 0 ? (
-
-        <CollapsibleRunSection
-
-          sectionId="other"
-
-          title={t("runs.sectionOtherCount", { count: other.length })}
-
-          runs={other}
-
-          defaultOpen={false}
-
-        />
-
-      ) : null}
-
+      <div className="runs-page__mobile-cta d-lg-none">
+        <Link to="/runs/new" className="btn btn-primary btn-lg w-100">
+          {t("common.newRun")}
+        </Link>
+      </div>
     </div>
-
   );
-
 }
-
-
 
 export function RecommendationsRedirect() {
-
   const { selectedRunId } = useAuth();
 
-
-
   if (selectedRunId) {
-
     return <Navigate to={`/runs/${selectedRunId}`} replace />;
-
   }
-
   return <Navigate to="/runs" replace />;
-
 }
-
-

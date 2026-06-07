@@ -13,10 +13,15 @@ from sqlalchemy import (
     Integer,
     Numeric,
     Text,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+from apps.api.shared.db_types import candidate_status_enum, run_mode_enum, run_status_enum, session_status_enum
+from packages.postrec_core.domain.enums import CandidateStatus, RunStatus, SessionStatus
+from packages.postrec_core.domain.run_mode import RunMode
 
 
 class Base(DeclarativeBase):
@@ -29,7 +34,6 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     phone_number: Mapped[str | None] = mapped_column(Text, nullable=True)
     email: Mapped[str | None] = mapped_column(Text, unique=True, nullable=True)
-    password_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
     full_name: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     whatsapp_opt_in: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
@@ -39,6 +43,7 @@ class User(Base):
     )
 
     research_profile: Mapped["UserResearchProfile | None"] = relationship(back_populates="user", uselist=False)
+    study_sessions: Mapped[list["StudySession"]] = relationship(back_populates="user")
 
 
 class AuthOtpChallenge(Base):
@@ -82,47 +87,59 @@ class UserResearchProfile(Base):
     user: Mapped["User"] = relationship(back_populates="research_profile")
 
 
-class VolunteerSession(Base):
-    __tablename__ = "volunteer_session"
+class StudySession(Base):
+    """A single browser visit / study participation session."""
+
+    __tablename__ = "study_session"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("app_user.id", ondelete="SET NULL"), nullable=True
+    )
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    status: Mapped[str] = mapped_column(Text, nullable=False, default="started")
+    status: Mapped[str] = mapped_column(
+        session_status_enum, nullable=False, default=SessionStatus.STARTED
+    )
     user_agent: Mapped[str | None] = mapped_column(Text, nullable=True)
-    ip_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
-    metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB, nullable=True)
 
-    consents: Mapped[list["ParticipantConsent"]] = relationship(back_populates="session")
-    profiles: Mapped[list["ParticipantProfile"]] = relationship(back_populates="session")
-    expectations: Mapped[list["UserExpectation"]] = relationship(back_populates="session")
+    user: Mapped["User | None"] = relationship(back_populates="study_sessions")
+    consents: Mapped[list["SessionConsent"]] = relationship(back_populates="session")
+    profiles: Mapped[list["SessionProfile"]] = relationship(back_populates="session")
+    expectations: Mapped[list["SessionExpectation"]] = relationship(back_populates="session")
     runs: Mapped[list["RecommendationRun"]] = relationship(back_populates="session")
+    feedback_items: Mapped[list["RecommendationFeedback"]] = relationship(back_populates="session")
+    final_surveys: Mapped[list["SessionFinalSurvey"]] = relationship(back_populates="session")
 
 
-class ParticipantConsent(Base):
-    __tablename__ = "participant_consent"
+class SessionConsent(Base):
+    __tablename__ = "session_consent"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[str] = mapped_column(Text, nullable=False)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("app_user.id", ondelete="SET NULL"), nullable=True
+    )
     session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("volunteer_session.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=False
     )
     consent_version: Mapped[str] = mapped_column(Text, nullable=False)
     accepted: Mapped[bool] = mapped_column(Boolean, nullable=False)
     accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB, nullable=True)
 
-    session: Mapped["VolunteerSession"] = relationship(back_populates="consents")
+    session: Mapped["StudySession"] = relationship(back_populates="consents")
 
 
-class ParticipantProfile(Base):
-    __tablename__ = "participant_profile"
+class SessionProfile(Base):
+    """Immutable profile snapshot captured at the start of a study session."""
+
+    __tablename__ = "session_profile"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[str] = mapped_column(Text, nullable=False)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("app_user.id", ondelete="SET NULL"), nullable=True
+    )
     session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("volunteer_session.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=False
     )
     research_area: Mapped[str | None] = mapped_column(Text, nullable=True)
     academic_level: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -133,16 +150,18 @@ class ParticipantProfile(Base):
     goal_with_postrec: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    session: Mapped["VolunteerSession"] = relationship(back_populates="profiles")
+    session: Mapped["StudySession"] = relationship(back_populates="profiles")
 
 
-class UserExpectation(Base):
-    __tablename__ = "user_expectation"
+class SessionExpectation(Base):
+    __tablename__ = "session_expectation"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("app_user.id", ondelete="SET NULL"), nullable=True
+    )
     session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("volunteer_session.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=False
     )
     research_area: Mapped[str | None] = mapped_column(Text, nullable=True)
     seed_topics: Mapped[list] = mapped_column(JSONB, nullable=False)
@@ -157,7 +176,7 @@ class UserExpectation(Base):
     expects_references: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    session: Mapped["VolunteerSession"] = relationship(back_populates="expectations")
+    session: Mapped["StudySession"] = relationship(back_populates="expectations")
     runs: Mapped[list["RecommendationRun"]] = relationship(back_populates="expectation")
 
 
@@ -166,31 +185,38 @@ class RecommendationRun(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     request_id: Mapped[str | None] = mapped_column(Text, unique=True, nullable=True)
-    user_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("app_user.id", ondelete="SET NULL"), nullable=True
+    )
     session_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("volunteer_session.id"), nullable=True
+        UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=True
     )
     expectation_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("user_expectation.id"), nullable=True
+        UUID(as_uuid=True), ForeignKey("session_expectation.id"), nullable=True
     )
     input: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    mode: Mapped[str] = mapped_column(Text, nullable=False)
-    status: Mapped[str] = mapped_column(Text, nullable=False)
+    mode: Mapped[str] = mapped_column(run_mode_enum, nullable=False, default=RunMode.QUICK)
+    status: Mapped[str] = mapped_column(run_status_enum, nullable=False, default=RunStatus.QUEUED)
     progress: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    current_step: Mapped[str | None] = mapped_column(Text, nullable=True)
+    current_step: Mapped[str | None] = mapped_column(run_status_enum, nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     max_papers: Mapped[int] = mapped_column(Integer, nullable=False)
     max_recommendations: Mapped[int] = mapped_column(Integer, nullable=False)
-    trace_id: Mapped[str | None] = mapped_column(Text, nullable=True)
     estimated_cost_usd: Mapped[float] = mapped_column(Numeric, default=0)
+    experiment_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    experiment_variant: Mapped[str | None] = mapped_column(Text, nullable=True)
+    assigned_mode: Mapped[str | None] = mapped_column(Text, nullable=True)
+    presentation_profile: Mapped[str] = mapped_column(Text, nullable=False, default="standard")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    session: Mapped["VolunteerSession | None"] = relationship(back_populates="runs")
-    expectation: Mapped["UserExpectation | None"] = relationship(back_populates="runs")
+    user: Mapped["User | None"] = relationship()
+    session: Mapped["StudySession | None"] = relationship(back_populates="runs")
+    expectation: Mapped["SessionExpectation | None"] = relationship(back_populates="runs")
     events: Mapped[list["RecommendationRunEvent"]] = relationship(back_populates="run")
     candidates: Mapped[list["RecommendationCandidate"]] = relationship(back_populates="run")
+    feedback_items: Mapped[list["RecommendationFeedback"]] = relationship(back_populates="run")
 
 
 class RecommendationRunEvent(Base):
@@ -198,14 +224,9 @@ class RecommendationRunEvent(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     run_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("recommendation_run.id"), nullable=False)
-    session_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("volunteer_session.id"), nullable=True
-    )
     event_type: Mapped[str] = mapped_column(Text, nullable=False)
     message: Mapped[str] = mapped_column(Text, nullable=False)
     payload: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    trace_id: Mapped[str | None] = mapped_column(Text, nullable=True)
-    span_id: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     run: Mapped["RecommendationRun"] = relationship(back_populates="events")
@@ -225,7 +246,6 @@ class SourceDocument(Base):
     doi: Mapped[str | None] = mapped_column(Text, nullable=True)
     url: Mapped[str | None] = mapped_column(Text, nullable=True)
     citation_count: Mapped[int] = mapped_column(Integer, default=0)
-    keywords: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB, nullable=True)
     content_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -270,7 +290,9 @@ class RecommendationCandidate(Base):
     confidence_level: Mapped[str | None] = mapped_column(Text, nullable=True)
     scores: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     final_score: Mapped[float | None] = mapped_column(Numeric, nullable=True)
-    status: Mapped[str] = mapped_column(Text, nullable=False, default="draft")
+    status: Mapped[str] = mapped_column(
+        candidate_status_enum, nullable=False, default=CandidateStatus.DRAFT
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -289,12 +311,15 @@ class RecommendationFeedback(Base):
         CheckConstraint("feasibility_score BETWEEN 1 AND 5", name="ck_feasibility_score"),
         CheckConstraint("trust_score BETWEEN 1 AND 5", name="ck_trust_score"),
         CheckConstraint("usefulness_score BETWEEN 1 AND 5", name="ck_usefulness_score"),
+        UniqueConstraint("recommendation_id", "session_id", name="uq_feedback_recommendation_session"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("app_user.id", ondelete="SET NULL"), nullable=True
+    )
     session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("volunteer_session.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=False
     )
     run_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("recommendation_run.id"), nullable=False)
     recommendation_id: Mapped[uuid.UUID] = mapped_column(
@@ -312,37 +337,24 @@ class RecommendationFeedback(Base):
     expectation_alignment_score: Mapped[float | None] = mapped_column(Numeric, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
+    session: Mapped["StudySession"] = relationship(back_populates="feedback_items")
+    run: Mapped["RecommendationRun"] = relationship(back_populates="feedback_items")
     recommendation: Mapped["RecommendationCandidate"] = relationship(back_populates="feedback")
-
-
-class UserInteractionEvent(Base):
-    __tablename__ = "user_interaction_event"
-
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[str | None] = mapped_column(Text, nullable=True)
-    session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("volunteer_session.id"), nullable=False
-    )
-    run_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("recommendation_run.id"), nullable=True
-    )
-    recommendation_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("recommendation_candidate.id"), nullable=True
-    )
-    event_type: Mapped[str] = mapped_column(Text, nullable=False)
-    event_value: Mapped[str | None] = mapped_column(Text, nullable=True)
-    metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class SessionFinalSurvey(Base):
     __tablename__ = "session_final_survey"
-    __table_args__ = (CheckConstraint("expectation_met_score BETWEEN 1 AND 5", name="ck_expectation_met_score"),)
+    __table_args__ = (
+        CheckConstraint("expectation_met_score BETWEEN 1 AND 5", name="ck_expectation_met_score"),
+        UniqueConstraint("session_id", name="uq_session_final_survey_session"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("app_user.id", ondelete="SET NULL"), nullable=True
+    )
     session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("volunteer_session.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=False
     )
     run_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("recommendation_run.id"), nullable=True
@@ -359,6 +371,10 @@ class SessionFinalSurvey(Base):
     free_comment: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
+    session: Mapped["StudySession"] = relationship(back_populates="final_surveys")
+    run: Mapped["RecommendationRun | None"] = relationship()
+    most_useful_recommendation: Mapped["RecommendationCandidate | None"] = relationship()
+
 
 class LLMUsage(Base):
     __tablename__ = "llm_usage"
@@ -367,9 +383,6 @@ class LLMUsage(Base):
     run_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("recommendation_run.id"), nullable=True
     )
-    recommendation_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("recommendation_candidate.id"), nullable=True
-    )
     provider: Mapped[str] = mapped_column(Text, nullable=False)
     model: Mapped[str] = mapped_column(Text, nullable=False)
     operation: Mapped[str] = mapped_column(Text, nullable=False)
@@ -377,49 +390,27 @@ class LLMUsage(Base):
     output_tokens: Mapped[int] = mapped_column(Integer, default=0)
     total_tokens: Mapped[int] = mapped_column(Integer, default=0)
     estimated_cost_usd: Mapped[float] = mapped_column(Numeric, default=0)
-    request_metadata: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-
-class ExportedArtifact(Base):
-    __tablename__ = "exported_artifact"
-
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    recommendation_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("recommendation_candidate.id"), nullable=False
-    )
-    artifact_type: Mapped[str] = mapped_column(Text, nullable=False)
-    file_path: Mapped[str | None] = mapped_column(Text, nullable=True)
-    content: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-
-
-class AuditLog(Base):
-    __tablename__ = "audit_log"
-
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    actor_id: Mapped[str | None] = mapped_column(Text, nullable=True)
-    action: Mapped[str] = mapped_column(Text, nullable=False)
-    entity_type: Mapped[str] = mapped_column(Text, nullable=False)
-    entity_id: Mapped[str | None] = mapped_column(Text, nullable=True)
-    metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    run: Mapped["RecommendationRun | None"] = relationship()
 
 
 Index("idx_app_user_phone_number", User.phone_number, unique=True)
 Index("idx_app_user_email", User.email, unique=True)
 Index("idx_auth_otp_phone_created", AuthOtpChallenge.phone_number, AuthOtpChallenge.created_at)
 Index("idx_user_research_profile_user_id", UserResearchProfile.user_id, unique=True)
+Index("idx_study_session_user_id", StudySession.user_id)
 Index("idx_recommendation_run_user_id", RecommendationRun.user_id)
-Index("idx_volunteer_session_user_id", VolunteerSession.user_id)
 Index("idx_recommendation_run_session_id", RecommendationRun.session_id)
 Index("idx_recommendation_run_status", RecommendationRun.status)
 Index("idx_recommendation_run_created_at", RecommendationRun.created_at)
+Index(
+    "idx_recommendation_run_experiment",
+    RecommendationRun.experiment_id,
+    RecommendationRun.experiment_variant,
+)
 Index("idx_recommendation_feedback_recommendation_id", RecommendationFeedback.recommendation_id)
 Index("idx_recommendation_feedback_session_id", RecommendationFeedback.session_id)
-Index("idx_user_interaction_event_session_id", UserInteractionEvent.session_id)
-Index("idx_user_interaction_event_event_type", UserInteractionEvent.event_type)
 Index("idx_source_document_doi", SourceDocument.doi)
 Index("idx_source_document_content_hash", SourceDocument.content_hash)
 Index("idx_llm_usage_run_id", LLMUsage.run_id)
-Index("idx_audit_log_actor_id", AuditLog.actor_id)

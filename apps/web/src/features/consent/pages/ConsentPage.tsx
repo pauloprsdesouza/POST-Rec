@@ -1,10 +1,12 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
-import { Alert, Button, Card, Form } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { Trans, useTranslation } from "react-i18next";
 import { Navigate, useNavigate } from "react-router-dom";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { InlineAlert } from "@/shared/ui/InlineAlert";
+import { OnboardingProgress } from "@/shared/ui/OnboardingProgress";
 import { useConsentStrings } from "@/shared/i18n/useConsentStrings";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { sessionService } from "@/shared/api";
@@ -15,15 +17,13 @@ export function ConsentPage() {
   const { summary, checkboxes } = useConsentStrings();
   const { accessToken, user, consentDone, completeConsent, setSessionId } = useAuth();
   const navigate = useNavigate();
-  const [checks, setChecks] = useState([false, false, false, false]);
+  const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   if (consentDone) {
     return <Navigate to="/profile?tab=consent" replace />;
   }
-
-  const allChecked = checks.every(Boolean);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -38,7 +38,7 @@ export function ConsentPage() {
       await sessionService.createConsent(accessToken, user.userId, session.session_id, true);
       setSessionId(session.session_id);
       completeConsent(session.session_id);
-      navigate("/profile");
+      navigate("/profile?tab=research");
     } catch (err) {
       setError(getErrorMessage(err, t("consent.errorSave")));
     } finally {
@@ -48,11 +48,16 @@ export function ConsentPage() {
 
   return (
     <div className="page-shell page-shell--narrow">
-      <PageHeader title={t("consent.pageTitle")} subtitle={t("consent.pageSubtitle")} />
+      <div className="page-stack page-stack--tight">
+        <PageHeader title={t("consent.pageTitle")} subtitle={t("consent.pageSubtitle")} />
 
-      <Card className="page-card consent-card border-0">
-        <Card.Body className="p-md-5">
-          <p className="lead-text mb-3">
+        <div className="consent-setup">
+          <OnboardingProgress />
+          <span className="consent-time-badge">{t("setup.timeEstimate")}</span>
+        </div>
+
+        <div className="panel consent-page__panel">
+          <p className="lead-text mb-4">
             <Trans i18nKey="consent.intro" components={{ strong: <strong /> }} />
           </p>
           <ul className="consent-panel__list mb-4">
@@ -61,38 +66,37 @@ export function ConsentPage() {
             ))}
           </ul>
 
-          {error ? <Alert variant="danger">{error}</Alert> : null}
+          {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
 
-          <Form onSubmit={handleSubmit}>
-            <div className="consent-checks">
-              {checkboxes.map((label, index) => (
-                <Form.Check
-                  key={label}
-                  type="checkbox"
-                  id={`consent-${index}`}
-                  className="consent-checks__item"
-                  label={label}
-                  checked={checks[index]}
-                  onChange={(e) => {
-                    const next = [...checks];
-                    next[index] = e.target.checked;
-                    setChecks(next);
-                  }}
-                />
-              ))}
-            </div>
+          <Form onSubmit={handleSubmit} className="form-stack">
+            <details className="consent-details">
+              <summary>{t("consent.readFullTerms")}</summary>
+              <ul className="consent-panel__list mt-2 mb-0">
+                {checkboxes.map((label) => (
+                  <li key={label}>{label}</li>
+                ))}
+              </ul>
+            </details>
+            <Form.Check
+              type="checkbox"
+              id="consent-agree"
+              className="consent-checks__item consent-checks__item--primary"
+              label={t("consent.agreeAll")}
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+            />
             <Button
               type="submit"
               variant="primary"
               size="lg"
-              className="mt-4 w-100"
-              disabled={!allChecked || loading}
+              className="w-100"
+              disabled={!agreed || loading}
             >
               {loading ? t("common.saving") : t("consent.acceptAndContinue")}
             </Button>
           </Form>
-        </Card.Body>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

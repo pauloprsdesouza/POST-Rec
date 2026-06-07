@@ -115,6 +115,10 @@ class Settings(BaseSettings):
     run_timeout_seconds: int = 900
     max_cost_per_run_usd: float = 2.00
 
+    experiment_fggv_vs_sota_enabled: bool = False
+    experiment_fggv_vs_sota_id: str = "fggv_vs_sota_v1"
+    experiment_treatment_fraction: float = 0.5
+
     run_stream_enabled: bool = True
 
     log_level: str = "INFO"
@@ -135,6 +139,8 @@ class Settings(BaseSettings):
     evolution_api_url: str = "http://192.168.10.13:8080"
     evolution_api_key: str = ""
     evolution_instance_name: str = ""
+
+    phone_default_country_code: str = "55"
 
     otp_length: int = 6
     otp_ttl_minutes: int = 5

@@ -18,7 +18,6 @@ def _event(event_type: str, message: str) -> RecommendationRunEvent:
     return RecommendationRunEvent(
         id=uuid4(),
         run_id=uuid4(),
-        session_id=uuid4(),
         event_type=event_type,
         message=message,
         created_at=datetime.now(UTC),

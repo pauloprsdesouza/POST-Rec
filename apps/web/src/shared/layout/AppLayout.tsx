@@ -5,6 +5,7 @@ import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useApiHealth } from "@/shared/hooks/useApiHealth";
 import { LanguageSwitcher } from "@/shared/ui/LanguageSwitcher";
+import { ThemeToggle } from "@/shared/ui/ThemeToggle";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { SetupBanner } from "./SetupBanner";
 
@@ -22,6 +23,7 @@ export function AppLayout() {
   const navigate = useNavigate();
 
   const setupComplete = consentDone && profileDone;
+  const setupHref = !consentDone ? "/consent" : "/profile?tab=research";
   const displayName = user?.fullName?.split(" ")[0] ?? t("common.researcher");
 
   const apiTitle =
@@ -29,7 +31,7 @@ export function AppLayout() {
 
   return (
     <>
-      <Navbar expand="lg" variant="dark" className="app-navbar shadow-sm sticky-top">
+      <Navbar expand="lg" className="app-navbar sticky-top">
         <div className="container-fluid container-lg">
           <Navbar.Brand as={Link} to="/" className="app-brand">
             <span className="app-brand__mark">P</span>
@@ -46,29 +48,34 @@ export function AppLayout() {
                   </Nav.Link>
                 ))
               ) : (
-                <Nav.Link as={NavLink} to="/profile" className="text-warning-emphasis">
+                <Nav.Link as={NavLink} to={setupHref} className="app-nav__setup-link">
                   {t("nav.completeSetup")}
                 </Nav.Link>
               )}
             </Nav>
 
             <div className="d-flex align-items-center gap-2 py-2 py-lg-0">
+              <ThemeToggle variant="navbar" />
               <LanguageSwitcher variant="navbar" />
 
               <span
                 className={`api-pill ${online ? "api-pill--online" : online === false ? "api-pill--offline" : ""}`}
                 title={apiTitle}
-              />
+                aria-label={apiTitle}
+              >
+                <span className="api-pill__dot" aria-hidden />
+                <span className="api-pill__label d-none d-xl-inline">{apiTitle}</span>
+              </span>
 
               <Dropdown align="end" className="user-dropdown">
                 <Dropdown.Toggle variant="link" className="user-dropdown__toggle text-decoration-none">
                   <span className="user-dropdown__avatar">{displayName.charAt(0).toUpperCase()}</span>
                   <span className="d-none d-md-inline user-dropdown__name">{displayName}</span>
                 </Dropdown.Toggle>
-                <Dropdown.Menu className="user-dropdown__menu shadow">
+                <Dropdown.Menu className="user-dropdown__menu">
                   <Dropdown.Header className="user-dropdown__header">
                     <div className="fw-semibold">{user?.fullName ?? t("common.researcher")}</div>
-                    <div className="small text-secondary">{user?.email ?? user?.phoneNumber}</div>
+                    <div className="user-dropdown__email">{user?.email ?? user?.phoneNumber}</div>
                   </Dropdown.Header>
                   <Dropdown.Divider />
                   <Dropdown.Item as={Link} to="/profile?tab=account">

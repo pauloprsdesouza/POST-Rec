@@ -4,7 +4,7 @@ import uuid
 
 from sqlalchemy.orm import Session
 
-from apps.api.shared.models import ParticipantProfile, RecommendationCandidate, RecommendationFeedback, UserResearchProfile
+from apps.api.shared.models import RecommendationCandidate, RecommendationFeedback, SessionProfile, UserResearchProfile
 
 
 class ProfileService:
@@ -18,21 +18,21 @@ class ProfileService:
         db.refresh(profile)
         return profile
 
-    def upsert_from_participant(
-        self, db: Session, user_id: uuid.UUID, participant: ParticipantProfile
+    def upsert_from_session_profile(
+        self, db: Session, user_id: uuid.UUID, session_profile: SessionProfile
     ) -> UserResearchProfile:
         profile = self.get_or_create(db, user_id)
-        profile.research_area = participant.research_area or profile.research_area
-        profile.academic_level = participant.academic_level or profile.academic_level
-        profile.professional_role = participant.professional_role or profile.professional_role
-        profile.experience_with_ai = participant.experience_with_ai or profile.experience_with_ai
+        profile.research_area = session_profile.research_area or profile.research_area
+        profile.academic_level = session_profile.academic_level or profile.academic_level
+        profile.professional_role = session_profile.professional_role or profile.professional_role
+        profile.experience_with_ai = session_profile.experience_with_ai or profile.experience_with_ai
         profile.experience_with_recommender_systems = (
-            participant.experience_with_recommender_systems or profile.experience_with_recommender_systems
+            session_profile.experience_with_recommender_systems or profile.experience_with_recommender_systems
         )
         profile.experience_with_scientific_writing = (
-            participant.experience_with_scientific_writing or profile.experience_with_scientific_writing
+            session_profile.experience_with_scientific_writing or profile.experience_with_scientific_writing
         )
-        profile.goal_with_postrec = participant.goal_with_postrec or profile.goal_with_postrec
+        profile.goal_with_postrec = session_profile.goal_with_postrec or profile.goal_with_postrec
         db.commit()
         db.refresh(profile)
         return profile

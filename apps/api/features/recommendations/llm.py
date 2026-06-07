@@ -14,6 +14,7 @@ from apps.api.shared.observability.logging import get_logger
 from apps.api.shared.infra.embedding_config import resolve_embedding_model
 from apps.api.features.runs.cost import add_usage_cost
 from apps.api.shared.settings import get_settings
+from packages.postrec_core.domain.expectation_context import format_user_expectations
 from packages.postrec_core.prompts.facet_critic import FACET_CRITIC_USER_TEMPLATE
 from packages.postrec_core.prompts.facet_pipeline import FGGV_PROPOSAL_USER_TEMPLATE
 from packages.postrec_core.prompts.recommendation_prompt import (
@@ -36,6 +37,13 @@ GEMINI_PRICING = {
     "gemini-2.5-flash-lite": {"input": 0.075, "output": 0.30},
 }
 DEFAULT_EMBEDDING_PRICING = {"input": 0.01, "output": 0.0}
+
+
+def _constraint_prompt_fields(constraints: dict) -> dict[str, str]:
+    return {
+        "constraints": json.dumps(constraints),
+        "user_expectations": format_user_expectations(constraints),
+    }
 
 
 class GeminiService:
@@ -173,7 +181,7 @@ class GeminiService:
             seed_topics=", ".join(seed_topics),
             expected_output=expected_output or "Research ideas",
             desired_depth=desired_depth or "medium",
-            constraints=json.dumps(constraints),
+            **_constraint_prompt_fields(constraints),
             papers_context=papers_context or "No papers retrieved.",
             max_recommendations=max_recommendations,
         )
@@ -275,7 +283,7 @@ class GeminiService:
             seed_topics=", ".join(seed_topics),
             expected_output=expected_output or "Research ideas",
             desired_depth=desired_depth or "medium",
-            constraints=json.dumps(constraints),
+            **_constraint_prompt_fields(constraints),
             sota_landscape_json=json.dumps(sota_landscape, default=str),
             gap_matrix_json=json.dumps(gap_matrix, default=str),
             papers_context=self._papers_context(papers),
@@ -314,7 +322,7 @@ class GeminiService:
             seed_topics=", ".join(seed_topics),
             expected_output=expected_output or "Research ideas",
             desired_depth=desired_depth or "medium",
-            constraints=json.dumps(constraints),
+            **_constraint_prompt_fields(constraints),
             sota_landscape_json=json.dumps(sota_landscape, default=str),
             gap_matrix_json=json.dumps(gap_matrix, default=str),
             facet_saturation_json=json.dumps(facet_saturation, default=str),

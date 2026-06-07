@@ -8,7 +8,7 @@ interface TransparencySectionProps {
 
 export function TransparencySection({ id, title, children }: TransparencySectionProps) {
   return (
-    <section id={id} className="transparency-section surface-card">
+    <section id={id} className="transparency-section panel">
       <h2 className="transparency-section__title">{title}</h2>
       <div className="transparency-section__body">{children}</div>
     </section>

@@ -58,7 +58,12 @@ class RunService:
         max_papers: int,
         max_recommendations: int,
         constraints: dict,
-        user_id: str | None = None,
+        user_id: uuid.UUID | None = None,
+        *,
+        experiment_id: str | None = None,
+        experiment_variant: str | None = None,
+        assigned_mode: str | None = None,
+        presentation_profile: str = "standard",
     ) -> RecommendationRun:
         run = RecommendationRun(
             request_id=request_id or str(uuid.uuid4()),
@@ -71,14 +76,21 @@ class RunService:
             progress=0,
             max_papers=max_papers,
             max_recommendations=max_recommendations,
+            experiment_id=experiment_id,
+            experiment_variant=experiment_variant,
+            assigned_mode=assigned_mode or mode,
+            presentation_profile=presentation_profile,
         )
         db.add(run)
         db.flush()
-        self._add_event(db, run, "run_created", "Recommendation run created")
+        event_message = "Recommendation run created"
+        if experiment_id:
+            event_message = "Recommendation run created for blind evaluation"
+        self._add_event(db, run, "run_created", event_message)
         db.commit()
         db.refresh(run)
         if user_id:
-            cache_service.invalidate_user_runs(user_id)
+            cache_service.invalidate_user_runs(str(user_id))
         run_stream_service.publish(db, run)
         logger.info("run_created", run_id=str(run.id), session_id=str(session_id))
         return run
@@ -106,7 +118,7 @@ class RunService:
         cache_service.invalidate_run(str(run.id))
 
         if run.user_id:
-            cache_service.invalidate_user_runs(run.user_id)
+            cache_service.invalidate_user_runs(str(run.user_id))
 
         run_stream_service.publish(db, run)
 
@@ -169,7 +181,6 @@ class RunService:
     ) -> None:
         event = RecommendationRunEvent(
             run_id=run.id,
-            session_id=run.session_id,
             event_type=event_type,
             message=message,
             payload=payload,

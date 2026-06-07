@@ -1,10 +1,12 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
-import { Alert, Button, Form, Nav } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { Trans, useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { AuthShell } from "@/shared/layout/AuthShell";
+import { InlineAlert } from "@/shared/ui/InlineAlert";
+import { OtpInput } from "@/shared/ui/OtpInput";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useApiHealth } from "@/shared/hooks/useApiHealth";
 import { authService } from "@/shared/api";
@@ -105,29 +107,47 @@ export function SignInPage() {
     }
   };
 
+  const credentialsTitle = mode === "register" ? t("auth.registerTitle") : t("auth.signInTitle");
+  const credentialsSubtitle = mode === "register" ? t("auth.registerSubtitle") : t("auth.signInSubtitle");
+
   return (
     <AuthShell online={online}>
       {step === "credentials" ? (
         <>
-          <Nav variant="pills" className="auth-tabs mb-4">
-            <Nav.Item>
-              <Nav.Link active={mode === "signin"} onClick={() => switchMode("signin")}>
+          <header className="auth-form__header">
+            <h1 className="auth-form__title">{credentialsTitle}</h1>
+            <p className="auth-form__subtitle">{credentialsSubtitle}</p>
+          </header>
+
+          <div className="auth-mode-switch">
+            <div className="segmented-control" role="tablist" aria-label={t("auth.signIn")}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "signin"}
+                className={`segmented-control__item ${mode === "signin" ? "segmented-control__item--selected" : ""}`}
+                onClick={() => switchMode("signin")}
+              >
                 {t("auth.signIn")}
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link active={mode === "register"} onClick={() => switchMode("register")}>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "register"}
+                className={`segmented-control__item ${mode === "register" ? "segmented-control__item--selected" : ""}`}
+                onClick={() => switchMode("register")}
+              >
                 {t("auth.createAccount")}
-              </Nav.Link>
-            </Nav.Item>
-          </Nav>
+              </button>
+            </div>
+          </div>
 
-          {error ? <Alert variant="danger">{error}</Alert> : null}
+          {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
 
-          <Form onSubmit={handleRequestOtp}>
+          <Form onSubmit={handleRequestOtp} className="form-stack">
             {mode === "register" ? (
               <>
-                <Form.Group className="mb-3">
+                <Form.Group className="field-group">
                   <Form.Label>{t("auth.fullName")}</Form.Label>
                   <Form.Control
                     value={fullName}
@@ -137,7 +157,7 @@ export function SignInPage() {
                     autoComplete="name"
                   />
                 </Form.Group>
-                <Form.Group className="mb-3">
+                <Form.Group className="field-group">
                   <Form.Label>{t("auth.email")}</Form.Label>
                   <Form.Control
                     type="email"
@@ -148,7 +168,7 @@ export function SignInPage() {
                     autoComplete="email"
                   />
                 </Form.Group>
-                <Form.Group className="mb-3">
+                <Form.Group className="field-group">
                   <Form.Label>{t("auth.whatsappNumber")}</Form.Label>
                   <Form.Control
                     type="tel"
@@ -158,117 +178,101 @@ export function SignInPage() {
                     required
                     autoComplete="tel"
                   />
-                  <Form.Text>{t("auth.whatsappHint")}</Form.Text>
+                  <Form.Text>{t("auth.whatsappHintShort")}</Form.Text>
                 </Form.Group>
                 <Form.Check
                   type="switch"
                   id="whatsapp-opt-in"
-                  className="mb-4"
-                  label={t("auth.whatsappOptIn")}
+                  label={t("auth.whatsappOptInShort")}
                   checked={whatsappOptIn}
                   onChange={(e) => setWhatsappOptIn(e.target.checked)}
                 />
               </>
             ) : (
-              <>
-                <p className="text-secondary small mb-3">{t("auth.signInHint")}</p>
-                <Form.Group className="mb-4">
-                  <Form.Label>{t("auth.email")}</Form.Label>
-                  <Form.Control
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder={t("auth.emailPlaceholder")}
-                    required
-                    autoComplete="email"
-                    autoFocus
-                  />
-                </Form.Group>
-              </>
+              <Form.Group className="field-group">
+                <Form.Label>{t("auth.email")}</Form.Label>
+                <Form.Control
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t("auth.emailPlaceholder")}
+                  required
+                  autoComplete="email"
+                  autoFocus
+                />
+              </Form.Group>
             )}
 
-            <Button type="submit" variant="primary" className="w-100" disabled={loading || !online}>
-              {loading
-                ? t("auth.sending")
-                : mode === "register"
-                  ? t("auth.createAccountAndSend")
-                  : t("auth.sendSignInCode")}
-            </Button>
-
-            {mode === "signin" ? (
-              <p className="text-secondary small mt-3 mb-0">
-                {t("auth.newHere")}{" "}
-                <button type="button" className="btn btn-link p-0 align-baseline" onClick={() => switchMode("register")}>
-                  {t("auth.createAnAccount")}
-                </button>{" "}
-                {t("auth.withContactDetails")}
-              </p>
-            ) : (
-              <p className="text-secondary small mt-3 mb-0">
-                {t("auth.alreadyRegistered")}{" "}
-                <button type="button" className="btn btn-link p-0 align-baseline" onClick={() => switchMode("signin")}>
-                  {t("auth.signInWithEmail")}
-                </button>
-                .
-              </p>
-            )}
-          </Form>
-        </>
-      ) : (
-        <>
-          {error ? <Alert variant="danger">{error}</Alert> : null}
-          {infoMessage ? <Alert variant="success">{infoMessage}</Alert> : null}
-          {devCode ? (
-            <Alert variant="info">
-              <Trans i18nKey="auth.devModeCode" values={{ code: devCode }} components={{ strong: <strong /> }} />
-            </Alert>
-          ) : null}
-
-          <Form onSubmit={handleVerifyOtp}>
-            <p className="text-secondary small mb-1">
-              <Trans i18nKey="auth.codeSentFor" values={{ email }} components={{ strong: <strong /> }} />
-              {phoneHint ? (
-                <>
-                  {" "}
-                  <Trans i18nKey="auth.codeSentToWhatsapp" values={{ phone: phoneHint }} components={{ strong: <strong /> }} />
-                </>
-              ) : null}
-              .
-            </p>
-            <p className="text-secondary small mb-3">{t("auth.changePhoneLater")}</p>
-
-            <Form.Group className="mb-4">
-              <Form.Label>{t("auth.verificationCode")}</Form.Label>
-              <Form.Control
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder={t("auth.codePlaceholder")}
-                required
-                autoFocus
-                inputMode="numeric"
-                autoComplete="one-time-code"
-              />
-            </Form.Group>
-
-            <Button type="submit" variant="primary" className="w-100 mb-2" disabled={loading}>
-              {loading ? t("auth.verifying") : t("auth.verifyAndContinue")}
-            </Button>
-            <div className="d-flex gap-2">
-              <Button
-                type="button"
-                variant="outline-secondary"
-                className="flex-grow-1"
-                onClick={resetOtpStep}
-                disabled={loading}
-              >
-                {t("common.back")}
+            <div className="auth-form__cta">
+              <Button type="submit" variant="primary" className="w-100" disabled={loading || online === false}>
+                {loading
+                  ? t("auth.sending")
+                  : mode === "register"
+                    ? t("auth.createAccountAndSend")
+                    : t("auth.sendSignInCode")}
               </Button>
-              <Button type="button" variant="outline-primary" className="flex-grow-1" onClick={handleResend} disabled={loading}>
-                {t("auth.resendCode")}
-              </Button>
+              <p className="auth-trust-line">{t("auth.trustLine")}</p>
             </div>
           </Form>
         </>
+      ) : (
+        <div className="auth-otp-step">
+          <button type="button" className="auth-otp-step__back" onClick={resetOtpStep} disabled={loading}>
+            ← {t("common.back")}
+          </button>
+
+          <header className="auth-form__header">
+            <h1 className="auth-form__title">{t("auth.otpTitle")}</h1>
+            <p className="auth-form__subtitle">{t("auth.otpSubtitle")}</p>
+          </header>
+
+          <div className="auth-otp-step__destination">
+            <span className="auth-otp-step__destination-label">{t("auth.otpSentTo")}</span>
+            <span className="auth-otp-step__destination-value">{email}</span>
+            {phoneHint ? (
+              <span className="auth-otp-step__destination-meta">
+                <Trans i18nKey="auth.otpWhatsappDelivery" values={{ phone: phoneHint }} />
+              </span>
+            ) : null}
+          </div>
+
+          {(error || infoMessage || devCode) && (
+            <div className="auth-otp-step__alerts">
+              {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
+              {infoMessage ? <InlineAlert variant="success">{infoMessage}</InlineAlert> : null}
+              {devCode ? (
+                <InlineAlert variant="info">
+                  <Trans i18nKey="auth.devModeCode" values={{ code: devCode }} components={{ strong: <strong /> }} />
+                </InlineAlert>
+              ) : null}
+            </div>
+          )}
+
+          <Form onSubmit={handleVerifyOtp} className="form-stack auth-otp-step__form">
+            <Form.Group className="field-group auth-otp-step__field">
+              <Form.Label className="visually-hidden">{t("auth.verificationCode")}</Form.Label>
+              <OtpInput
+                id="auth-otp"
+                value={code}
+                onChange={setCode}
+                autoFocus
+                disabled={loading}
+                aria-label={t("auth.verificationCode")}
+              />
+            </Form.Group>
+
+            <Button type="submit" variant="primary" className="w-100" disabled={loading || code.length < 6}>
+              {loading ? t("auth.verifying") : t("auth.verifyAndContinue")}
+            </Button>
+
+            <p className="auth-otp-step__help">
+              {t("auth.otpNoCode")}{" "}
+              <button type="button" className="auth-form__text-link" onClick={handleResend} disabled={loading}>
+                {t("auth.resendCode")}
+              </button>
+            </p>
+          </Form>
+        </div>
       )}
     </AuthShell>
   );

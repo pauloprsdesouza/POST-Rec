@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from apps.api.shared.models import RecommendationFeedback, RecommendationRun
 from apps.api.shared.infra.cache import CacheKeys, CacheTTL, cache_service
 from apps.api.features.validation.metrics import compute_sota_quality_metrics
+from apps.api.features.experiments.service import experiment_service
 from packages.postrec_core.domain.enums import RunStatus
 
 
@@ -53,6 +54,7 @@ class ValidationMetricsService:
 
         total_feedback = int(feedback_stats.total or 0)
         sota_metrics = compute_sota_quality_metrics(db)
+        experiment_metrics = experiment_service.experiment_metrics(db)
 
         base = {
             "run_completion_rate": completed / total_runs if total_runs else 0.0,
@@ -60,6 +62,7 @@ class ValidationMetricsService:
             "total_runs": total_runs,
             "total_feedback": total_feedback,
             **sota_metrics,
+            "experiment": experiment_metrics,
         }
 
         if not total_feedback:

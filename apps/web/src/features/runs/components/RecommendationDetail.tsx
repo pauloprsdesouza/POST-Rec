@@ -1,13 +1,14 @@
-import type { FormEvent } from "react";
 import { useState } from "react";
-import { Accordion, Alert, Button, Col, Form, Row } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 
 import { runService } from "@/shared/api";
 import { getErrorMessage } from "@/shared/api/errors";
 import type { Recommendation, SourceDocument } from "@/shared/types/api";
 import { EvidenceList } from "./EvidenceList";
+import { QuickFeedbackPanel, type WouldUse } from "./QuickFeedbackPanel";
+import { ScoreBar } from "./ScoreBar";
 import { SotaVerificationPanel } from "./SotaVerificationPanel";
+type IdeaSection = "summary" | "method" | "sources";
 
 interface RecommendationDetailProps {
   recommendation: Recommendation;
@@ -17,6 +18,10 @@ interface RecommendationDetailProps {
   sessionId: string | null;
   token: string;
   sources?: SourceDocument[];
+  blind?: boolean;
+  initialRating?: number | null;
+  onRated?: (recommendationId: string, rating: number, isFirstRating: boolean) => void;
+  onSkip?: () => void;
 }
 
 export function RecommendationDetail({
@@ -27,23 +32,19 @@ export function RecommendationDetail({
   sessionId,
   token,
   sources = [],
+  blind = false,
+  initialRating = null,
+  onRated,
+  onSkip,
 }: RecommendationDetailProps) {
   const { t } = useTranslation();
-  const [feedback, setFeedback] = useState({
-    relevance: 3,
-    clarity: 3,
-    feasibility: 3,
-    originality: 3,
-    trust: 3,
-    usefulness: 3,
-    wouldUse: "maybe",
-    decision: "save",
-    comment: "",
-  });
+  const [activeSection, setActiveSection] = useState<IdeaSection>("summary");
+  const [savedRating, setSavedRating] = useState<number | null>(initialRating);
+  const [wouldUse, setWouldUse] = useState<WouldUse>("maybe");
+  const [comment, setComment] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
 
   const scoreLabel =
     recommendation.final_score != null ? Math.round(recommendation.final_score) : null;
@@ -53,29 +54,41 @@ export function RecommendationDetail({
   });
   const sourceCount = recommendation.evidence_papers?.length ?? 0;
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
+  const decisionFromRating = (rating: number) => {
+    if (rating >= 4) return "approved";
+    if (rating >= 3) return "save";
+    if (rating === 2) return "needs_revision";
+    return "rejected";
+  };
+
+  const wouldUseFromRating = (rating: number): WouldUse => {
+    if (rating >= 4) return "yes";
+    if (rating >= 3) return "maybe";
+    return "no";
+  };
+
+  const submitRating = async (rating: number, useInPaper = wouldUse) => {
+    const isFirstRating = savedRating == null;
     setSubmitting(true);
     setError(null);
     setMessage(null);
     try {
-      const result = await runService.submitFeedback(token, recommendation.id, {
+      await runService.submitFeedback(token, recommendation.id, {
         session_id: sessionId,
         run_id: runId,
-        relevance_score: feedback.relevance,
-        originality_score: feedback.originality,
-        clarity_score: feedback.clarity,
-        feasibility_score: feedback.feasibility,
-        trust_score: feedback.trust,
-        usefulness_score: feedback.usefulness,
-        would_use_in_real_paper: feedback.wouldUse,
-        decision: feedback.decision,
-        comment: feedback.comment,
+        relevance_score: rating,
+        originality_score: rating,
+        clarity_score: rating,
+        feasibility_score: rating,
+        trust_score: rating,
+        usefulness_score: rating,
+        would_use_in_real_paper: useInPaper,
+        decision: decisionFromRating(rating),
+        comment: comment.trim() || undefined,
       });
-      setMessage(
-        t("ideas.feedbackSaved", { score: result.expectation_alignment_score.toFixed(2) }),
-      );
-      setShowFeedback(false);
+      setSavedRating(rating);
+      setMessage(isFirstRating ? t("ideas.feedbackSavedNext") : t("ideas.feedbackSavedShort"));
+      onRated?.(recommendation.id, rating, isFirstRating);
     } catch (err) {
       setError(getErrorMessage(err, t("ideas.feedbackError")));
     } finally {
@@ -83,8 +96,16 @@ export function RecommendationDetail({
     }
   };
 
+  const applyRating = (rating: number) => {
+    const useInPaper = savedRating == null ? wouldUseFromRating(rating) : wouldUse;
+    if (savedRating == null) {
+      setWouldUse(useInPaper);
+    }
+    void submitRating(rating, useInPaper);
+  };
+
   return (
-    <article className="surface-card idea-detail">
+    <article className="idea-detail">
       <div className="idea-detail__meta">
         <span className="idea-detail__counter">
           {t("ideas.countOfTotal", { current: index, total })}
@@ -97,153 +118,99 @@ export function RecommendationDetail({
       </div>
 
       <h2 className="idea-detail__title">{recommendation.title}</h2>
-
       {recommendation.technique_name ? (
         <p className="idea-detail__technique">{recommendation.technique_name}</p>
       ) : null}
 
-      <Accordion defaultActiveKey="summary" className="idea-detail__sections">
-        <Accordion.Item eventKey="summary" className="idea-section">
-          <Accordion.Header>{t("ideas.summary")}</Accordion.Header>
-          <Accordion.Body>
+      <QuickFeedbackPanel
+        rating={savedRating}
+        wouldUse={wouldUse}
+        submitting={submitting}
+        message={message}
+        error={error}
+        onThumbUp={() => applyRating(4)}
+        onThumbDown={() => applyRating(2)}
+        onSkip={onSkip}
+        onStarClick={applyRating}
+        onWouldUseChange={(value) => {
+          setWouldUse(value);
+          if (savedRating != null) {
+            void submitRating(savedRating, value);
+          }
+        }}
+        comment={comment}
+        onCommentChange={setComment}
+        onCommentBlur={() => {
+          if (savedRating != null && comment.trim()) {
+            void submitRating(savedRating, wouldUse);
+          }
+        }}
+      />
+
+      <nav className="idea-tabs" aria-label={t("ideas.sectionNav")}>
+        {(
+          [
+            ["summary", t("ideas.summary")],
+            ["method", t("ideas.methodPlan")],
+            ["sources", t("ideas.evidence", { count: sourceCount })],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            className={`idea-tabs__btn ${activeSection === key ? "idea-tabs__btn--active" : ""}`}
+            aria-selected={activeSection === key}
+            onClick={() => setActiveSection(key)}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      <div className="idea-tab-panel">
+        {activeSection === "summary" ? (
+          <>
             <Section label={t("ideas.researchGap")} value={recommendation.research_gap} />
             <Section label={t("ideas.researchQuestion")} value={recommendation.research_question} />
             <Section label={t("ideas.hypothesis")} value={recommendation.hypothesis} />
             <Section label={t("ideas.contribution")} value={recommendation.expected_contribution} />
             <Section label={t("ideas.relatedWork")} value={recommendation.related_work_summary} />
-            <SotaVerificationPanel recommendation={recommendation} sources={sources} />
+            <SotaVerificationPanel recommendation={recommendation} sources={sources} blind={blind} />
             {recommendation.scores ? (
               <div className="idea-scores">
+                <p className="idea-scores__heading">{t("ideas.qualityScores")}</p>
                 {Object.entries(recommendation.scores)
                   .filter(([name]) =>
                     ["relevance", "novelty", "evidence", "feasibility"].includes(name),
                   )
                   .map(([name, value]) => (
-                    <div key={name} className="idea-scores__item">
-                      <div className="idea-scores__label">
-                        {t(`ideas.scoreNames.${name}`, {
-                          defaultValue: name.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-                        })}
-                      </div>
-                      <div className="progress idea-scores__bar">
-                        <div
-                          className="progress-bar"
-                          style={{ width: `${Math.min(value, 100)}%` }}
-                        />
-                      </div>
-                    </div>
+                    <ScoreBar
+                      key={name}
+                      label={t(`ideas.scoreNames.${name}`, {
+                        defaultValue: name.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+                      })}
+                      value={value}
+                    />
                   ))}
               </div>
             ) : null}
-          </Accordion.Body>
-        </Accordion.Item>
+          </>
+        ) : null}
 
-        <Accordion.Item eventKey="method" className="idea-section">
-          <Accordion.Header>{t("ideas.methodPlan")}</Accordion.Header>
-          <Accordion.Body>
+        {activeSection === "method" ? (
+          <>
             <Section label={t("ideas.proposedMethod")} value={recommendation.proposed_method} />
             <Section label={t("ideas.experimentalPlan")} value={recommendation.experimental_plan} />
             <ListSection label={t("ideas.datasets")} items={recommendation.datasets} />
             <ListSection label={t("ideas.metrics")} items={recommendation.evaluation_metrics} />
             <ListSection label={t("ideas.risks")} items={recommendation.risks} />
-          </Accordion.Body>
-        </Accordion.Item>
+          </>
+        ) : null}
 
-        <Accordion.Item eventKey="sources" className="idea-section">
-          <Accordion.Header>{t("ideas.evidence", { count: sourceCount })}</Accordion.Header>
-          <Accordion.Body>
-            <EvidenceList papers={recommendation.evidence_papers} />
-          </Accordion.Body>
-        </Accordion.Item>
-      </Accordion>
-
-      {message ? (
-        <Alert variant="success" className="mt-3 mb-0">
-          {message}
-        </Alert>
-      ) : null}
-
-      {!showFeedback ? (
-        <Button
-          variant="primary"
-          className="idea-detail__rate-btn w-100"
-          onClick={() => setShowFeedback(true)}
-        >
-          {t("ideas.rateIdea")}
-        </Button>
-      ) : (
-        <div className="idea-feedback mt-3">
-          <div className="idea-feedback__header">
-            <h3 className="h6 mb-0">{t("ideas.yourFeedback")}</h3>
-            <Button variant="link" className="p-0" onClick={() => setShowFeedback(false)}>
-              {t("common.close")}
-            </Button>
-          </div>
-          {error ? <Alert variant="danger">{error}</Alert> : null}
-          <Form onSubmit={handleSubmit}>
-            <p className="text-secondary small">{t("ideas.feedbackHint")}</p>
-            <SliderField
-              label={t("ideas.relevance")}
-              value={feedback.relevance}
-              onChange={(v) => setFeedback({ ...feedback, relevance: v })}
-            />
-            <SliderField
-              label={t("ideas.clarity")}
-              value={feedback.clarity}
-              onChange={(v) => setFeedback({ ...feedback, clarity: v })}
-            />
-            <SliderField
-              label={t("ideas.feasibilityLabel")}
-              value={feedback.feasibility}
-              onChange={(v) => setFeedback({ ...feedback, feasibility: v })}
-            />
-            <SliderField
-              label={t("ideas.originality")}
-              value={feedback.originality}
-              onChange={(v) => setFeedback({ ...feedback, originality: v })}
-            />
-            <Row className="g-3 mt-1">
-              <Col xs={6}>
-                <Form.Label className="small">{t("ideas.useInPaper")}</Form.Label>
-                <Form.Select
-                  size="sm"
-                  value={feedback.wouldUse}
-                  onChange={(e) => setFeedback({ ...feedback, wouldUse: e.target.value })}
-                >
-                  <option value="yes">{t("common.yes")}</option>
-                  <option value="maybe">{t("common.maybe")}</option>
-                  <option value="no">{t("common.no")}</option>
-                </Form.Select>
-              </Col>
-              <Col xs={6}>
-                <Form.Label className="small">{t("ideas.decision")}</Form.Label>
-                <Form.Select
-                  size="sm"
-                  value={feedback.decision}
-                  onChange={(e) => setFeedback({ ...feedback, decision: e.target.value })}
-                >
-                  <option value="approved">{t("ideas.approved")}</option>
-                  <option value="save">{t("ideas.saveDecision")}</option>
-                  <option value="needs_revision">{t("ideas.needsRevision")}</option>
-                  <option value="rejected">{t("ideas.rejected")}</option>
-                </Form.Select>
-              </Col>
-            </Row>
-            <Form.Group className="mt-2">
-              <Form.Label className="small">{t("ideas.comments")}</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={2}
-                value={feedback.comment}
-                onChange={(e) => setFeedback({ ...feedback, comment: e.target.value })}
-              />
-            </Form.Group>
-            <Button type="submit" variant="primary" className="w-100 mt-3" disabled={submitting}>
-              {submitting ? t("ideas.saving") : t("ideas.submitFeedback")}
-            </Button>
-          </Form>
-        </div>
-      )}
+        {activeSection === "sources" ? (
+          <EvidenceList papers={recommendation.evidence_papers} />
+        ) : null}
+      </div>
     </article>
   );
 }
@@ -269,24 +236,5 @@ function ListSection({ label, items }: { label: string; items?: string[] }) {
         ))}
       </ul>
     </div>
-  );
-}
-
-function SliderField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  onChange: (value: number) => void;
-}) {
-  return (
-    <Form.Group className="mb-2">
-      <Form.Label className="small mb-1">
-        {label} <strong>{value}</strong>
-      </Form.Label>
-      <Form.Range min={1} max={5} value={value} onChange={(e) => onChange(Number(e.target.value))} />
-    </Form.Group>
   );
 }

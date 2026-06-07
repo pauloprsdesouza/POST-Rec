@@ -25,9 +25,21 @@ class AuthError(Exception):
 
 
 def normalize_phone(phone: str) -> str:
+    """Normalize to E.164 digits (no +). Adds default country code for local BR numbers."""
+    settings = get_settings()
+    country = re.sub(r"\D", "", settings.phone_default_country_code or "55")
     digits = re.sub(r"\D", "", phone.strip())
+    digits = digits.lstrip("0")
+
+    if not digits:
+        raise AuthError("Enter a valid phone number with country code (e.g. +557999733237)")
+
+    # Local numbers without country code (common BR: 10–11 digits).
+    if len(digits) in (10, 11) and country and not digits.startswith(country):
+        digits = country + digits
+
     if len(digits) < 10 or len(digits) > 15:
-        raise AuthError("Enter a valid phone number with country code (e.g. +5582999999999)")
+        raise AuthError("Enter a valid phone number with country code (e.g. +557999733237)")
     return digits
 
 
@@ -132,7 +144,8 @@ class AuthService:
                 dev_code = code
                 logger.warning("otp_whatsapp_fallback", phone_number=phone, code=code, error=str(exc))
             else:
-                raise AuthError("Could not send WhatsApp message. Try again later.") from exc
+                message = str(exc).strip() or "Could not send WhatsApp message. Try again later."
+                raise AuthError(message) from exc
 
         return otp_ttl_minutes * 60, dev_code, mask_phone(phone)
 
@@ -185,7 +198,7 @@ class AuthService:
         if not user.whatsapp_opt_in:
             raise AuthError("WhatsApp notifications are disabled. Enable them in your profile to sign in.")
 
-        return self._send_otp_to_phone(db, phone=user.phone_number, purpose="login")
+        return self._send_otp_to_phone(db, phone=normalize_phone(user.phone_number), purpose="login")
 
     def verify_otp(self, db: Session, *, email: str, code: str) -> tuple[User, str]:
         normalized_email = normalize_email(email)
@@ -195,7 +208,7 @@ class AuthService:
         if not user.is_active:
             raise AuthError("Account is disabled.")
 
-        phone = user.phone_number
+        phone = normalize_phone(user.phone_number)
         normalized_code = code.strip()
         now = datetime.now(UTC)
 

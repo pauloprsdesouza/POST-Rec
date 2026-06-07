@@ -9,6 +9,8 @@ Seed topics: {seed_topics}
 Expected output: {expected_output}
 Desired depth: {desired_depth}
 Constraints: {constraints}
+User expectations:
+{user_expectations}
 
 Retrieved papers (use ONLY these as evidence):
 {papers_context}

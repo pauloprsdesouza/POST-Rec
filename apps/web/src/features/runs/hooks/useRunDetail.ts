@@ -92,7 +92,7 @@ export function useRunDetail({ token, runId, onRunUpdate }: UseRunDetailOptions)
     };
 
     const handleTerminalTransition = async (outcome: RunOutcome) => {
-      if (outcome === "ready") {
+      if (outcome === "ready" || outcome === "reviewed") {
         stopPolling();
         stream?.close();
         await loadRecommendations();
@@ -159,7 +159,8 @@ export function useRunDetail({ token, runId, onRunUpdate }: UseRunDetailOptions)
         void (async () => {
           try {
             const streamedRun = latestRun;
-            if (streamedRun && getRunOutcome(streamedRun) === "ready") {
+            const streamedOutcome = streamedRun ? getRunOutcome(streamedRun) : null;
+            if (streamedOutcome === "ready" || streamedOutcome === "reviewed") {
               await handleTerminalTransition("ready");
               return;
             }
@@ -188,7 +189,8 @@ export function useRunDetail({ token, runId, onRunUpdate }: UseRunDetailOptions)
 
   const outcome = run ? getRunOutcome(run) : null;
   const loading =
-    loadingRun || (outcome === "ready" && loadingIdeas && recommendations.length === 0);
+    loadingRun ||
+    ((outcome === "ready" || outcome === "reviewed") && loadingIdeas && recommendations.length === 0);
 
   return {
     run,
@@ -198,6 +200,8 @@ export function useRunDetail({ token, runId, onRunUpdate }: UseRunDetailOptions)
     sources,
     error,
     loading,
+    loadingRun,
+    loadingIdeas,
     outcome,
     activeIndex,
     setActiveIndex,

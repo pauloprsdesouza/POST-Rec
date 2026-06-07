@@ -6,11 +6,12 @@ import uuid
 from sqlalchemy.orm import Session
 
 from apps.api.shared.database import SessionLocal
-from apps.api.shared.models import DocumentEmbedding, RecommendationRun, UserExpectation, UserResearchProfile
+from apps.api.shared.models import DocumentEmbedding, RecommendationRun, SessionExpectation, UserResearchProfile
 from apps.api.shared.observability.logging import configure_logging, get_logger
 from apps.api.shared.infra.cache import cache_service
 from apps.api.shared.infra.embedding_config import resolve_embedding_model
 from apps.api.shared.infra.http_retry import RetryableFetchError
+from packages.postrec_core.domain.expectation_context import merge_expectation_into_constraints
 from apps.api.features.notifications.service import notification_service
 from apps.api.features.profile.service import profile_service
 from apps.api.features.recommendations.llm import gemini_service
@@ -32,7 +33,7 @@ logger = get_logger("postrec-worker")
 def _invalidate_run_caches(run: RecommendationRun) -> None:
     cache_service.invalidate_run(str(run.id))
     if run.user_id:
-        cache_service.invalidate_user_runs(run.user_id)
+        cache_service.invalidate_user_runs(str(run.user_id))
 
 
 def _resolve_run_context(
@@ -40,10 +41,15 @@ def _resolve_run_context(
     run: RecommendationRun,
     topics: list[str],
     constraints: dict,
-) -> tuple[list[str], dict, UserExpectation | None, str | None, list[str] | None, list[str] | None, int]:
+) -> tuple[list[str], dict, SessionExpectation | None, str | None, list[str] | None, list[str] | None, int]:
     expectation = None
     if run.expectation_id:
-        expectation = db.query(UserExpectation).filter_by(id=run.expectation_id).first()
+        expectation = db.query(SessionExpectation).filter_by(id=run.expectation_id).first()
+
+    if expectation and expectation.seed_topics and not topics:
+        topics = list(expectation.seed_topics)
+
+    constraints = merge_expectation_into_constraints(expectation, constraints)
 
     research_area = expectation.research_area if expectation else None
     learned_topics: list[str] | None = None
@@ -54,19 +60,16 @@ def _resolve_run_context(
         max_article_age_years = int(constraints["max_article_age_years"])
 
     if run.user_id:
-        try:
-            profile = db.query(UserResearchProfile).filter_by(user_id=uuid.UUID(run.user_id)).first()
-            if profile:
-                research_area = research_area or profile.research_area
-                learned_topics = list(profile.learned_topics or [])
-                avoided_topics = list(profile.avoided_topics or [])
-                expanded_topics = profile_service.expanded_seed_topics(profile, topics)
-                if constraints.get("max_article_age_years") is None:
-                    defaults = profile.recommendation_defaults or {}
-                    if defaults.get("max_article_age_years") is not None:
-                        max_article_age_years = int(defaults["max_article_age_years"])
-        except (ValueError, TypeError):
-            pass
+        profile = db.query(UserResearchProfile).filter_by(user_id=run.user_id).first()
+        if profile:
+            research_area = research_area or profile.research_area
+            learned_topics = list(profile.learned_topics or [])
+            avoided_topics = list(profile.avoided_topics or [])
+            expanded_topics = profile_service.expanded_seed_topics(profile, topics)
+            if constraints.get("max_article_age_years") is None:
+                defaults = profile.recommendation_defaults or {}
+                if defaults.get("max_article_age_years") is not None:
+                    max_article_age_years = int(defaults["max_article_age_years"])
 
     return expanded_topics, constraints, expectation, research_area, learned_topics, avoided_topics, max_article_age_years
 

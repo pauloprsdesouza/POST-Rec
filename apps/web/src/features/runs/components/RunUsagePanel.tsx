@@ -32,7 +32,7 @@ export function RunUsagePanel({ run }: RunUsagePanelProps) {
       : null;
 
   return (
-    <details className="surface-card run-usage">
+    <details className="run-usage panel">
       <summary className="run-usage__summary">{t("usage.summary", { cost: totalCost })}</summary>
 
       <div className="run-usage__body">

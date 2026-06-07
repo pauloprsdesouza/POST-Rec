@@ -22,12 +22,17 @@ from apps.api.shared.schemas.common import (
 )
 from apps.api.shared.infra.cache import CacheKeys, CacheTTL, cache_service, is_terminal_run, run_detail_ttl, run_events_ttl
 from apps.api.shared.infra.cache_helpers import load_cached_json
-from apps.api.features.runs.access import ensure_run_access, get_run_or_404
-from apps.api.features.runs.query import run_detail_payload, run_events_payload, run_sources_payload
+from apps.api.features.runs.access import ensure_run_access, get_run_or_404, user_id_optional
+from apps.api.features.runs.query import (
+    feedback_counts_by_run,
+    run_detail_payload,
+    run_events_payload,
+    run_sources_payload,
+)
 from apps.api.features.runs.service import run_service
 from apps.api.features.runs.stream import stream_run_updates
 from apps.api.features.recommendations.sources import get_run_source_documents, serialize_source_documents
-from apps.api.workers.tasks import process_recommendation_run
+from apps.api.features.experiments.service import experiment_service
 
 router = APIRouter(prefix="/api/v1")
 
@@ -38,18 +43,30 @@ def create_recommendation_run(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_required),
 ):
+    constraints = payload.constraints.model_dump()
+    assignment = experiment_service.resolve_run_assignment(
+        user_id=current_user.id,
+        requested_mode=payload.mode,
+        avoid_real_user_experiments=bool(constraints.get("avoid_real_user_experiments", True)),
+    )
     run = run_service.create_run(
         db=db,
         session_id=payload.session_id,
         expectation_id=payload.expectation_id,
         request_id=payload.request_id,
         topics=payload.topics,
-        mode=payload.mode,
+        mode=assignment.mode,
         max_papers=payload.max_papers,
         max_recommendations=payload.max_recommendations,
-        constraints=payload.constraints.model_dump(),
-        user_id=str(current_user.id),
+        constraints=constraints,
+        user_id=current_user.id,
+        experiment_id=assignment.experiment_id,
+        experiment_variant=assignment.experiment_variant,
+        assigned_mode=assignment.assigned_mode,
+        presentation_profile=assignment.presentation_profile,
     )
+    from apps.api.workers.tasks import process_recommendation_run
+
     process_recommendation_run.delay(str(run.id))
     cache_service.invalidate_user_runs(str(current_user.id))
     return RecommendationRunResponse(
@@ -69,12 +86,23 @@ def get_run(
     run = get_run_or_404(db, run_id)
     ensure_run_access(run, current_user)
     run_key = str(run_id)
+    user_id = user_id_optional(current_user)
     data = load_cached_json(
         CacheKeys.run_detail(run_key),
         run_detail_ttl(run.status),
         lambda: run_detail_payload(db, run),
         terminal=is_terminal_run(run.status),
     )
+    if user_id:
+        rec_count = int(data.get("recommendation_count") or 0)
+        feedback_count = (
+            feedback_counts_by_run(db, user_id, [run_id]).get(run_id, 0) if rec_count > 0 else 0
+        )
+        data = {
+            **data,
+            "feedback_count": feedback_count,
+            "feedback_complete": rec_count > 0 and feedback_count >= rec_count,
+        }
     return RunDetailResponse.model_validate(data)
 
 
@@ -85,7 +113,7 @@ def get_run_events_endpoint(run_id: uuid.UUID, db: Session = Depends(get_db)):
     data = load_cached_json(
         CacheKeys.run_events(run_key),
         run_events_ttl(run.status),
-        lambda: run_events_payload(db, run_id, run.status),
+        lambda: run_events_payload(db, run_id, run.status, run),
         terminal=is_terminal_run(run.status),
     )
     return [RunEventResponse.model_validate(item) for item in data]

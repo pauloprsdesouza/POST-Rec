@@ -50,7 +50,9 @@
     "preferences": "Preferencias",
     "consent": "Consentimiento",
     "signOut": "Cerrar sesión",
-    "language": "Idioma"
+    "language": "Idioma",
+    "themeDark": "Activar modo oscuro",
+    "themeLight": "Activar modo claro"
   },
   "locale": {
     "en-US": "English (US)",
@@ -59,18 +61,38 @@
   },
   "setup": {
     "title": "Configuración:",
-    "consentMessage": "Acepta el consentimiento de participación para continuar.",
-    "profileMessage": "Completa tu perfil de investigación para generar recomendaciones.",
+    "timeEstimate": "~2 min de configuración",
+    "consentMessage": "Acepta el consentimiento para desbloquear recomendaciones personalizadas.",
+    "profileMessage": "Indica tu área de investigación — adaptaremos cada idea a tu campo.",
     "reviewConsent": "Revisar consentimiento",
     "completeProfile": "Completar perfil"
   },
+  "onboarding": {
+    "progressLabel": "Progreso de configuración",
+    "steps": {
+      "consent": "Consentimiento",
+      "profile": "Perfil",
+      "firstRun": "Primera ejecución"
+    }
+  },
   "auth": {
-    "eyebrow": "Plataforma de descubrimiento científico",
-    "heroTitle": "Ideas de investigación con respaldo en evidencia",
-    "heroSubtitle": "Inicia sesión con tu correo. Los códigos de un solo uso y las notificaciones de ejecución se envían por WhatsApp cuando está activado.",
-    "feature1": "Ideas de investigación respaldadas por artículos reales",
-    "feature2": "Recuperación personalizada que aprende de tu feedback",
-    "feature3": "Inicio de sesión seguro con códigos de un solo uso por WhatsApp",
+    "brandPanelLabel": "Acerca de POST-Rec",
+    "eyebrow": "Para investigadores",
+    "heroTitle": "Convierte la literatura en tu próxima idea de investigación",
+    "heroSubtitle": "POST-Rec busca artículos científicos reales, encuentra vacíos en la literatura y sugiere direcciones respaldadas por evidencia — en minutos.",
+    "feature1": "Ideas basadas en artículos reales de catálogos abiertos",
+    "feature2": "Recomendaciones personalizadas que aprenden de tu feedback",
+    "feature3": "De temas semilla a ideas listas para revisar en una sola ejecución",
+    "signInTitle": "Iniciar sesión",
+    "signInSubtitle": "Te enviaremos un código de un solo uso a tu correo.",
+    "registerTitle": "Crear cuenta",
+    "registerSubtitle": "Unos datos para empezar.",
+    "otpTitle": "Introduce tu código",
+    "otpSubtitle": "Escribe el código de verificación de 6 dígitos abajo.",
+    "otpSentTo": "Enviado a",
+    "otpWhatsappDelivery": "También en WhatsApp {{phone}}",
+    "otpNoCode": "¿No recibiste el código?",
+    "useDifferentEmail": "Usar otro correo",
     "signIn": "Iniciar sesión",
     "createAccount": "Crear cuenta",
     "fullName": "Nombre completo",
@@ -80,7 +102,9 @@
     "whatsappNumber": "Número de WhatsApp",
     "whatsappPlaceholder": "+34 612 345 678",
     "whatsappHint": "Incluye el código de país. Se usa para códigos de acceso y alertas opcionales de ejecución.",
+    "whatsappHintShort": "Incluye el código de país (ej. +34…).",
     "whatsappOptIn": "Enviar OTP y notificaciones de ejecución por WhatsApp",
+    "whatsappOptInShort": "Notificaciones por WhatsApp",
     "signInHint": "Introduce el correo vinculado a tu cuenta. Enviamos un código de un solo uso a tu WhatsApp guardado cuando las notificaciones están activadas.",
     "sendSignInCode": "Enviar código de acceso",
     "createAccountAndSend": "Crear cuenta y enviar código",
@@ -101,7 +125,8 @@
     "devModeCode": "Modo desarrollo: tu código es <strong>{{code}}</strong>",
     "errorSendCode": "No se pudo enviar el código de verificación.",
     "errorVerify": "La verificación falló.",
-    "errorResend": "No se pudo reenviar el código."
+    "errorResend": "No se pudo reenviar el código.",
+    "trustLine": "Gratis para investigadores · Sin tarjeta · Empieza en menos de un minuto"
   },
   "consent": {
     "pageTitle": "Configuración inicial",
@@ -126,7 +151,9 @@
       "Entiendo que el sistema es experimental.",
       "Entiendo que las recomendaciones deben ser revisadas por una persona.",
       "Entiendo que puedo retirarme en cualquier momento."
-    ]
+    ],
+    "readFullTerms": "Leer términos completos",
+    "agreeAll": "Acepto participar y entiendo los términos anteriores"
   },
   "profile": {
     "title": "Tu perfil",
@@ -157,6 +184,7 @@
     "startRun": "Iniciar ejecución",
     "researchProfileSaved": "Perfil de investigación guardado.",
     "researchAreaRequired": "El área de investigación es obligatoria.",
+    "researchSetupHint": "Cuéntanos tu área de investigación para que las recomendaciones encajen con tu campo. Solo hace falta una vez.",
     "errorSaveProfile": "No se pudo guardar el perfil.",
     "preferencesIntro": "Estos valores prellenan el formulario de nueva ejecución. Puedes ajustarlos en cada ejecución.",
     "savePreferences": "Guardar preferencias",
@@ -182,7 +210,9 @@
     "depthDeep": "Profunda — planes detallados",
     "maxArticleAge": "Antigüedad máxima de artículos",
     "maxArticleAgeOption": "Últimos {{years}} años",
-    "maxArticleAgeHint": "Solo recuperar artículos publicados dentro de este período."
+    "maxArticleAgeHint": "Solo recuperar artículos publicados dentro de este período.",
+    "moreOptions": "Más opciones",
+    "hideOptions": "Ocultar opciones"
   },
   "newRun": {
     "title": "Nueva ejecución",
@@ -191,23 +221,45 @@
     "errorStart": "No se pudo iniciar la ejecución.",
     "starting": "Iniciando ejecución…",
     "generate": "Generar recomendaciones",
+    "generateHint": "Suele estar listo en unos minutos — te avisaremos cuando las ideas estén listas.",
+    "stickyHint": "Un toque para empezar a generar ideas",
+    "valueStripLabel": "Por qué usan POST-Rec los investigadores",
+    "valueEvidence": "Evidencia de artículos reales",
+    "valuePersonalized": "Aprende de tu feedback",
+    "valueFast": "Listo en minutos",
+    "valueStripInline": "Evidencia de artículos reales · Aprende de tu feedback · Listo en minutos",
     "learnedTopicsNote": "Tu perfil incluye {{count}} tema(s) aprendido(s) de feedback anterior.",
+    "experimentBlindNotice": "Estás inscrito en un estudio de evaluación ciego. El sistema asignará un método de recomendación automáticamente — no verás cuál se usó.",
+    "gettingStarted": {
+      "title": "Cómo funciona",
+      "step1": "Añade temas semilla que describan lo que quieres explorar.",
+      "step2": "Buscamos artículos reales y analizamos brechas en la literatura.",
+      "step3": "Revisa ideas respaldadas por evidencia y valora las que te ayuden."
+    },
     "runMode": {
       "label": "Modo de generación",
+      "intro": "Elige qué tan profundo analiza POST-Rec la literatura. ¿No estás seguro? Empieza con la opción recomendada.",
+      "recommended": "Recomendado",
+      "showAdvanced": "Mostrar modos avanzados",
+      "hideAdvanced": "Ocultar modos avanzados",
       "quick": {
         "label": "Rápido",
+        "shortHint": "Vista previa rápida — ideal para una primera exploración.",
         "hint": "Generación en una pasada con campos SOTA y verificación de novedad."
       },
       "sota": {
         "label": "Basado en SOTA",
+        "shortHint": "Mejor equilibrio entre calidad y profundidad para la mayoría.",
         "hint": "Pipeline completo: panorama → matriz de brechas → propuestas con crítico estricto."
       },
       "exploratory": {
         "label": "Exploratorio",
+        "shortHint": "Ideas más amplias y novedosas — pueden requerir más refinamiento.",
         "hint": "Pipeline multi-etapa con mayor peso en novedad e ideas más amplias."
       },
       "fggv": {
         "label": "FGGV (Facet-Grounded)",
+        "shortHint": "Experimental — verificación por facetas y selección diversa.",
         "hint": "Método propuesto: verificación de novedad por faceta, alineación con brechas y selección diversa."
       }
     }
@@ -216,13 +268,37 @@
     "title": "Ejecuciones",
     "subtitleEmpty": "Inicia una ejecución para obtener ideas de investigación respaldadas por artículos reales.",
     "subtitleStats": "{{total}} en total · {{active}} en curso · {{completed}} listas para revisar",
+    "emptyHeroEyebrow": "Empieza aquí",
+    "emptyHeroTitle": "Genera tus primeras ideas de investigación",
+    "emptyHeroSubtitle": "POST-Rec busca artículos reales, encuentra vacíos y sugiere ideas que puedes convertir en investigación — en minutos.",
+    "emptyHeroStep1": "Añade algunos temas que quieras explorar",
+    "emptyHeroStep2": "Buscamos y analizamos la literatura",
+    "emptyHeroStep3": "Revisa ideas con evidencia y valora lo que ayuda",
+    "emptyHeroCta": "Generar recomendaciones",
+    "emptyHeroLearnMore": "Cómo funciona →",
     "noRunsTitle": "Aún no hay ejecuciones",
     "noRunsDescription": "Crea tu primera ejecución: buscaremos artículos, analizaremos brechas y sugeriremos ideas para tu investigación.",
     "startRun": "Iniciar ejecución",
     "sectionInProgress": "En curso",
+    "sectionInProgressDesc": "Buscando artículos y generando ideas — te avisaremos cuando estén listas.",
     "sectionReady": "Listas para revisar",
+    "sectionReadyDesc": "Pulsa Útil o No útil en cada idea — unos 30 segundos por ejecución.",
     "sectionOther": "Otras",
+    "sectionOtherDesc": "Ejecuciones que terminaron sin ideas o con algún problema.",
     "sectionOtherCount": "Otras ({{count}})",
+    "filterLabel": "Filtrar ejecuciones",
+    "filterAll": "Todas",
+    "filterReady": "Listas",
+    "filterActive": "En curso",
+    "filterEmptyReady": "No hay ejecuciones listas para revisar. Inicia una nueva o vuelve pronto.",
+    "filterEmptyActive": "No hay ejecuciones en curso ahora mismo.",
+    "readyBannerTitle": "{{count}} ejecución(es) esperando tu feedback",
+    "readyBannerText": "Valoraciones rápidas nos ayudan a personalizar tus próximas recomendaciones.",
+    "reviewAndRate": "Revisar y valorar",
+    "viewIdeas": "Ver ideas",
+    "rateIdeasHint": "~30 s · pulgar arriba o abajo",
+    "generatingHint": "Generando ideas…",
+    "topicsLabel": "Temas",
     "ideasReady": "{{count}} ideas listas",
     "ideasReadyUnknown": "Revisar ideas",
     "trackProgress": "Seguir progreso →",
@@ -231,16 +307,50 @@
     "allSources": "Todos los artículos fuente ({{count}})",
     "outcomeIncomplete": "Sin ideas generadas",
     "completedWithoutIdeas": "Esta ejecución terminó pero no se guardaron recomendaciones. Puedes iniciar una nueva con otros temas.",
-    "noIdeasGenerated": "Finalizó sin ideas"
+    "noIdeasGenerated": "Finalizó sin ideas",
+    "completeBanner": {
+      "title": "Tus ideas están listas",
+      "text": "Pulsa Útil o No útil en cada idea — un segundo cada una.",
+      "textProgress": "Quedan {{remaining}} idea(s) — un toque cada con Útil o No útil.",
+      "thumbHint": "Útil · No útil",
+      "allRatedTitle": "Todas las ideas valoradas",
+      "allRatedText": "¡Gracias! Deja una valoración rápida de la sesión abajo o inicia una nueva ejecución.",
+      "survey": "Encuesta rápida",
+      "newRun": "Nueva ejecución",
+      "learnMore": "Cómo funciona la puntuación"
+    }
   },
   "ideas": {
     "generatedIdeas": "Ideas generadas",
     "countOfTotal": "{{current}} de {{total}}",
     "ideaNumber": "Idea {{number}}",
     "swipeHint": "Desliza para ver ideas",
+    "browseHint": "Desliza o usa las flechas para ver las ideas",
+    "previousIdea": "Idea anterior",
+    "nextIdea": "Idea siguiente",
     "goToIdea": "Ir a la idea {{number}}",
     "score": "Puntuación {{value}}",
     "rateIdea": "Valorar esta idea",
+    "quickRatingLabel": "¿Qué tan útil es esta idea?",
+    "quickFeedbackPrompt": "¿Fue útil esta idea?",
+    "useful": "Útil",
+    "notUseful": "No útil",
+    "skipIdea": "Omitir",
+    "showFineTune": "Ajustar valoración",
+    "hideFineTune": "Ocultar ajuste",
+    "feedbackProgress": "{{rated}} de {{total}} valoradas",
+    "feedbackProgressComplete": "Las {{count}} ideas valoradas",
+    "celebrationFirst": "¡Buen comienzo! Quedan {{remaining}}",
+    "celebrationAll": "¡Listo — gracias por tu feedback!",
+    "jumpToUnrated": "Siguiente sin valorar",
+    "rateValue": "Valorar {{value}} de 5",
+    "feedbackSavedShort": "Gracias — guardado",
+    "feedbackSavedNext": "Gracias — siguiente idea",
+    "addNote": "Añadir nota (opcional)",
+    "notePlaceholder": "¿Algo que debamos saber?",
+    "sectionNav": "Secciones de la idea",
+    "feedbackPromptTitle": "Ayúdanos a mejorar tu próxima ejecución",
+    "feedbackPromptText": "Una valoración rápida (menos de un minuto) ayuda a POST-Rec a aprender qué funciona para ti.",
     "yourFeedback": "Tu feedback",
     "feedbackHint": "Las valoraciones mejoran tu próxima ejecución.",
     "feedbackSaved": "Guardado · alineación {{score}}",
@@ -280,6 +390,7 @@
       "medium": "Confianza media",
       "high": "Confianza alta"
     },
+    "qualityScores": "Puntuaciones de calidad",
     "scoreNames": {
       "relevance": "Relevancia",
       "clarity": "Claridad",
@@ -326,7 +437,7 @@
   },
   "insights": {
     "title": "Métricas",
-    "subtitle": "Métricas agregadas de validación de todas las sesiones POST-Rec.",
+    "subtitle": "Tendencias de calidad de la comunidad según el feedback de investigadores — tus valoraciones contribuyen a estas métricas.",
     "quality": "Calidad",
     "trustFeasibility": "Confianza y viabilidad",
     "activity": "Actividad",
@@ -345,11 +456,22 @@
     "avgSotaFit": "Ajuste SOTA medio",
     "totalRuns": "Ejecuciones totales",
     "totalFeedback": "Feedback total",
-    "emptyHint": "Las métricas aparecen cuando los participantes envían feedback sobre recomendaciones."
+    "emptyHint": "Las métricas aparecen cuando los participantes envían feedback sobre recomendaciones.",
+    "emptyTitle": "Aún no hay feedback",
+    "emptyDescription": "Valora ideas después de una ejecución para ver cómo la comunidad evalúa la calidad.",
+    "emptyAction": "Ir a tus ejecuciones"
   },
   "survey": {
     "title": "Feedback de sesión",
     "subtitle": "Ayúdanos a mejorar POST-Rec con una breve encuesta final.",
+    "subtitleShort": "Dos toques — listo.",
+    "quickPrompt": "¿Cómo fue esta sesión?",
+    "quickSatisfaction": "Satisfacción general",
+    "quickUseAgain": "¿Usarías POST-Rec de nuevo?",
+    "quickSubmit": "Listo",
+    "autoSaveHint": "Se guarda automáticamente al responder ambas preguntas.",
+    "backToRuns": "Volver a ejecuciones",
+    "thankYouShort": "¡Gracias por tu feedback!",
     "expectationsMet": "¿Los resultados cumplieron tus expectativas? ({{score}})",
     "wouldUseInPaper": "¿Usarías alguna recomendación en un artículo real?",
     "wouldUseAgain": "Volvería a usar POST-Rec",
@@ -364,6 +486,7 @@
   },
   "status": {
     "ready": "Listo para revisar",
+    "reviewed": "Revisado",
     "in_progress": "En progreso",
     "incomplete": "Sin ideas",
     "queued": "En cola",
@@ -381,6 +504,26 @@
     "cost_limit_exceeded": "Límite de coste",
     "failed_schema_validation": "Error de esquema"
   },
+  "statusDescriptions": {
+    "default": "Trabajando en: {{step}}",
+    "ready": "Tus recomendaciones están listas — explora las ideas abajo.",
+    "in_progress": "Tu ejecución se está procesando…",
+    "incomplete": "La ejecución terminó pero no se generaron ideas.",
+    "queued": "En cola — empezaremos a buscar en breve.",
+    "started": "Iniciando tu ejecución de investigación personalizada…",
+    "searching_papers": "Buscando artículos académicos que coincidan con tus temas…",
+    "normalizing_documents": "Organizando y limpiando los artículos recuperados…",
+    "deduplicating_documents": "Eliminando artículos duplicados del corpus…",
+    "generating_embeddings": "Analizando el contenido para encontrar las mejores coincidencias…",
+    "ranking_candidates": "Clasificando los artículos más relevantes para tu perfil…",
+    "generating_recommendations": "Redactando ideas de investigación basadas en la evidencia…",
+    "validating_output": "Comprobando calidad, novedad y viabilidad de las ideas…",
+    "completed": "Listo — tus ideas están preparadas para revisar.",
+    "failed": "Algo salió mal. Revisa el registro de actividad para más detalles.",
+    "cancelled": "Esta ejecución fue cancelada.",
+    "cost_limit_exceeded": "La ejecución se detuvo al alcanzar el límite de coste.",
+    "failed_schema_validation": "Falló la validación de salida — inténtalo de nuevo o contacta con soporte."
+  },
   "progress": {
     "step": "Paso: {{step}}",
     "progressLabel": "Progreso",
@@ -389,7 +532,8 @@
     "liveUpdates": "Actualizaciones en vivo",
     "activityLog": "Registro de actividad",
     "readyLoading": "Recomendaciones listas — cargando abajo…",
-    "recoverableHint": "Las advertencias temporales son normales mientras se buscan fuentes. La ejecución continúa automáticamente."
+    "recoverableHint": "Las advertencias temporales son normales mientras se buscan fuentes. La ejecución continúa automáticamente.",
+    "encourage": "Buscando artículos y elaborando ideas — espera un momento, suele tardar unos minutos."
   },
   "usage": {
     "title": "Uso de la ejecución",
@@ -406,6 +550,12 @@
       "embedding": "Embeddings de artículos",
       "generation": "Generación de ideas"
     }
+  },
+  "conversion": {
+    "profileReadyTitle": "¡Todo listo!",
+    "profileReadyDesc": "Tu perfil de investigación está guardado. Genera tus primeras ideas con evidencia en un paso.",
+    "generateFirstRun": "Generar recomendaciones",
+    "nextStepFootnote": "Toma unos 2 minutos definir temas e iniciar."
   },
   "enums": {
     "academicLevel": {

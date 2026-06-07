@@ -40,11 +40,12 @@ export function TransparencyPage() {
 
   return (
     <div className="page-shell page-shell--wide transparency-page">
-      <PageHeader title={t("transparency.title")} subtitle={t("transparency.subtitle")} />
+      <div className="page-stack">
+        <PageHeader title={t("transparency.title")} subtitle={t("transparency.subtitle")} />
 
-      <nav className="transparency-toc surface-card" aria-label={t("transparency.tocLabel")}>
-        <p className="transparency-toc__label">{t("transparency.tocLabel")}</p>
-        <ol className="transparency-toc__list">
+        <nav className="transparency-toc panel" aria-label={t("transparency.tocLabel")}>
+          <p className="panel__title mb-3">{t("transparency.tocLabel")}</p>
+          <ol className="transparency-toc__list">
           {TOC_SECTIONS.map((id) => (
             <li key={id}>
               <a href={`#${id}`}>{t(`transparency.sections.${id}`)}</a>
@@ -203,6 +204,7 @@ export function TransparencyPage() {
           </ul>
         </TransparencySection>
       </article>
+      </div>
     </div>
   );
 }

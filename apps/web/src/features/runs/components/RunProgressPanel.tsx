@@ -1,7 +1,5 @@
 import { useMemo } from "react";
 
-import { ProgressBar } from "react-bootstrap";
-
 import { useTranslation } from "react-i18next";
 
 import type { RecommendationRun, RunEvent } from "@/shared/types/api";
@@ -12,6 +10,7 @@ import { formatEstimatedCost } from "@/features/runs/utils/formatCost";
 
 import { filterUserFacingEvents } from "@/features/runs/utils/runLog";
 
+import { RunProgressBar } from "./RunProgressBar";
 interface RunProgressPanelProps {
   run: RecommendationRun;
   events: RunEvent[];
@@ -35,21 +34,28 @@ export function RunProgressPanel({ run, events, live = true }: RunProgressPanelP
   const warningCount = visibleEvents.filter((event) => event.level === "warning").length;
 
   const stepKey = run.current_step ?? run.status;
-  const step = t(`status.${stepKey}`, { defaultValue: humanizeStatus(stepKey) });
+  const stepLabel = t(`status.${stepKey}`, { defaultValue: humanizeStatus(stepKey) });
+  const stepDescription = t(`statusDescriptions.${stepKey}`, {
+    defaultValue: t("statusDescriptions.default", { step: stepLabel }),
+  });
   const isActive = outcome === "in_progress";
   const costFormatted = formatEstimatedCost(run.estimated_cost_usd ?? 0, i18n.language);
 
   return (
-    <div className="surface-card run-progress">
-      <p className="run-progress__step">{t("progress.step", { step })}</p>
+    <div className="run-progress panel">
+      {isActive ? (
+        <p className="run-progress__encourage">{t("progress.encourage")}</p>
+      ) : null}
+      <p className="run-progress__step">{stepDescription}</p>
+      {!isActive ? (
+        <p className="run-progress__step-label">{stepLabel}</p>
+      ) : null}
 
-      <ProgressBar
-        now={run.progress}
-        label={`${run.progress}%`}
-        className="run-progress__bar"
-        variant={outcome === "failed" ? "danger" : outcome === "ready" ? "success" : undefined}
+      <RunProgressBar
+        value={run.progress}
+        tone={outcome === "failed" ? "danger" : outcome === "ready" ? "success" : "default"}
+        label={t("progress.progressLabel")}
       />
-
       {!isActive ? (
         <div className="run-progress__stats">
           <div className="run-progress__stat">

@@ -4,6 +4,8 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "@/shared/layout/AppLayout";
 import { ProtectedRoute } from "@/features/routing/ProtectedRoute";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
+import { useTranslation } from "react-i18next";
 
 const SignInPage = lazy(() =>
   import("@/features/auth/pages/SignInPage").then((module) => ({ default: module.SignInPage })),
@@ -42,9 +44,10 @@ const RecommendationsRedirect = lazy(() =>
 );
 
 function RouteFallback() {
+  const { t } = useTranslation();
   return (
     <div className="route-loading" aria-live="polite">
-      Loading…
+      <LoadingSpinner label={t("common.loading")} />
     </div>
   );
 }
@@ -58,7 +61,7 @@ function HomeRedirect() {
     return <Navigate to="/consent" replace />;
   }
   if (!profileDone) {
-    return <Navigate to="/profile" replace />;
+    return <Navigate to="/profile?tab=research" replace />;
   }
   return <Navigate to="/runs" replace />;
 }

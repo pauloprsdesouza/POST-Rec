@@ -1,31 +1,67 @@
-// POST-Rec design tokens — single source of truth for visual identity.
+// POST-Rec design tokens — flat, high-contrast product UI.
 
 :root {
   // Brand
-  --postrec-primary: #2563eb;
-  --postrec-primary-dark: #1d4ed8;
-  --postrec-primary-light: #dbeafe;
-  --postrec-accent: #0ea5e9;
-  // Surfaces
-  --postrec-bg: #f8fafc;
+  --postrec-primary: #4338ca;
+  --postrec-primary-hover: #3730a3;
+  --postrec-primary-dark: #312e81;
+  --postrec-primary-light: #eef2ff;
+  --postrec-primary-subtle: #c7d2fe;
+  --postrec-accent: #4f46e5;
+  --postrec-accent-soft: #6366f1;
+
+  // Surfaces — flat canvas + white content areas (no gradients)
+  --postrec-bg: #e8eaef;
+  --postrec-bg-elevated: #ffffff;
   --postrec-surface: #ffffff;
-  --postrec-surface-muted: #f1f5f9;
-  --postrec-border: #e2e8f0;
-  // Text
+  --postrec-surface-muted: #f2f3f7;
+  --postrec-surface-hover: #e8eaef;
+  --postrec-border: #cbd5e1;
+  --postrec-border-strong: #94a3b8;
+  --postrec-border-subtle: #e2e8f0;
+
+  // Text — WCAG-friendly on white
   --postrec-text: #0f172a;
-  --postrec-muted: #64748b;
+  --postrec-text-secondary: #334155;
+  --postrec-muted: #475569;
+  --postrec-muted-light: #64748b;
+
   // Semantic
-  --postrec-success: #16a34a;
-  --postrec-warning: #d97706;
-  --postrec-danger: #dc2626;
+  --postrec-success: #047857;
+  --postrec-success-bg: #ecfdf5;
+  --postrec-success-border: #6ee7b7;
+  --postrec-warning: #b45309;
+  --postrec-warning-bg: #fffbeb;
+  --postrec-warning-border: #fcd34d;
+  --postrec-danger: #b91c1c;
+  --postrec-danger-bg: #fef2f2;
+  --postrec-danger-border: #fca5a5;
+
+  // On-color & rating
+  --postrec-on-primary: #ffffff;
+  --postrec-rating-star: #d97706;
+  --postrec-rating-star-hover: #f59e0b;
+  --postrec-rating-star-bg: var(--postrec-warning-bg);
+  --postrec-rating-star-border: var(--postrec-warning-border);
+  --postrec-ring-success: color-mix(in srgb, var(--postrec-success) 18%, transparent);
+  --postrec-ring-danger: color-mix(in srgb, var(--postrec-danger) 14%, transparent);
+  --postrec-ring-warning: color-mix(in srgb, var(--postrec-warning) 20%, transparent);
+  --postrec-thumb-up-bg: var(--postrec-success-bg);
+  --postrec-thumb-down-bg: var(--postrec-danger-bg);
+
   // Typography
-  --postrec-font: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --postrec-font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --postrec-font-mono: ui-monospace, "Cascadia Code", "Consolas", monospace;
   --postrec-text-xs: 0.75rem;
-  --postrec-text-sm: 0.8125rem;
-  --postrec-text-base: 0.9375rem;
-  --postrec-text-lg: 1rem;
-  --postrec-text-xl: 1.125rem;
-  --postrec-text-2xl: 1.625rem;
+  --postrec-text-sm: 0.875rem;
+  --postrec-text-base: 1rem;
+  --postrec-text-lg: 1.125rem;
+  --postrec-text-xl: 1.25rem;
+  --postrec-text-2xl: 1.5rem;
+  --postrec-text-3xl: 1.875rem;
+  --postrec-leading: 1.6;
+  --postrec-leading-tight: 1.35;
+
   // Spacing
   --postrec-space-1: 0.25rem;
   --postrec-space-2: 0.5rem;
@@ -33,17 +69,109 @@
   --postrec-space-4: 1rem;
   --postrec-space-5: 1.25rem;
   --postrec-space-6: 1.5rem;
+  --postrec-space-7: 1.75rem;
   --postrec-space-8: 2rem;
-  // Layout
-  --postrec-page-max: 720px;
+  --postrec-space-10: 2.5rem;
+  --postrec-space-12: 3rem;
+  --postrec-space-16: 4rem;
+
+  // Layout widths (RUI: constrain reading width, slightly wider for lists)
+  --postrec-page-max: 800px;
+  --postrec-page-list: 920px;
   --postrec-page-narrow: 560px;
-  --postrec-page-wide: 1140px;
+  --postrec-page-wide: 1120px;
   --postrec-nav-height: 3.5rem;
   --postrec-bottom-nav-height: 4rem;
   --postrec-safe-bottom: env(safe-area-inset-bottom, 0px);
-  // Shape & elevation
-  --postrec-radius: 0.875rem;
-  --postrec-radius-sm: 0.625rem;
-  --postrec-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.04);
-  --postrec-shadow-lg: 0 4px 24px rgba(15, 23, 42, 0.08);
+
+  // Shape — crisp corners, border-led depth
+  --postrec-radius: 0.5rem;
+  --postrec-radius-sm: 0.375rem;
+  --postrec-radius-lg: 0.75rem;
+  --postrec-radius-pill: 999px;
+  --postrec-shadow-xs: none;
+  --postrec-shadow: none;
+  --postrec-shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --postrec-shadow-sm: none;
+  --postrec-shadow-focus: 0 0 0 3px rgba(67, 56, 202, 0.25);
+
+  // Motion
+  --postrec-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --postrec-duration: 0.15s;
+
+  // Illustrations
+  --illus-surface: #ffffff;
+  --illus-border: #cbd5e1;
+  --illus-muted: #64748b;
+  --illus-accent: #4338ca;
+  --illus-accent-soft: #c7d2fe;
+
+  // Navbar
+  --postrec-nav-bg: #ffffff;
+  --postrec-nav-border: var(--postrec-border);
+
+  // Auth brand panel — solid flat primary (no gradient)
+  --postrec-auth-brand-bg: #4338ca;
+  --postrec-auth-brand-text: #ffffff;
+  --postrec-auth-brand-muted: #c7d2fe;
+}
+
+[data-theme="dark"] {
+  --postrec-primary: #a5b4fc;
+  --postrec-primary-hover: #818cf8;
+  --postrec-primary-dark: #6366f1;
+  --postrec-primary-light: rgba(99, 102, 241, 0.18);
+  --postrec-primary-subtle: rgba(129, 140, 248, 0.35);
+  --postrec-accent: #818cf8;
+  --postrec-accent-soft: #a5b4fc;
+
+  --postrec-bg: #0c0e14;
+  --postrec-bg-elevated: #141820;
+  --postrec-surface: #171b26;
+  --postrec-surface-muted: #1e2433;
+  --postrec-surface-hover: #252b3d;
+  --postrec-border: #3d4659;
+  --postrec-border-strong: #64748b;
+  --postrec-border-subtle: #2a3042;
+
+  --postrec-text: #f8fafc;
+  --postrec-text-secondary: #e2e8f0;
+  --postrec-muted: #94a3b8;
+  --postrec-muted-light: #64748b;
+
+  --postrec-success: #34d399;
+  --postrec-success-bg: rgba(16, 185, 129, 0.15);
+  --postrec-success-border: rgba(52, 211, 153, 0.4);
+  --postrec-warning: #fbbf24;
+  --postrec-warning: #b45309;
+  --postrec-warning-bg: rgba(245, 158, 11, 0.12);
+  --postrec-warning-border: rgba(251, 191, 36, 0.35);
+  --postrec-danger: #f87171;
+  --postrec-danger-bg: rgba(220, 38, 38, 0.15);
+  --postrec-danger-border: rgba(248, 113, 113, 0.35);
+
+  --postrec-rating-star: #fbbf24;
+  --postrec-rating-star-hover: #fcd34d;
+  --postrec-rating-star-bg: var(--postrec-warning-bg);
+  --postrec-rating-star-border: var(--postrec-warning-border);
+  --postrec-ring-success: color-mix(in srgb, var(--postrec-success) 28%, transparent);
+  --postrec-ring-danger: color-mix(in srgb, var(--postrec-danger) 24%, transparent);
+  --postrec-ring-warning: color-mix(in srgb, var(--postrec-warning) 28%, transparent);
+  --postrec-thumb-up-bg: var(--postrec-success-bg);
+  --postrec-thumb-down-bg: var(--postrec-danger-bg);
+  --postrec-on-primary: #ffffff;
+
+  --postrec-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --postrec-shadow-focus: 0 0 0 3px rgba(165, 180, 252, 0.35);
+
+  --illus-surface: #222736;
+  --illus-border: #3d4659;
+  --illus-muted: #64748b;
+  --illus-accent: #a5b4fc;
+  --illus-accent-soft: rgba(165, 180, 252, 0.25);
+
+  --postrec-nav-bg: #171b26;
+  --postrec-nav-border: #3d4659;
+
+  --postrec-auth-brand-bg: #312e81;
 }

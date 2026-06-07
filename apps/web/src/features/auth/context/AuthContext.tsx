@@ -69,12 +69,64 @@ function writeStorage(data: StoredAuth | null): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
+async function resolveOnboardingFlags(accessToken: string) {
+  const [profileResult, consentResult] = await Promise.allSettled([
+    profileService.getProfile(accessToken),
+    sessionService.getConsentStatus(accessToken),
+  ]);
+
+  return {
+    profileDone:
+      profileResult.status === "fulfilled" ? Boolean(profileResult.value.research_area) : null,
+    consentDone: consentResult.status === "fulfilled" ? consentResult.value.accepted : null,
+  };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [stored, setStored] = useState<StoredAuth | null>(() => readStorage());
 
   useEffect(() => {
     writeStorage(stored);
   }, [stored]);
+
+  useEffect(() => {
+    const accessToken = stored?.accessToken;
+    if (!accessToken) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void (async () => {
+      const flags = await resolveOnboardingFlags(accessToken);
+      if (cancelled) {
+        return;
+      }
+
+      setStored((current) => {
+        if (!current || current.accessToken !== accessToken) {
+          return current;
+        }
+
+        const profileDone = flags.profileDone ?? current.profileDone;
+        const consentDone = flags.consentDone ?? current.consentDone;
+
+        if (profileDone === current.profileDone && consentDone === current.consentDone) {
+          return current;
+        }
+
+        return {
+          ...current,
+          profileDone,
+          consentDone,
+        };
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [stored?.accessToken]);
 
   const signIn = useCallback(async (response: AuthResponse) => {
     const user: AuthUser = {
@@ -85,27 +137,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       whatsappOptIn: response.whatsapp_opt_in,
     };
 
-    let profileDone: boolean;
-    let consentDone: boolean;
-    try {
-      const [profile, consent] = await Promise.all([
-        profileService.getProfile(response.access_token),
-        sessionService.getConsentStatus(response.access_token),
-      ]);
-      profileDone = Boolean(profile.research_area);
-      consentDone = consent.accepted;
-    } catch {
-      profileDone = false;
-      consentDone = false;
-    }
+    const flags = await resolveOnboardingFlags(response.access_token);
 
-    setStored({
-      accessToken: response.access_token,
-      user,
-      consentDone,
-      profileDone,
-      sessionId: null,
-      selectedRunId: null,
+    setStored((previous) => {
+      const consentDone = flags.consentDone ?? previous?.consentDone ?? false;
+      const profileDone = flags.profileDone ?? previous?.profileDone ?? false;
+
+      return {
+        accessToken: response.access_token,
+        user,
+        consentDone,
+        profileDone,
+        sessionId: consentDone ? (previous?.sessionId ?? null) : null,
+        selectedRunId: previous?.selectedRunId ?? null,
+      };
     });
   }, []);
 

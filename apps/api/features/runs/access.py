@@ -8,12 +8,12 @@ from sqlalchemy.orm import Session
 from apps.api.shared.models import RecommendationRun, User
 
 
-def user_id_str(user: User | None) -> str | None:
-    return str(user.id) if user else None
+def user_id_optional(user: User | None) -> uuid.UUID | None:
+    return user.id if user else None
 
 
 def ensure_run_access(run: RecommendationRun, user: User | None) -> None:
-    if user and run.user_id and run.user_id != str(user.id):
+    if user and run.user_id and run.user_id != user.id:
         raise HTTPException(status_code=403, detail="Not allowed to access this run")
 
 

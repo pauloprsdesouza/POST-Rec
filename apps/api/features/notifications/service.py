@@ -26,7 +26,7 @@ class NotificationService:
         if not run.user_id:
             return
 
-        user = db.query(User).filter_by(id=uuid.UUID(str(run.user_id))).first()
+        user = db.query(User).filter_by(id=run.user_id).first()
         if not user or not user.phone_number or not user.whatsapp_opt_in:
             return
 
@@ -56,7 +56,7 @@ class NotificationService:
         if not run.user_id:
             return
 
-        user = db.query(User).filter_by(id=uuid.UUID(str(run.user_id))).first()
+        user = db.query(User).filter_by(id=run.user_id).first()
         if not user or not user.phone_number or not user.whatsapp_opt_in:
             return
 

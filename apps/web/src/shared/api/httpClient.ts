@@ -1,4 +1,5 @@
 import { env } from "@/shared/config/env";
+import { parseHttpErrorDetail } from "./errors";
 
 export interface RequestOptions {
   token?: string | null;
@@ -41,10 +42,8 @@ export class HttpClient implements IHttpClient {
     if (!response.ok) {
       let detail = response.statusText;
       try {
-        const payload = (await response.json()) as { detail?: string };
-        if (payload.detail) {
-          detail = payload.detail;
-        }
+        const payload = await response.json();
+        detail = parseHttpErrorDetail(payload, detail);
       } catch {
         // ignore JSON parse errors
       }

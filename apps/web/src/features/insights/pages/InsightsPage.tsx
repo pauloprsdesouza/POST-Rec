@@ -1,9 +1,11 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Alert } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
+import { EmptyState } from "@/shared/ui/EmptyState";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { validationService } from "@/shared/api";
 import type { ValidationDashboard } from "@/shared/types/api";
@@ -28,8 +30,10 @@ function InsightMetric({
 
 function InsightSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="insight-section">
-      <h2 className="insight-section__title">{title}</h2>
+    <section className="insight-section panel">
+      <div className="panel__header">
+        <h2 className="panel__title">{title}</h2>
+      </div>
       <div className="insight-section__grid">{children}</div>
     </section>
   );
@@ -66,7 +70,7 @@ export function InsightsPage() {
     return (
       <div className="page-shell">
         <PageHeader title={t("insights.title")} subtitle={t("insights.subtitle")} />
-        <Alert variant="danger">{error ?? t("common.metricsUnavailable")}</Alert>
+        <InlineAlert variant="danger">{error ?? t("common.metricsUnavailable")}</InlineAlert>
       </div>
     );
   }
@@ -75,13 +79,23 @@ export function InsightsPage() {
 
   return (
     <div className="page-shell insights-page">
-      <PageHeader title={t("insights.title")} subtitle={t("insights.subtitle")} />
+      <div className="page-stack">
+        <PageHeader title={t("insights.title")} subtitle={t("insights.subtitle")} />
 
-      {!hasFeedback ? (
-        <p className="insights-page__hint">{t("insights.emptyHint")}</p>
-      ) : null}
+        {!hasFeedback ? (
+          <EmptyState
+            variant="insights"
+            title={t("insights.emptyTitle")}
+            description={t("insights.emptyDescription")}
+            action={
+              <Link to="/runs/new" className="btn btn-primary">
+                {t("insights.emptyAction")}
+              </Link>
+            }
+          />
+        ) : null}
 
-      <InsightSection title={t("insights.quality")}>
+        <InsightSection title={t("insights.quality")}>
         <InsightMetric
           label={t("insights.avgEas")}
           value={formatDecimal(dashboard.average_eas, locale)}
@@ -147,6 +161,7 @@ export function InsightsPage() {
           value={formatPercent(dashboard.run_completion_rate, locale)}
         />
       </InsightSection>
+      </div>
     </div>
   );
 }

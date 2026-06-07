@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from apps.api.shared.models import (
     RecommendationCandidate,
+    RecommendationFeedback,
     RecommendationRun,
     RecommendationRunEvent,
 )
@@ -24,7 +25,46 @@ from apps.api.features.recommendations.sources import (
     get_run_source_documents,
     serialize_source_documents,
 )
+from apps.api.features.experiments.presentation import (
+    blind_event_payload,
+    blind_recommendation_payload,
+    blind_run_detail_payload,
+    blind_run_summary_payload,
+    is_blind_run,
+)
 from packages.postrec_core.domain.enums import RunStatus
+
+
+def feedback_counts_by_run(
+    db: Session,
+    user_id: uuid.UUID,
+    run_ids: list[uuid.UUID],
+) -> dict[uuid.UUID, int]:
+    if not run_ids:
+        return {}
+    rows = (
+        db.query(RecommendationFeedback.run_id, func.count(func.distinct(RecommendationFeedback.recommendation_id)))
+        .filter(
+            RecommendationFeedback.run_id.in_(run_ids),
+            RecommendationFeedback.user_id == user_id,
+        )
+        .group_by(RecommendationFeedback.run_id)
+        .all()
+    )
+    return {run_id: int(count) for run_id, count in rows}
+
+
+def user_feedback_map_for_run(
+    db: Session,
+    user_id: uuid.UUID,
+    run_id: uuid.UUID,
+) -> dict[uuid.UUID, RecommendationFeedback]:
+    rows = (
+        db.query(RecommendationFeedback)
+        .filter_by(run_id=run_id, user_id=user_id)
+        .all()
+    )
+    return {row.recommendation_id: row for row in rows}
 
 
 def published_recommendation_counts(db: Session, run_ids: list[uuid.UUID]) -> dict[uuid.UUID, int]:
@@ -42,7 +82,12 @@ def published_recommendation_counts(db: Session, run_ids: list[uuid.UUID]) -> di
     return {run_id: int(count) for run_id, count in rows}
 
 
-def _candidate_to_response(candidate: RecommendationCandidate, source_docs) -> dict:
+def _candidate_to_response(
+    candidate: RecommendationCandidate,
+    source_docs,
+    *,
+    feedback: RecommendationFeedback | None = None,
+) -> dict:
     scores = candidate.scores or {}
     sota = scores.get("_sota") if isinstance(scores.get("_sota"), dict) else {}
     validation_issues = scores.get("_validation_issues")
@@ -84,6 +129,14 @@ def _candidate_to_response(candidate: RecommendationCandidate, source_docs) -> d
         confidence_level=candidate.confidence_level,
         scores=candidate.scores,
         final_score=float(candidate.final_score) if candidate.final_score else None,
+        user_feedback=(
+            {
+                "relevance_score": feedback.relevance_score,
+                "decision": feedback.decision,
+            }
+            if feedback
+            else None
+        ),
     ).model_dump(mode="json")
 
 
@@ -94,12 +147,13 @@ def run_detail_payload(db: Session, run: RecommendationRun) -> dict:
         .count()
     )
     usage = get_run_usage_summary(db, run, recommendation_count=rec_count)
-    return RunDetailResponse(
+    payload = RunDetailResponse(
         id=run.id,
         status=run.status,
         progress=run.progress,
         current_step=run.current_step,
         mode=run.mode,
+        presentation_profile=run.presentation_profile or "standard",
         error_message=sanitize_run_error_message(run.error_message),
         estimated_cost_usd=float(usage["estimated_cost_usd"]),
         created_at=run.created_at,
@@ -109,17 +163,32 @@ def run_detail_payload(db: Session, run: RecommendationRun) -> dict:
         topics=list((run.input or {}).get("topics") or []),
         usage=usage,
     ).model_dump(mode="json")
+    return _maybe_blind_run_detail(payload, run)
 
 
-def run_events_payload(db: Session, run_id: uuid.UUID, run_status: str) -> list[dict]:
+def _maybe_blind_run_detail(payload: dict, run: RecommendationRun) -> dict:
+    if is_blind_run(run):
+        return blind_run_detail_payload(payload)
+    return payload
+
+
+def run_events_payload(
+    db: Session,
+    run_id: uuid.UUID,
+    run_status: str,
+    run: RecommendationRun | None = None,
+) -> list[dict]:
     events = db.query(RecommendationRunEvent).filter_by(run_id=run_id).order_by(RecommendationRunEvent.created_at).all()
-    return format_events_for_user(events, run_status)
+    formatted = format_events_for_user(events, run_status)
+    if run and is_blind_run(run):
+        return [blind_event_payload(item) for item in formatted]
+    return formatted
 
 
 def run_stream_payload(db: Session, run: RecommendationRun) -> dict:
     return {
         "run": run_detail_payload(db, run),
-        "events": run_events_payload(db, run.id, run.status),
+        "events": run_events_payload(db, run.id, run.status, run),
     }
 
 
@@ -132,7 +201,11 @@ def run_recommendations_payload(
     run_id: uuid.UUID,
     *,
     include_refinement: bool = False,
+    run: RecommendationRun | None = None,
+    user_id: uuid.UUID | None = None,
 ) -> list[dict]:
+    if run is None:
+        run = db.query(RecommendationRun).filter_by(id=run_id).first()
     query = db.query(RecommendationCandidate).filter_by(run_id=run_id)
     if not include_refinement:
         query = query.filter_by(status="published")
@@ -142,33 +215,47 @@ def run_recommendations_payload(
         reverse=True,
     )
     source_docs = get_run_source_documents(db, run_id)
-    return [_candidate_to_response(candidate, source_docs) for candidate in candidates]
+    feedback_map = user_feedback_map_for_run(db, user_id, run_id) if user_id else {}
+    payloads = [
+        _candidate_to_response(candidate, source_docs, feedback=feedback_map.get(candidate.id))
+        for candidate in candidates
+    ]
+    if run and is_blind_run(run):
+        return [blind_recommendation_payload(item) for item in payloads]
+    return payloads
 
 
 def run_summaries_payload(db: Session, user_id: uuid.UUID, limit: int) -> list[dict]:
     runs = (
         db.query(RecommendationRun)
-        .filter_by(user_id=str(user_id))
+        .filter_by(user_id=user_id)
         .order_by(RecommendationRun.created_at.desc())
         .limit(min(limit, 100))
         .all()
     )
     completed_ids = [run.id for run in runs if run.status == RunStatus.COMPLETED]
     rec_counts = published_recommendation_counts(db, completed_ids)
+    feedback_counts = feedback_counts_by_run(db, user_id, completed_ids)
 
-    summaries: list[RunSummaryResponse] = []
+    summaries: list[dict] = []
     for run in runs:
         rec_count = rec_counts.get(run.id, 0) if run.status == RunStatus.COMPLETED else 0
-        summaries.append(
-            RunSummaryResponse(
-                id=run.id,
-                status=run.status,
-                progress=run.progress,
-                mode=run.mode,
-                created_at=run.created_at,
-                finished_at=run.finished_at,
-                topics=list((run.input or {}).get("topics") or []),
-                recommendation_count=rec_count,
-            )
+        feedback_count = feedback_counts.get(run.id, 0) if rec_count > 0 else 0
+        summary = RunSummaryResponse(
+            id=run.id,
+            status=run.status,
+            progress=run.progress,
+            mode=run.mode,
+            presentation_profile=run.presentation_profile or "standard",
+            created_at=run.created_at,
+            finished_at=run.finished_at,
+            topics=list((run.input or {}).get("topics") or []),
+            recommendation_count=rec_count,
+            feedback_count=feedback_count,
+            feedback_complete=rec_count > 0 and feedback_count >= rec_count,
         )
-    return [item.model_dump(mode="json") for item in summaries]
+        payload = summary.model_dump(mode="json")
+        if is_blind_run(run):
+            payload = blind_run_summary_payload(payload)
+        summaries.append(payload)
+    return summaries

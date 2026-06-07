@@ -1,44 +1,76 @@
-"""Recommendation read routes."""
-
-import uuid
-
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-
-from apps.api.shared.database import get_db
-from apps.api.shared.dependencies import get_current_user_optional
-from apps.api.shared.models import User
-from apps.api.shared.schemas.common import RecommendationResponse
-from apps.api.shared.infra.cache import CacheKeys, CacheTTL, is_terminal_run
-from apps.api.shared.infra.cache_helpers import load_cached_json
-from apps.api.features.runs.access import ensure_run_access, get_run_or_404
-from apps.api.features.runs.query import run_recommendations_payload
-
-router = APIRouter(prefix="/api/v1")
-
-
-@router.get("/recommendation-runs/{run_id}/recommendations", response_model=list[RecommendationResponse])
-def get_recommendations(
-    run_id: uuid.UUID,
-    include_refinement: bool = False,
-    db: Session = Depends(get_db),
-    current_user: User | None = Depends(get_current_user_optional),
-):
-    run = get_run_or_404(db, run_id)
-    ensure_run_access(run, current_user)
-
-    run_key = str(run_id)
-    cache_suffix = ":all" if include_refinement else ":published"
-    if not is_terminal_run(run.status):
-        return [
-            RecommendationResponse.model_validate(item)
-            for item in run_recommendations_payload(db, run_id, include_refinement=include_refinement)
-        ]
-
-    data = load_cached_json(
-        CacheKeys.run_recommendations(run_key) + cache_suffix,
-        CacheTTL.RECOMMENDATIONS,
-        lambda: run_recommendations_payload(db, run_id, include_refinement=include_refinement),
-        terminal=True,
-    )
-    return [RecommendationResponse.model_validate(item) for item in data]
+"""Recommendation read routes."""
+
+import uuid
+
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
+from apps.api.shared.database import get_db
+from apps.api.shared.dependencies import get_current_user_optional
+from apps.api.shared.models import User
+from apps.api.shared.schemas.common import RecommendationResponse
+from apps.api.shared.infra.cache import CacheKeys, CacheTTL, is_terminal_run
+from apps.api.shared.infra.cache_helpers import load_cached_json
+from apps.api.features.runs.access import ensure_run_access, get_run_or_404, user_id_optional
+from apps.api.features.runs.query import run_recommendations_payload, user_feedback_map_for_run
+
+router = APIRouter(prefix="/api/v1")
+
+
+def _attach_user_feedback(
+    items: list[dict],
+    feedback_map: dict[uuid.UUID, object],
+) -> list[dict]:
+    if not feedback_map:
+        return items
+    enriched: list[dict] = []
+    for item in items:
+        payload = dict(item)
+        feedback = feedback_map.get(uuid.UUID(str(payload["id"])))
+        if feedback is not None:
+            payload["user_feedback"] = {
+                "relevance_score": feedback.relevance_score,
+                "decision": feedback.decision,
+            }
+        enriched.append(payload)
+    return enriched
+
+
+@router.get("/recommendation-runs/{run_id}/recommendations", response_model=list[RecommendationResponse])
+def get_recommendations(
+    run_id: uuid.UUID,
+    include_refinement: bool = False,
+    db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional),
+):
+    run = get_run_or_404(db, run_id)
+    ensure_run_access(run, current_user)
+    user_id = user_id_optional(current_user)
+
+    run_key = str(run_id)
+    cache_suffix = ":all" if include_refinement else ":published"
+    if not is_terminal_run(run.status):
+        payloads = run_recommendations_payload(
+            db,
+            run_id,
+            include_refinement=include_refinement,
+            run=run,
+            user_id=user_id,
+        )
+        return [RecommendationResponse.model_validate(item) for item in payloads]
+
+    data = load_cached_json(
+        CacheKeys.run_recommendations(run_key) + cache_suffix,
+        CacheTTL.RECOMMENDATIONS,
+        lambda: run_recommendations_payload(
+            db,
+            run_id,
+            include_refinement=include_refinement,
+            run=run,
+        ),
+        terminal=True,
+    )
+    if user_id:
+        feedback_map = user_feedback_map_for_run(db, user_id, run_id)
+        data = _attach_user_feedback(data, feedback_map)
+    return [RecommendationResponse.model_validate(item) for item in data]

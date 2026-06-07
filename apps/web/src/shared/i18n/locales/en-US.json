@@ -50,7 +50,9 @@
     "preferences": "Preferences",
     "consent": "Consent",
     "signOut": "Sign out",
-    "language": "Language"
+    "language": "Language",
+    "themeDark": "Switch to dark mode",
+    "themeLight": "Switch to light mode"
   },
   "locale": {
     "en-US": "English (US)",
@@ -59,18 +61,38 @@
   },
   "setup": {
     "title": "Setup:",
-    "consentMessage": "Accept the participation consent to continue.",
-    "profileMessage": "Complete your research profile to start generating recommendations.",
+    "timeEstimate": "~2 min setup",
+    "consentMessage": "Accept the participation consent to unlock personalized recommendations.",
+    "profileMessage": "Tell us your research area — we'll tailor every idea to your field.",
     "reviewConsent": "Review consent",
     "completeProfile": "Complete profile"
   },
+  "onboarding": {
+    "progressLabel": "Setup progress",
+    "steps": {
+      "consent": "Consent",
+      "profile": "Profile",
+      "firstRun": "First run"
+    }
+  },
   "auth": {
-    "eyebrow": "Scientific discovery platform",
-    "heroTitle": "Research ideas, grounded in evidence",
-    "heroSubtitle": "Sign in with your email. One-time codes and run notifications are delivered via WhatsApp when enabled.",
-    "feature1": "Evidence-backed research ideas from real papers",
-    "feature2": "Personalized retrieval that learns from your feedback",
-    "feature3": "Secure sign-in via WhatsApp one-time codes",
+    "brandPanelLabel": "About POST-Rec",
+    "eyebrow": "For researchers",
+    "heroTitle": "Turn literature into your next research idea",
+    "heroSubtitle": "POST-Rec searches real scientific papers, finds gaps in the literature, and suggests evidence-backed directions you can explore — in minutes.",
+    "feature1": "Ideas grounded in real papers from open catalogs",
+    "feature2": "Personalized recommendations that learn from your feedback",
+    "feature3": "From seed topics to reviewable ideas in a single run",
+    "signInTitle": "Sign in",
+    "signInSubtitle": "We'll send a one-time code to your email.",
+    "registerTitle": "Create account",
+    "registerSubtitle": "A few details to get started.",
+    "otpTitle": "Enter your code",
+    "otpSubtitle": "Type the 6-digit verification code below.",
+    "otpSentTo": "Sent to",
+    "otpWhatsappDelivery": "Also on WhatsApp {{phone}}",
+    "otpNoCode": "Didn't get the code?",
+    "useDifferentEmail": "Use a different email",
     "signIn": "Sign in",
     "createAccount": "Create account",
     "fullName": "Full name",
@@ -78,9 +100,11 @@
     "email": "Email",
     "emailPlaceholder": "you@university.edu",
     "whatsappNumber": "WhatsApp number",
-    "whatsappPlaceholder": "+55 79 99973-3237",
-    "whatsappHint": "Include country code. Used for sign-in codes and optional run alerts.",
+    "whatsappPlaceholder": "+557999733237",
+    "whatsappHint": "Include country code (e.g. +55…). Local numbers like (79) 99973-3237 are accepted.",
+    "whatsappHintShort": "Include country code (e.g. +55…).",
     "whatsappOptIn": "Send OTP and run notifications via WhatsApp",
+    "whatsappOptInShort": "WhatsApp notifications",
     "signInHint": "Enter the email linked to your account. We send a one-time code to your saved WhatsApp number when notifications are enabled.",
     "sendSignInCode": "Send sign-in code",
     "createAccountAndSend": "Create account & send code",
@@ -101,7 +125,8 @@
     "devModeCode": "Development mode: your code is <strong>{{code}}</strong>",
     "errorSendCode": "Could not send verification code.",
     "errorVerify": "Verification failed.",
-    "errorResend": "Could not resend code."
+    "errorResend": "Could not resend code.",
+    "trustLine": "Free for researchers · No credit card · Takes under a minute to start"
   },
   "consent": {
     "pageTitle": "One-time setup",
@@ -126,7 +151,9 @@
       "I understand the system is experimental.",
       "I understand recommendations must be reviewed by a human.",
       "I understand I may withdraw at any time."
-    ]
+    ],
+    "readFullTerms": "Read full terms",
+    "agreeAll": "I agree to participate and understand the terms above"
   },
   "profile": {
     "title": "Your profile",
@@ -157,6 +184,7 @@
     "startRun": "Start a run",
     "researchProfileSaved": "Research profile saved.",
     "researchAreaRequired": "Research area is required.",
+    "researchSetupHint": "Tell us about your research area so recommendations match your field. You only need to do this once.",
     "errorSaveProfile": "Could not save profile.",
     "preferencesIntro": "These defaults pre-fill the new run form. You can still adjust them for each run.",
     "savePreferences": "Save preferences",
@@ -182,7 +210,9 @@
     "depthDeep": "Deep — detailed plans",
     "maxArticleAge": "Maximum article age",
     "maxArticleAgeOption": "Last {{years}} years",
-    "maxArticleAgeHint": "Only retrieve papers published within this window."
+    "maxArticleAgeHint": "Only retrieve papers published within this window.",
+    "moreOptions": "More options",
+    "hideOptions": "Hide options"
   },
   "newRun": {
     "title": "New run",
@@ -191,23 +221,45 @@
     "errorStart": "Could not start run.",
     "starting": "Starting run…",
     "generate": "Generate recommendations",
+    "generateHint": "Usually ready in a few minutes — we'll notify you when ideas are ready.",
+    "stickyHint": "One tap to start generating ideas",
+    "valueStripLabel": "Why researchers use POST-Rec",
+    "valueEvidence": "Evidence from real papers",
+    "valuePersonalized": "Learns from your feedback",
+    "valueFast": "Ready in minutes",
+    "valueStripInline": "Evidence from real papers · Learns from your feedback · Ready in minutes",
     "learnedTopicsNote": "Your profile includes {{count}} learned topic(s) from past feedback.",
+    "experimentBlindNotice": "You are enrolled in a blind evaluation study. The system will assign a recommendation method automatically — you will not see which one was used.",
+    "gettingStarted": {
+      "title": "How it works",
+      "step1": "Add seed topics that describe what you want to explore.",
+      "step2": "We search real papers and analyze gaps in the literature.",
+      "step3": "Review evidence-backed research ideas and rate what helps."
+    },
     "runMode": {
       "label": "Generation mode",
+      "intro": "Choose how deeply POST-Rec analyzes the literature. Not sure? Start with the recommended option.",
+      "recommended": "Recommended",
+      "showAdvanced": "Show advanced modes",
+      "hideAdvanced": "Hide advanced modes",
       "quick": {
         "label": "Quick",
+        "shortHint": "Fast preview — good for a first look at possible directions.",
         "hint": "Single-pass generation with enhanced SOTA fields and novelty verification."
       },
       "sota": {
         "label": "SOTA-grounded",
+        "shortHint": "Best balance of quality and depth for most researchers.",
         "hint": "Full landscape → gap matrix → proposals with strict critic filtering."
       },
       "exploratory": {
         "label": "Exploratory",
+        "shortHint": "Broader, more novel ideas — may need more refinement.",
         "hint": "Full multi-stage pipeline with higher weight on novelty and broader ideas."
       },
       "fggv": {
         "label": "FGGV (Facet-Grounded)",
+        "shortHint": "Experimental — facet-level verification and diversity selection.",
         "hint": "Novel method: facet-level novelty verification, gap alignment, and diversity selection."
       }
     }
@@ -216,13 +268,37 @@
     "title": "Runs",
     "subtitleEmpty": "Start a run to generate research ideas backed by real papers.",
     "subtitleStats": "{{total}} total · {{active}} in progress · {{completed}} ready to review",
+    "emptyHeroEyebrow": "Get started",
+    "emptyHeroTitle": "Generate your first research ideas",
+    "emptyHeroSubtitle": "POST-Rec searches real papers, finds gaps, and suggests ideas you can turn into research — in minutes.",
+    "emptyHeroStep1": "Add a few topics you want to explore",
+    "emptyHeroStep2": "We search and analyze the literature",
+    "emptyHeroStep3": "Review evidence-backed ideas and rate what helps",
+    "emptyHeroCta": "Generate recommendations",
+    "emptyHeroLearnMore": "How it works →",
     "noRunsTitle": "No runs yet",
     "noRunsDescription": "Create your first run and we'll search papers, analyze gaps, and suggest ideas you can turn into research.",
     "startRun": "Start a run",
     "sectionInProgress": "In progress",
+    "sectionInProgressDesc": "Searching papers and generating ideas — we'll notify you when ready.",
     "sectionReady": "Ready to review",
+    "sectionReadyDesc": "Tap Useful or Not useful on each idea — about 30 seconds per run.",
     "sectionOther": "Other",
+    "sectionOtherDesc": "Runs that finished without ideas or encountered an issue.",
     "sectionOtherCount": "Other ({{count}})",
+    "filterLabel": "Filter runs",
+    "filterAll": "All runs",
+    "filterReady": "Ready",
+    "filterActive": "In progress",
+    "filterEmptyReady": "No runs ready to review yet. Start a new run or check back soon.",
+    "filterEmptyActive": "No runs in progress right now.",
+    "readyBannerTitle": "{{count}} run(s) waiting for your feedback",
+    "readyBannerText": "Quick thumb ratings help us personalize your next recommendations.",
+    "reviewAndRate": "Review & rate",
+    "viewIdeas": "View ideas",
+    "rateIdeasHint": "~30 sec · thumb up or down",
+    "generatingHint": "Generating ideas…",
+    "topicsLabel": "Topics",
     "ideasReady": "{{count}} ideas ready",
     "ideasReadyUnknown": "Review ideas",
     "trackProgress": "Track progress →",
@@ -231,16 +307,50 @@
     "allSources": "All source papers ({{count}})",
     "outcomeIncomplete": "No ideas generated",
     "completedWithoutIdeas": "This run finished but no recommendations were saved. You can start a new run with different topics.",
-    "noIdeasGenerated": "Finished without ideas"
+    "noIdeasGenerated": "Finished without ideas",
+    "completeBanner": {
+      "title": "Your ideas are ready",
+      "text": "Tap Useful or Not useful on each idea — one second each.",
+      "textProgress": "{{remaining}} idea(s) left — one tap each with Useful or Not useful.",
+      "thumbHint": "Useful · Not useful",
+      "allRatedTitle": "All ideas rated",
+      "allRatedText": "Thanks! Share a quick session rating below, or start a new run.",
+      "survey": "Quick session survey",
+      "newRun": "Start another run",
+      "learnMore": "How scoring works"
+    }
   },
   "ideas": {
     "generatedIdeas": "Generated ideas",
     "countOfTotal": "{{current}} of {{total}}",
     "ideaNumber": "Idea {{number}}",
     "swipeHint": "Swipe to browse ideas",
+    "browseHint": "Swipe sideways or use the arrows to browse ideas",
+    "previousIdea": "Previous idea",
+    "nextIdea": "Next idea",
     "goToIdea": "Go to idea {{number}}",
     "score": "Score {{value}}",
     "rateIdea": "Rate this idea",
+    "quickRatingLabel": "How useful is this idea?",
+    "quickFeedbackPrompt": "Was this idea useful?",
+    "useful": "Useful",
+    "notUseful": "Not useful",
+    "skipIdea": "Skip",
+    "showFineTune": "Fine-tune rating",
+    "hideFineTune": "Hide fine-tune",
+    "feedbackProgress": "{{rated}} of {{total}} rated",
+    "feedbackProgressComplete": "All {{count}} ideas rated",
+    "celebrationFirst": "Nice start! {{remaining}} more to go",
+    "celebrationAll": "All done — thanks for your feedback!",
+    "jumpToUnrated": "Next unrated",
+    "rateValue": "Rate {{value}} out of 5",
+    "feedbackSavedShort": "Thanks — saved",
+    "feedbackSavedNext": "Thanks — next idea",
+    "addNote": "Add a note (optional)",
+    "notePlaceholder": "Anything we should know?",
+    "sectionNav": "Idea sections",
+    "feedbackPromptTitle": "Help us improve your next run",
+    "feedbackPromptText": "A quick rating takes under a minute and helps POST-Rec learn what works for you.",
     "yourFeedback": "Your feedback",
     "feedbackHint": "Ratings improve your next run.",
     "feedbackSaved": "Saved · alignment {{score}}",
@@ -280,6 +390,7 @@
       "medium": "Medium confidence",
       "high": "High confidence"
     },
+    "qualityScores": "Quality scores",
     "scoreNames": {
       "relevance": "Relevance",
       "clarity": "Clarity",
@@ -327,7 +438,7 @@
   },
   "insights": {
     "title": "Insights",
-    "subtitle": "Study-wide validation metrics from all POST-Rec sessions.",
+    "subtitle": "Community-wide quality trends from researcher feedback — your ratings contribute to these metrics.",
     "quality": "Quality",
     "trustFeasibility": "Trust & feasibility",
     "activity": "Activity",
@@ -346,11 +457,22 @@
     "avgSotaFit": "Avg. SOTA fit",
     "totalRuns": "Total runs",
     "totalFeedback": "Total feedback",
-    "emptyHint": "Metrics appear after participants submit feedback on recommendations."
+    "emptyHint": "Metrics appear after participants submit feedback on recommendations.",
+    "emptyTitle": "No feedback yet",
+    "emptyDescription": "Rate ideas after a run to see how the community evaluates recommendation quality.",
+    "emptyAction": "Go to your runs"
   },
   "survey": {
     "title": "Session feedback",
     "subtitle": "Help us improve POST-Rec with a short closing survey.",
+    "subtitleShort": "Two taps — that's it.",
+    "quickPrompt": "How was this session?",
+    "quickSatisfaction": "Overall satisfaction",
+    "quickUseAgain": "Would you use POST-Rec again?",
+    "quickSubmit": "Done",
+    "autoSaveHint": "Saves automatically when you answer both questions.",
+    "backToRuns": "Back to runs",
+    "thankYouShort": "Thanks for your feedback!",
     "expectationsMet": "Did results meet your expectations? ({{score}})",
     "wouldUseInPaper": "Would you use any recommendation in a real paper?",
     "wouldUseAgain": "Would use POST-Rec again",
@@ -365,6 +487,7 @@
   },
   "status": {
     "ready": "Ready to review",
+    "reviewed": "Reviewed",
     "in_progress": "In progress",
     "incomplete": "No ideas",
     "queued": "Queued",
@@ -382,6 +505,26 @@
     "cost_limit_exceeded": "Cost limit",
     "failed_schema_validation": "Schema error"
   },
+  "statusDescriptions": {
+    "default": "Working on: {{step}}",
+    "ready": "Your recommendations are ready — explore the ideas below.",
+    "in_progress": "Your run is processing…",
+    "incomplete": "The run finished but no ideas were generated.",
+    "queued": "Waiting in queue — we'll start searching soon.",
+    "started": "Starting your personalized research run…",
+    "searching_papers": "Searching academic databases for papers that match your topics…",
+    "normalizing_documents": "Cleaning and organizing retrieved papers…",
+    "deduplicating_documents": "Removing duplicate articles from the corpus…",
+    "generating_embeddings": "Understanding paper content to find the best matches…",
+    "ranking_candidates": "Ranking the most relevant papers for your profile…",
+    "generating_recommendations": "Drafting research ideas grounded in the evidence…",
+    "validating_output": "Checking ideas for quality, novelty, and feasibility…",
+    "completed": "All done — your ideas are ready to review.",
+    "failed": "Something went wrong. Check the activity log for details.",
+    "cancelled": "This run was cancelled.",
+    "cost_limit_exceeded": "The run stopped because it reached the cost limit.",
+    "failed_schema_validation": "Output validation failed — please try again or contact support."
+  },
   "progress": {
     "step": "Step: {{step}}",
     "progressLabel": "Progress",
@@ -390,7 +533,8 @@
     "liveUpdates": "Live updates",
     "activityLog": "Activity log",
     "readyLoading": "Recommendations are ready — loading below…",
-    "recoverableHint": "Temporary warnings are normal while sources are searched. The run continues automatically."
+    "recoverableHint": "Temporary warnings are normal while sources are searched. The run continues automatically.",
+    "encourage": "Searching papers and crafting ideas — hang tight, this usually takes a few minutes."
   },
   "usage": {
     "title": "Run usage",
@@ -574,6 +718,12 @@
       "l4": "Citation boost is capped in relevance scoring; SOTA quotas prioritize recent papers in the final context.",
       "l5": "Estimated API costs are approximate; see the usage panel on completed runs for token-level detail."
     }
+  },
+  "conversion": {
+    "profileReadyTitle": "You're all set!",
+    "profileReadyDesc": "Your research profile is saved. Generate your first evidence-backed ideas in one step.",
+    "generateFirstRun": "Generate recommendations",
+    "nextStepFootnote": "Takes about 2 minutes to set topics and start."
   },
   "enums": {
     "academicLevel": {

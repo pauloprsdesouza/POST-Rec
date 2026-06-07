@@ -1,85 +1,141 @@
-// Top navigation, brand, user menu, API status pill.
+// Light frosted top bar — modern SaaS pattern (Linear, Notion, Stripe).
 
 .app-navbar {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  background: var(--postrec-nav-bg) !important;
+  border-bottom: 1px solid var(--postrec-nav-border);
+  box-shadow: none;
   min-height: var(--postrec-nav-height);
+  padding-block: 0.375rem;
+}
+
+.app-navbar .navbar-toggler {
+  border-color: var(--postrec-border);
+  padding: 0.375rem 0.5rem;
+}
+
+.app-navbar .navbar-toggler-icon {
+  filter: none;
 }
 
 .app-brand {
-  display: flex;
   align-items: center;
-  gap: 0.5rem;
+  display: flex;
+  gap: 0.625rem;
   font-weight: 700 !important;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.02em;
+  text-decoration: none !important;
 }
 
 .app-brand__mark {
   align-items: center;
   background: var(--postrec-primary);
-  border-radius: 0.5rem;
-  color: #fff;
+  border: 1px solid var(--postrec-primary-dark);
+  border-radius: var(--postrec-radius-sm);
+  box-shadow: none;
+  color: var(--postrec-on-primary);
   display: inline-flex;
   font-size: 0.875rem;
   font-weight: 700;
-  height: 1.75rem;
+  height: 1.875rem;
   justify-content: center;
-  width: 1.75rem;
+  width: 1.875rem;
 }
 
 .app-brand__text {
-  color: #f8fafc;
+  color: var(--postrec-text);
+  font-size: 1.0625rem;
 }
 
 .app-nav .nav-link {
   border-radius: var(--postrec-radius-sm);
-  color: rgba(255, 255, 255, 0.75) !important;
-  font-size: 0.9375rem;
+  color: var(--postrec-muted) !important;
+  font-size: var(--postrec-text-sm);
   font-weight: 500;
   margin-inline: 0.125rem;
-  padding: 0.4rem 0.75rem !important;
-  transition: background 0.15s, color 0.15s;
+  padding: 0.4375rem 0.875rem !important;
+  transition:
+    background var(--postrec-duration) var(--postrec-ease),
+    color var(--postrec-duration) var(--postrec-ease);
 }
 
 .app-nav .nav-link:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff !important;
+  background: var(--postrec-surface-hover);
+  color: var(--postrec-text) !important;
 }
 
 .app-nav .nav-link.active {
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff !important;
+  background: var(--postrec-primary-light);
+  color: var(--postrec-primary) !important;
+  font-weight: 600;
 }
 
-.app-nav__secondary {
-  opacity: 0.85;
+.app-nav__setup-link {
+  background: var(--postrec-warning-bg) !important;
+  color: var(--postrec-warning) !important;
+  font-weight: 600;
 }
 
-.app-nav__divider {
-  background: rgba(255, 255, 255, 0.2);
-  height: 1.25rem;
-  margin: 0 0.5rem;
-  width: 1px;
+.app-nav__setup-link:hover {
+  background: var(--postrec-warning-bg) !important;
+  color: var(--postrec-warning) !important;
+  filter: brightness(0.97);
 }
 
 .api-pill {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 999px;
-  height: 0.5rem;
-  width: 0.5rem;
+  align-items: center;
+  background: var(--postrec-surface-muted);
+  border: 1px solid var(--postrec-border);
+  border-radius: var(--postrec-radius-pill);
+  display: inline-flex;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  gap: 0.375rem;
+  line-height: 1;
+  padding: 0.3125rem 0.625rem 0.3125rem 0.4375rem;
+}
+
+.api-pill__dot {
+  background: var(--postrec-muted-light);
+  border-radius: var(--postrec-radius-pill);
+  flex-shrink: 0;
+  height: 0.4375rem;
+  width: 0.4375rem;
+}
+
+.api-pill__label {
+  color: var(--postrec-muted);
+  letter-spacing: 0.01em;
 }
 
 .api-pill--online {
-  background: #4ade80;
-  box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+  background: var(--postrec-success-bg);
+  border-color: var(--postrec-success-border);
+}
+
+.api-pill--online .api-pill__dot {
+  background: var(--postrec-success);
+}
+
+.api-pill--online .api-pill__label {
+  color: var(--postrec-success);
 }
 
 .api-pill--offline {
-  background: #f87171;
+  background: var(--postrec-danger-bg);
+  border-color: var(--postrec-danger-border);
+}
+
+.api-pill--offline .api-pill__dot {
+  background: var(--postrec-danger);
+}
+
+.api-pill--offline .api-pill__label {
+  color: var(--postrec-danger);
 }
 
 .user-dropdown__toggle {
   align-items: center;
-  color: #fff !important;
+  color: var(--postrec-text) !important;
   display: flex !important;
   gap: 0.5rem;
   padding: 0.25rem 0.5rem !important;
@@ -87,34 +143,43 @@
 
 .user-dropdown__toggle::after {
   margin-left: 0.25rem;
+  opacity: 0.5;
 }
 
 .user-dropdown__avatar {
   align-items: center;
-  background: var(--postrec-primary);
+  background: var(--postrec-primary-light);
+  border: 1px solid var(--postrec-primary-subtle);
   border-radius: 50%;
-  color: #fff;
+  color: var(--postrec-primary);
   display: inline-flex;
   font-size: 0.8125rem;
-  font-weight: 600;
+  font-weight: 700;
   height: 2rem;
   justify-content: center;
   width: 2rem;
 }
 
 .user-dropdown__name {
-  color: #f1f5f9;
-  font-size: 0.875rem;
-  font-weight: 500;
+  color: var(--postrec-text-secondary);
+  font-size: var(--postrec-text-sm);
+  font-weight: 600;
 }
 
 .user-dropdown__menu {
+  background: var(--postrec-surface);
   border: 1px solid var(--postrec-border);
   border-radius: var(--postrec-radius);
+  box-shadow: none;
   min-width: 220px;
   padding: 0.375rem;
 }
 
 .user-dropdown__header {
   padding: 0.5rem 0.75rem;
+}
+
+.user-dropdown__email {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-xs);
 }

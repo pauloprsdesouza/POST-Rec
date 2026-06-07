@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field
 
 
 class SessionCreate(BaseModel):
-    user_id: str | None = None
     user_agent: str | None = None
 
 
@@ -17,10 +16,10 @@ class SessionResponse(BaseModel):
 
 
 class ConsentCreate(BaseModel):
-    user_id: str
     session_id: UUID
     consent_version: str = "v1.0"
     accepted: bool
+    user_id: str | None = None  # ignored; derived from auth token
 
 
 class ConsentResponse(BaseModel):
@@ -43,7 +42,6 @@ class RecommendationDefaults(BaseModel):
 
 
 class ProfileCreate(BaseModel):
-    user_id: str
     session_id: UUID
     research_area: str | None = None
     academic_level: str | None = None
@@ -60,7 +58,7 @@ class ProfileResponse(BaseModel):
 
 class ExpectationCreate(BaseModel):
     session_id: UUID
-    user_id: str | None = None
+    user_id: UUID | None = None
     research_area: str | None = None
     seed_topics: list[str]
     expected_output: str | None = None
@@ -127,12 +125,15 @@ class RunDetailResponse(BaseModel):
     progress: int
     current_step: str | None
     mode: str | None = None
+    presentation_profile: str = "standard"
     error_message: str | None
     estimated_cost_usd: float
     created_at: datetime
     started_at: datetime | None
     finished_at: datetime | None
     recommendation_count: int = 0
+    feedback_count: int = 0
+    feedback_complete: bool = False
     topics: list[str] = Field(default_factory=list)
     usage: RunUsageSummaryResponse | None = None
 
@@ -143,6 +144,11 @@ class RunEventResponse(BaseModel):
     message: str
     created_at: datetime
     level: str = "info"
+
+
+class RecommendationUserFeedbackResponse(BaseModel):
+    relevance_score: int | None = None
+    decision: str | None = None
 
 
 class RecommendationResponse(BaseModel):
@@ -180,6 +186,7 @@ class RecommendationResponse(BaseModel):
     confidence_level: str | None
     scores: dict | None = None
     final_score: float | None
+    user_feedback: RecommendationUserFeedbackResponse | None = None
 
 
 class SourceDocumentResponse(BaseModel):
@@ -217,7 +224,7 @@ class FeedbackResponse(BaseModel):
 class FinalSurveyCreate(BaseModel):
     session_id: UUID
     run_id: UUID | None = None
-    user_id: str | None = None
+    user_id: UUID | None = None
     expectation_met_score: int = Field(ge=1, le=5)
     would_use_again: bool
     would_recommend: bool
@@ -226,6 +233,24 @@ class FinalSurveyCreate(BaseModel):
     what_helped_most: str | None = None
     what_hurt_most: str | None = None
     free_comment: str | None = None
+
+
+class ExperimentVariantMetrics(BaseModel):
+    variant: str
+    run_count: int
+    completed_count: int
+    feedback_count: int
+    average_eas: float
+    average_originality: float
+    approval_rate: float
+    would_use_rate: float
+
+
+class ExperimentDashboardSection(BaseModel):
+    experiment_id: str
+    active: bool
+    presentation_profile: str
+    variants: list[ExperimentVariantMetrics] = Field(default_factory=list)
 
 
 class ValidationDashboardResponse(BaseModel):
@@ -244,6 +269,7 @@ class ValidationDashboardResponse(BaseModel):
     refinement_rate: float = 0.0
     avg_novelty_verified: float = 0.0
     avg_sota_fit: float = 0.0
+    experiment: ExperimentDashboardSection | None = None
 
 
 class HealthResponse(BaseModel):
@@ -336,10 +362,22 @@ class RunSummaryResponse(BaseModel):
     status: str
     progress: int
     mode: str | None = None
+    presentation_profile: str = "standard"
     created_at: datetime
     finished_at: datetime | None
     topics: list[str] = Field(default_factory=list)
     recommendation_count: int = 0
+    feedback_count: int = 0
+    feedback_complete: bool = False
+
+
+class ExperimentEnrollmentResponse(BaseModel):
+    experiment_active: bool
+    experiment_id: str | None = None
+    enrolled: bool
+    presentation_profile: str = "standard"
+    control_mode: str = "sota"
+    treatment_mode: str = "fggv"
 
 
 class ReadyResponse(BaseModel):

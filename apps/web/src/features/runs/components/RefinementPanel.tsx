@@ -1,4 +1,3 @@
-import { Alert, ListGroup } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 
 import type { Recommendation } from "@/shared/types/api";
@@ -15,23 +14,23 @@ export function RefinementPanel({ items }: RefinementPanelProps) {
   }
 
   return (
-    <Alert variant="warning" className="refinement-panel mt-4">
-      <h3 className="h6 mb-2">{t("ideas.refinement.title")}</h3>
-      <p className="small mb-3">{t("ideas.refinement.subtitle", { count: items.length })}</p>
-      <ListGroup variant="flush">
+    <aside className="refinement-panel">
+      <h3 className="refinement-panel__title">{t("ideas.refinement.title")}</h3>
+      <p className="refinement-panel__subtitle">{t("ideas.refinement.subtitle", { count: items.length })}</p>
+      <div>
         {items.map((item) => (
-          <ListGroup.Item key={item.id} className="px-0 bg-transparent border-0">
-            <strong>{item.title}</strong>
+          <div key={item.id} className="refinement-panel__item">
+            <div className="refinement-panel__item-title">{item.title}</div>
             {item.validation_issues?.length ? (
-              <ul className="small mb-0 mt-1">
+              <ul className="refinement-panel__issues mb-0">
                 {item.validation_issues.map((issue) => (
                   <li key={issue}>{issue}</li>
                 ))}
               </ul>
             ) : null}
-          </ListGroup.Item>
+          </div>
         ))}
-      </ListGroup>
-    </Alert>
+      </div>
+    </aside>
   );
 }

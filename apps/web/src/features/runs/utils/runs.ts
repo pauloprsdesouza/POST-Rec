@@ -10,6 +10,32 @@ export function formatRunDateTime(iso: string | null | undefined, locale: string
   }).format(new Date(iso));
 }
 
+export function formatRelativeRunTime(iso: string | null | undefined, locale: string): string {
+  if (!iso) {
+    return "";
+  }
+  const then = new Date(iso).getTime();
+  const now = Date.now();
+  const diffSec = Math.round((then - now) / 1000);
+  const absSec = Math.abs(diffSec);
+
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+
+  if (absSec < 60) {
+    return rtf.format(Math.round(diffSec), "second");
+  }
+  if (absSec < 3600) {
+    return rtf.format(Math.round(diffSec / 60), "minute");
+  }
+  if (absSec < 86400) {
+    return rtf.format(Math.round(diffSec / 3600), "hour");
+  }
+  if (absSec < 604800) {
+    return rtf.format(Math.round(diffSec / 86400), "day");
+  }
+  return formatRunDateTime(iso, locale);
+}
+
 export function formatRunTopics(run: RecommendationRun, noTopicsLabel: string, maxLength = 80): string {
   const topics = (run.topics ?? []).join(", ") || noTopicsLabel;
   return topics.length > maxLength ? `${topics.slice(0, maxLength)}…` : topics;
@@ -26,13 +52,19 @@ export function isRunActive(status: string): boolean {
   return !["completed", ...FAILED_STATUSES].includes(status);
 }
 
-export type RunOutcome = "ready" | "in_progress" | "failed" | "incomplete";
+export type RunOutcome = "ready" | "reviewed" | "in_progress" | "failed" | "incomplete";
 
 export function getRunOutcome(run: RecommendationRun): RunOutcome {
   const recommendationCount = run.recommendation_count ?? 0;
 
   if (run.status === "completed") {
-    return recommendationCount > 0 ? "ready" : "incomplete";
+    if (recommendationCount === 0) {
+      return "incomplete";
+    }
+    if (run.feedback_complete) {
+      return "reviewed";
+    }
+    return "ready";
   }
   if (FAILED_STATUSES.has(run.status)) {
     return "failed";

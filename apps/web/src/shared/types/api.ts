@@ -85,6 +85,7 @@ export interface RecommendationRun {
   status: string;
   progress: number;
   mode?: string;
+  presentation_profile?: "standard" | "blind";
   current_step?: string | null;
   topics?: string[];
   created_at?: string;
@@ -92,7 +93,14 @@ export interface RecommendationRun {
   estimated_cost_usd?: number;
   error_message?: string | null;
   recommendation_count?: number;
+  feedback_count?: number;
+  feedback_complete?: boolean;
   usage?: RunUsageSummary | null;
+}
+
+export interface RecommendationUserFeedback {
+  relevance_score?: number | null;
+  decision?: string | null;
 }
 
 export interface RunEvent {
@@ -149,6 +157,7 @@ export interface Recommendation {
   scores?: Record<string, number>;
   final_score?: number;
   confidence_level?: string;
+  user_feedback?: RecommendationUserFeedback | null;
 }
 
 export interface SourceDocument {
@@ -175,6 +184,25 @@ export interface ValidationDashboard {
   refinement_rate?: number;
   avg_novelty_verified?: number;
   avg_sota_fit?: number;
+  experiment?: ExperimentDashboard | null;
+}
+
+export interface ExperimentVariantMetrics {
+  variant: string;
+  run_count: number;
+  completed_count: number;
+  feedback_count: number;
+  average_eas: number;
+  average_originality: number;
+  approval_rate: number;
+  would_use_rate: number;
+}
+
+export interface ExperimentDashboard {
+  experiment_id: string;
+  active: boolean;
+  presentation_profile: string;
+  variants: ExperimentVariantMetrics[];
 }
 
 export interface FeedbackResult {

@@ -1,15 +1,34 @@
 // Language switcher (navbar + inline forms).
 
+.language-switcher--navbar {
+  align-items: center;
+  display: inline-flex;
+}
+
 .language-switcher--navbar .language-switcher__toggle {
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 0.8125rem;
+  align-items: center;
+  background: var(--postrec-surface-muted);
+  border: 1px solid var(--postrec-border);
+  border-radius: var(--postrec-radius-sm);
+  color: var(--postrec-text-secondary) !important;
+  display: inline-flex;
+  font-size: 0.75rem;
   font-weight: 700;
+  height: 2rem;
+  justify-content: center;
+  line-height: 1;
   min-width: 2rem;
-  padding: 0.25rem 0.5rem;
+  padding: 0 0.5rem;
+}
+
+.language-switcher--navbar .language-switcher__toggle::after {
+  display: none;
 }
 
 .language-switcher--navbar .language-switcher__toggle:hover {
-  color: #fff;
+  background: var(--postrec-surface-hover);
+  border-color: var(--postrec-primary-subtle);
+  color: var(--postrec-primary) !important;
 }
 
 .language-switcher--inline {
@@ -22,4 +41,11 @@
   font-size: 0.8125rem;
   font-weight: 600;
   margin-bottom: 0.35rem;
+}
+
+.language-switcher__menu {
+  background: var(--postrec-surface);
+  border: 1px solid var(--postrec-border);
+  border-radius: var(--postrec-radius);
+  box-shadow: none;
 }

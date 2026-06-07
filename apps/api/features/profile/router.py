@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from apps.api.shared.database import get_db
 from apps.api.shared.dependencies import get_current_user_optional
-from apps.api.shared.models import ParticipantProfile, User, UserExpectation
+from apps.api.shared.models import SessionExpectation, SessionProfile, User
 from apps.api.shared.schemas.common import (
     ExpectationCreate,
     ExpectationResponse,
@@ -13,7 +13,7 @@ from apps.api.shared.schemas.common import (
     ProfileResponse,
 )
 from apps.api.features.profile.service import profile_service
-from apps.api.features.runs.access import user_id_str
+from apps.api.features.runs.access import user_id_optional
 from apps.api.shared.infra.cache import cache_service
 
 router = APIRouter(prefix="/api/v1")
@@ -25,15 +25,14 @@ def create_profile(
     db: Session = Depends(get_db),
     current_user: User | None = Depends(get_current_user_optional),
 ):
-    data = payload.model_dump()
-    if current_user:
-        data["user_id"] = str(current_user.id)
-    profile = ParticipantProfile(**data)
+    data = payload.model_dump(exclude={"user_id"})
+    data["user_id"] = user_id_optional(current_user)
+    profile = SessionProfile(**data)
     db.add(profile)
     db.commit()
     db.refresh(profile)
     if current_user:
-        profile_service.upsert_from_participant(db, current_user.id, profile)
+        profile_service.upsert_from_session_profile(db, current_user.id, profile)
         cache_service.invalidate_user_profile(str(current_user.id))
     return ProfileResponse(id=profile.id)
 
@@ -44,10 +43,9 @@ def create_expectation(
     db: Session = Depends(get_db),
     current_user: User | None = Depends(get_current_user_optional),
 ):
-    data = payload.model_dump()
-    if current_user:
-        data["user_id"] = str(current_user.id)
-    expectation = UserExpectation(**data)
+    data = payload.model_dump(exclude={"user_id"})
+    data["user_id"] = user_id_optional(current_user)
+    expectation = SessionExpectation(**data)
     db.add(expectation)
     db.commit()
     db.refresh(expectation)

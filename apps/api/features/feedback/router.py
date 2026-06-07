@@ -10,7 +10,7 @@ from apps.api.shared.dependencies import get_current_user_optional
 from apps.api.shared.models import User
 from apps.api.shared.schemas.common import FeedbackCreate, FeedbackResponse
 from apps.api.features.feedback.service import feedback_service
-from apps.api.features.runs.access import user_id_str
+from apps.api.features.runs.access import user_id_optional
 
 router = APIRouter(prefix="/api/v1")
 
@@ -28,6 +28,6 @@ def submit_feedback(
         payload.session_id,
         payload.run_id,
         payload.model_dump(),
-        user_id=user_id_str(current_user),
+        user_id=user_id_optional(current_user),
     )
     return FeedbackResponse(id=feedback.id, expectation_alignment_score=float(feedback.expectation_alignment_score))

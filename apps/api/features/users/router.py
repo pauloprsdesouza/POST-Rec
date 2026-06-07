@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from apps.api.shared.database import get_db
 from apps.api.shared.dependencies import get_current_user_required
-from apps.api.shared.models import ParticipantConsent, User
+from apps.api.shared.models import SessionConsent, User
 from apps.api.shared.schemas.common import (
     RecommendationDefaults,
     RunSummaryResponse,
@@ -48,9 +48,9 @@ def _profile_response(profile) -> UserProfileResponse:
 
 def _load_consent(db: Session, user_id: uuid.UUID) -> UserConsentStatusResponse:
     consent = (
-        db.query(ParticipantConsent)
-        .filter_by(user_id=str(user_id), accepted=True)
-        .order_by(ParticipantConsent.accepted_at.desc())
+        db.query(SessionConsent)
+        .filter_by(user_id=user_id, accepted=True)
+        .order_by(SessionConsent.accepted_at.desc())
         .first()
     )
     if not consent:
@@ -62,7 +62,7 @@ def _load_consent(db: Session, user_id: uuid.UUID) -> UserConsentStatusResponse:
     )
 
 
-from apps.api.features.runs.query import run_summaries_payload
+@router.get("/consent", response_model=UserConsentStatusResponse)
 def get_my_consent(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_required),

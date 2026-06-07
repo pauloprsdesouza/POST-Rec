@@ -6,10 +6,12 @@ import type { Recommendation } from "@/shared/types/api";
 interface IdeaCarouselProps {
   items: Recommendation[];
   activeIndex: number;
+  ratedIds?: Set<string>;
+  skippedIds?: Set<string>;
   onSelect: (index: number) => void;
 }
 
-export function IdeaCarousel({ items, activeIndex, onSelect }: IdeaCarouselProps) {
+export function IdeaCarousel({ items, activeIndex, ratedIds, skippedIds, onSelect }: IdeaCarouselProps) {
   const { t } = useTranslation();
   const trackRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -92,6 +94,8 @@ export function IdeaCarousel({ items, activeIndex, onSelect }: IdeaCarouselProps
     return null;
   }
 
+  const showNav = items.length > 1;
+
   return (
     <div className="idea-carousel" aria-label={t("ideas.generatedIdeas")}>
       <div className="idea-carousel__header">
@@ -102,15 +106,17 @@ export function IdeaCarousel({ items, activeIndex, onSelect }: IdeaCarouselProps
       </div>
 
       <div className="idea-carousel__stage">
-        <div
-          className={`idea-carousel__fade idea-carousel__fade--left ${canPrev ? "idea-carousel__fade--visible" : ""}`}
-          aria-hidden
-        />
-        <div
-          className={`idea-carousel__fade idea-carousel__fade--right ${canNext ? "idea-carousel__fade--visible" : ""}`}
-          aria-hidden
-        />
-
+        {showNav ? (
+          <button
+            type="button"
+            className="idea-carousel__nav idea-carousel__nav--prev"
+            aria-label={t("ideas.previousIdea")}
+            disabled={!canPrev}
+            onClick={() => onSelect(activeIndex - 1)}
+          >
+            ‹
+          </button>
+        ) : null}
         <div
           ref={trackRef}
           className="idea-carousel__track"
@@ -120,6 +126,8 @@ export function IdeaCarousel({ items, activeIndex, onSelect }: IdeaCarouselProps
         >
           {items.map((item, index) => {
             const isActive = index === activeIndex;
+            const isRated = ratedIds?.has(item.id) ?? false;
+            const isSkipped = skippedIds?.has(item.id) ?? false;
             const score = item.final_score != null ? Math.round(item.final_score) : null;
 
             return (
@@ -132,10 +140,14 @@ export function IdeaCarousel({ items, activeIndex, onSelect }: IdeaCarouselProps
                 role="tab"
                 aria-selected={isActive}
                 aria-label={`${t("ideas.ideaNumber", { number: index + 1 })}: ${item.title}`}
-                className={`idea-carousel__slide ${isActive ? "idea-carousel__slide--active" : ""}`}
+                className={`idea-carousel__slide ${isActive ? "idea-carousel__slide--active" : ""} ${isRated ? "idea-carousel__slide--rated" : ""} ${isSkipped ? "idea-carousel__slide--skipped" : ""}`}
                 onClick={() => onSelect(index)}
               >
-                <span className="idea-carousel__slide-index">{t("ideas.ideaNumber", { number: index + 1 })}</span>
+                <span className="idea-carousel__slide-index">
+                  {isRated ? <span className="idea-carousel__slide-check" aria-hidden>✓</span> : null}
+                  {isSkipped ? <span className="idea-carousel__slide-skip" aria-hidden>–</span> : null}
+                  {t("ideas.ideaNumber", { number: index + 1 })}
+                </span>
                 <span className="idea-carousel__slide-title">{item.title}</span>
                 {item.technique_name ? (
                   <span className="idea-carousel__slide-meta">{item.technique_name}</span>
@@ -147,21 +159,20 @@ export function IdeaCarousel({ items, activeIndex, onSelect }: IdeaCarouselProps
             );
           })}
         </div>
+
+        {showNav ? (
+          <button
+            type="button"
+            className="idea-carousel__nav idea-carousel__nav--next"
+            aria-label={t("ideas.nextIdea")}
+            disabled={!canNext}
+            onClick={() => onSelect(activeIndex + 1)}
+          >
+            ›
+          </button>
+        ) : null}
       </div>
 
-      <div className="idea-carousel__dots" role="tablist" aria-label={t("ideas.swipeHint")}>
-        {items.map((item, index) => (
-          <button
-            key={item.id}
-            type="button"
-            role="tab"
-            aria-selected={index === activeIndex}
-            aria-label={t("ideas.goToIdea", { number: index + 1 })}
-            className={`idea-carousel__dot ${index === activeIndex ? "idea-carousel__dot--active" : ""}`}
-            onClick={() => onSelect(index)}
-          />
-        ))}
-      </div>
     </div>
   );
 }
