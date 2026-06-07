@@ -64,9 +64,20 @@ class Settings(BaseSettings):
     semantic_scholar_api_key: str = ""
 
     retrieval_fetch_max_attempts: int = 5
+    retrieval_http_retries: int = 4
     retrieval_use_celery_deferred: bool = True
     retrieval_deferred_timeout_seconds: int = 180
     retrieval_min_relevance_score: float = 0.22
+    retrieval_cache_enabled: bool = True
+    retrieval_cache_ttl_seconds: int = 21_600
+    retrieval_circuit_failure_threshold: int = 4
+    retrieval_circuit_cooldown_seconds: float = 120.0
+    retrieval_min_papers_before_skip: int = 12
+    retrieval_openalex_min_interval: float = 0.35
+    retrieval_crossref_min_interval: float = 0.35
+    retrieval_semantic_scholar_min_interval: float = 5.0
+    retrieval_arxiv_min_interval: float = 4.0
+    retrieval_source_priority: str = "openalex,crossref,semantic_scholar,arxiv"
     hybrid_retrieval_enabled: bool = True
     hybrid_sparse_weight: float = 0.4
     sota_recent_years: int = 3

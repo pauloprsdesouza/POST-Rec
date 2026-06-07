@@ -1,4 +1,4 @@
-"""HTTP retry helpers for external academic APIs."""
+"""HTTP retry helpers with full jitter (AWS-style) for external academic APIs."""
 
 import asyncio
 import random
@@ -19,6 +19,21 @@ class RetryableFetchError(Exception):
         self.status_code = status_code
 
 
+def full_jitter_backoff(
+    *,
+    attempt: int,
+    base_delay: float = 2.0,
+    max_delay: float = 120.0,
+    status_code: int | None = None,
+) -> float:
+    """AWS recommended backoff: sleep = random(0, min(cap, base * 2^attempt))."""
+    if status_code == 429:
+        base_delay = max(base_delay, 5.0)
+        max_delay = max(max_delay, 90.0)
+    ceiling = min(base_delay * (2 ** max(attempt, 0)), max_delay)
+    return random.uniform(0.0, ceiling)
+
+
 def parse_retry_after(response: httpx.Response, *, attempt: int, base_delay: float) -> float:
     header = response.headers.get("Retry-After")
     if header:
@@ -34,22 +49,22 @@ def parse_retry_after(response: httpx.Response, *, attempt: int, base_delay: flo
             except (TypeError, ValueError, OverflowError):
                 pass
 
-    exponential = min(base_delay * (2**attempt), 60.0)
-    jitter = random.uniform(0.0, min(base_delay, 2.0))
-    return exponential + jitter
+    return full_jitter_backoff(attempt=attempt, base_delay=base_delay, status_code=response.status_code)
 
 
 def compute_backoff(
     *,
     attempt: int,
     base_delay: float = 2.0,
-    max_delay: float = 60.0,
+    max_delay: float = 120.0,
     status_code: int | None = None,
 ) -> float:
-    if status_code == 429:
-        base_delay = max(base_delay, 5.0)
-    delay = min(base_delay * (2 ** max(attempt - 1, 0)), max_delay)
-    return delay + random.uniform(0.0, 1.0)
+    return full_jitter_backoff(
+        attempt=max(attempt - 1, 0),
+        base_delay=base_delay,
+        max_delay=max_delay,
+        status_code=status_code,
+    )
 
 
 async def get_with_retry(
@@ -60,10 +75,16 @@ async def get_with_retry(
     headers: dict[str, str] | None = None,
     retries: int = 5,
     base_delay: float = 2.0,
+    max_delay: float = 120.0,
     source: str | None = None,
 ) -> httpx.Response:
     last_response: httpx.Response | None = None
     last_exc: Exception | None = None
+
+    source_min_delay = {
+        "arxiv": 8.0,
+        "semantic_scholar": 6.0,
+    }
 
     for attempt in range(retries):
         try:
@@ -74,8 +95,8 @@ async def get_with_retry(
                 return response
 
             retry_after = parse_retry_after(response, attempt=attempt, base_delay=base_delay)
-            if source == "arxiv" and response.status_code == 429:
-                retry_after = max(retry_after, 10.0)
+            if source in source_min_delay and response.status_code == 429:
+                retry_after = max(retry_after, source_min_delay[source])
             if attempt >= retries - 1:
                 response.raise_for_status()
 
@@ -85,9 +106,19 @@ async def get_with_retry(
             if attempt >= retries - 1:
                 raise RetryableFetchError(
                     f"Timeout after {retries} attempts",
-                    retry_after_seconds=compute_backoff(attempt=attempt + 1, base_delay=base_delay),
+                    retry_after_seconds=compute_backoff(
+                        attempt=attempt + 1,
+                        base_delay=base_delay,
+                        max_delay=max_delay,
+                    ),
                 ) from exc
-            await asyncio.sleep(compute_backoff(attempt=attempt + 1, base_delay=base_delay))
+            await asyncio.sleep(
+                compute_backoff(
+                    attempt=attempt + 1,
+                    base_delay=base_delay,
+                    max_delay=max_delay,
+                )
+            )
         except httpx.HTTPStatusError as exc:
             last_exc = exc
             if exc.response.status_code not in RETRYABLE_STATUS_CODES or attempt >= retries - 1:
@@ -96,13 +127,15 @@ async def get_with_retry(
                     retry_after_seconds=compute_backoff(
                         attempt=attempt + 1,
                         base_delay=base_delay,
+                        max_delay=max_delay,
                         status_code=exc.response.status_code,
                     ),
                     status_code=exc.response.status_code,
                 ) from exc
-            await asyncio.sleep(
-                parse_retry_after(exc.response, attempt=attempt, base_delay=base_delay)
-            )
+            delay = parse_retry_after(exc.response, attempt=attempt, base_delay=base_delay)
+            if source in source_min_delay and exc.response.status_code == 429:
+                delay = max(delay, source_min_delay[source])
+            await asyncio.sleep(delay)
 
     if last_response is not None:
         last_response.raise_for_status()

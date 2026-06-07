@@ -14,6 +14,8 @@ from apps.api.models import SourceDocument
 from apps.api.observability.logging import get_logger
 from apps.api.services.fetch_queue import FetchJob, FetchQueueProcessor
 from apps.api.services.http_retry import RetryableFetchError, get_with_retry
+from apps.api.services.resilience.registry import get_source_circuit_breaker
+from apps.api.services.retrieval_cache import retrieval_cache_service
 from apps.api.services.relevance_service import filter_and_rank_papers
 from apps.api.settings import get_settings
 from packages.postrec_core.retrieval.dual_pass import merge_dual_pass_results
@@ -185,10 +187,17 @@ def _raise_retryable(exc: Exception, *, source: str) -> None:
     if isinstance(exc, RetryableFetchError):
         raise exc
     if isinstance(exc, httpx.HTTPStatusError):
+        from apps.api.services.http_retry import compute_backoff
+
+        status = exc.response.status_code
         raise RetryableFetchError(
             str(exc) or exc.response.reason_phrase or "HTTP error",
-            retry_after_seconds=10.0 if source == "arxiv" else 5.0,
-            status_code=exc.response.status_code,
+            retry_after_seconds=compute_backoff(
+                attempt=1,
+                base_delay=10.0 if source == "arxiv" else 5.0,
+                status_code=status,
+            ),
+            status_code=status,
         ) from exc
     raise RetryableFetchError(
         f"{type(exc).__name__}: {exc or 'unknown error'}",
@@ -225,11 +234,14 @@ class RetrievalService:
         per_query = max(fetch_target // max(len(expanded_queries), 1), 10)
         per_source = max(per_query // 4, 5)
         jobs = self._build_fetch_jobs(expanded_queries, per_source)
+        jobs.sort(key=lambda job: (job.priority, job.source, job.query))
 
         async with httpx.AsyncClient(timeout=45.0, follow_redirects=True) as client:
             processor = FetchQueueProcessor(
                 lambda job: self._dispatch_job(client, job),
                 max_attempts=self.settings.retrieval_fetch_max_attempts,
+                circuit_breaker=get_source_circuit_breaker(),
+                min_unique_papers=self.settings.retrieval_min_papers_before_skip,
             )
             queue_result = await processor.process(jobs)
             raw_papers = list(queue_result.papers)
@@ -279,6 +291,8 @@ class RetrievalService:
             expanded_queries=len(expanded_queries),
             fetch_requeued=queue_result.requeued_jobs,
             fetch_exhausted=len(queue_result.exhausted_jobs),
+            fetch_skipped_circuit=queue_result.skipped_circuit_jobs,
+            fetch_early_stopped=queue_result.early_stopped,
             relevance_input=filter_stats["input"],
             relevance_filtered_out=filter_stats["filtered_out"],
             relevance_kept=filter_stats["kept"],
@@ -292,31 +306,49 @@ class RetrievalService:
             job = FetchJob(source=source, query=query, limit=limit, pass_kind=pass_kind)
             return await self._dispatch_job(client, job)
 
+    def _source_priority_map(self) -> dict[str, int]:
+        order = [
+            part.strip()
+            for part in self.settings.retrieval_source_priority.split(",")
+            if part.strip()
+        ]
+        return {source: index for index, source in enumerate(order)}
+
     def _build_fetch_jobs(self, queries: list[str], per_source: int) -> list[FetchJob]:
         jobs: list[FetchJob] = []
+        priority_map = self._source_priority_map()
         pass_kinds = ("sota", "foundation") if self.settings.dual_retrieval_enabled else ("foundation",)
         for query in queries:
             for pass_kind in pass_kinds:
                 sota_limit = max(per_source // 2, 3)
                 limit = sota_limit if pass_kind == "sota" else per_source
-                jobs.append(FetchJob(source="openalex", query=query, limit=limit, pass_kind=pass_kind))
-                jobs.append(
-                    FetchJob(
-                        source="arxiv",
-                        query=query,
-                        limit=max(limit // 2, 3),
-                        pass_kind=pass_kind,
+                specs = (
+                    ("openalex", limit),
+                    ("arxiv", max(limit // 2, 3)),
+                    ("semantic_scholar", limit),
+                    ("crossref", limit),
+                )
+                for source, source_limit in specs:
+                    jobs.append(
+                        FetchJob(
+                            source=source,
+                            query=query,
+                            limit=source_limit,
+                            pass_kind=pass_kind,
+                            priority=priority_map.get(source, 99),
+                        )
                     )
-                )
-                jobs.append(
-                    FetchJob(source="semantic_scholar", query=query, limit=limit, pass_kind=pass_kind)
-                )
-                jobs.append(FetchJob(source="crossref", query=query, limit=limit, pass_kind=pass_kind))
         return jobs
 
     async def _dispatch_job(
         self, client: httpx.AsyncClient, job: FetchJob
     ) -> list[dict[str, Any]]:
+        cached = retrieval_cache_service.get(job.source, job.query, job.limit, job.pass_kind)
+        if cached is not None:
+            for paper in cached:
+                paper["retrieval_pass"] = job.pass_kind
+            return cached
+
         if job.source == "openalex":
             papers = await self._fetch_openalex(client, job.query, job.limit, job.pass_kind)
         elif job.source == "arxiv":
@@ -330,6 +362,8 @@ class RetrievalService:
 
         for paper in papers:
             paper["retrieval_pass"] = job.pass_kind
+        if papers:
+            retrieval_cache_service.set(job.source, job.query, job.limit, job.pass_kind, papers)
         return papers
 
     async def _retry_exhausted_fetches(
@@ -510,6 +544,7 @@ class RetrievalService:
                 params=params,
                 headers=headers,
                 source="openalex",
+                retries=self.settings.retrieval_http_retries,
             )
             data = resp.json()
         except Exception as exc:
@@ -547,7 +582,7 @@ class RetrievalService:
                 client,
                 ARXIV_API_URL,
                 params={"search_query": f"all:{query}", "max_results": min(limit, 10)},
-                retries=5,
+                retries=self.settings.retrieval_http_retries,
                 base_delay=5.0,
                 source="arxiv",
             )
@@ -608,8 +643,8 @@ class RetrievalService:
                 SEMANTIC_SCHOLAR_API_URL,
                 params={"query": query, "limit": min(limit, 20), "fields": SEMANTIC_SCHOLAR_FIELDS},
                 headers=headers,
-                retries=5,
-                base_delay=3.0,
+                retries=self.settings.retrieval_http_retries,
+                base_delay=5.0,
                 source="semantic_scholar",
             )
             data = resp.json()
@@ -669,6 +704,7 @@ class RetrievalService:
                 params=params,
                 headers=headers,
                 source="crossref",
+                retries=self.settings.retrieval_http_retries,
             )
             data = resp.json()
         except Exception as exc:

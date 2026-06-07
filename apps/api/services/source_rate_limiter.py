@@ -9,13 +9,12 @@ from apps.api.settings import get_settings
 
 logger = get_logger("postrec-retrieval")
 
-# arXiv: at most one request every 3 seconds.
-# Semantic Scholar: conservative spacing without a paid key.
-SOURCE_MIN_INTERVAL_SECONDS = {
-    "arxiv": 3.5,
-    "semantic_scholar": 2.0,
-    "openalex": 0.25,
-    "crossref": 0.25,
+# Conservative defaults (Semantic Scholar / arXiv are strictest).
+DEFAULT_SOURCE_MIN_INTERVAL_SECONDS = {
+    "openalex": 0.35,
+    "crossref": 0.35,
+    "semantic_scholar": 5.0,
+    "arxiv": 4.0,
 }
 
 
@@ -38,7 +37,14 @@ class SourceRateLimiter:
                 self._redis = None
 
     def _interval(self, source: str) -> float:
-        return SOURCE_MIN_INTERVAL_SECONDS.get(source, 0.5)
+        settings = get_settings()
+        configured = {
+            "openalex": settings.retrieval_openalex_min_interval,
+            "crossref": settings.retrieval_crossref_min_interval,
+            "semantic_scholar": settings.retrieval_semantic_scholar_min_interval,
+            "arxiv": settings.retrieval_arxiv_min_interval,
+        }
+        return configured.get(source, DEFAULT_SOURCE_MIN_INTERVAL_SECONDS.get(source, 0.5))
 
     def _wait_local(self, source: str) -> float:
         interval = self._interval(source)
@@ -54,7 +60,7 @@ class SourceRateLimiter:
     def _wait_redis(self, source: str) -> float:
         assert self._redis is not None
         interval = self._interval(source)
-        key = f"postrec:ratelimit:{source}"
+        key = f"{get_settings().cache_key_prefix}:ratelimit:{source}"
         while True:
             now = time.time()
             raw = self._redis.get(key)

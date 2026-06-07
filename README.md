@@ -110,6 +110,8 @@ py scripts/run_offline_evaluation.py --ablations
 
 See [docs/fggv-evaluation.md](docs/fggv-evaluation.md) for baselines and human-study protocol.
 
+Retrieval uses circuit breakers, full-jitter backoff, and Redis caching for 429 resilience — see [docs/retrieval-resilience.md](docs/retrieval-resilience.md).
+
 ## Configuration
 
 | Variable | Default | Description |
