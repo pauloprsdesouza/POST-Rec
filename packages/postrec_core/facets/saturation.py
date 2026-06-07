@@ -7,11 +7,7 @@ from packages.postrec_core.facets.taxonomy import FACET_WEIGHTS, FacetType
 
 def underserved_facets(saturation: dict[str, float], *, threshold: float = 0.45) -> list[str]:
     """Facet types mentioned in fewer than threshold fraction of papers."""
-    return [
-        facet.value
-        for facet in FacetType.all_ordered()
-        if saturation.get(facet.value, 1.0) < threshold
-    ]
+    return [facet.value for facet in FacetType.all_ordered() if saturation.get(facet.value, 1.0) < threshold]
 
 
 def saturation_adjusted_weights(saturation: dict[str, float], *, boost: float = 0.5) -> dict[str, float]:

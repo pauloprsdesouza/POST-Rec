@@ -12,11 +12,7 @@ from apps.api.models import LLMUsage, RecommendationRun
 
 
 def get_run_estimated_cost(db: Session, run: RecommendationRun) -> float:
-    total = (
-        db.query(func.coalesce(func.sum(LLMUsage.estimated_cost_usd), 0))
-        .filter(LLMUsage.run_id == run.id)
-        .scalar()
-    )
+    total = db.query(func.coalesce(func.sum(LLMUsage.estimated_cost_usd), 0)).filter(LLMUsage.run_id == run.id).scalar()
     aggregate = float(total or 0)
     stored = float(run.estimated_cost_usd or 0)
     return max(aggregate, stored)
@@ -28,12 +24,7 @@ def get_run_usage_summary(
     *,
     recommendation_count: int = 0,
 ) -> dict[str, Any]:
-    rows = (
-        db.query(LLMUsage)
-        .filter(LLMUsage.run_id == run.id)
-        .order_by(LLMUsage.created_at)
-        .all()
-    )
+    rows = db.query(LLMUsage).filter(LLMUsage.run_id == run.id).order_by(LLMUsage.created_at).all()
 
     merged: dict[str, dict[str, Any]] = {}
     for row in rows:
@@ -67,9 +58,7 @@ def get_run_usage_summary(
     output_tokens = sum(line["output_tokens"] for line in lines)
     total_cost = get_run_estimated_cost(db, run)
 
-    avg_per_recommendation = (
-        total_cost / recommendation_count if recommendation_count > 0 else None
-    )
+    avg_per_recommendation = total_cost / recommendation_count if recommendation_count > 0 else None
 
     return {
         "estimated_cost_usd": total_cost,

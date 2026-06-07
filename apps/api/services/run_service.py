@@ -39,9 +39,9 @@ def _build_scores(rec: dict) -> tuple[dict, float]:
     if final is None:
         final = scores.get("verified_final_score") or scores.get("final_score")
     if final is None:
-        final = compute_final_ranking_score(
-            {k: v / 100 for k, v in scores.items() if isinstance(v, (int, float))}
-        ) * 100
+        final = (
+            compute_final_ranking_score({k: v / 100 for k, v in scores.items() if isinstance(v, (int, float))}) * 100
+        )
 
     return scores, float(final)
 

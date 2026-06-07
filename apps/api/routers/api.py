@@ -46,10 +46,6 @@ from apps.api.schemas.common import (
     SourceDocumentResponse,
     ValidationDashboardResponse,
 )
-from apps.api.services.source_service import (
-    enrich_evidence_papers,
-    get_run_source_documents,
-)
 from apps.api.services.cache_service import (
     CacheKeys,
     CacheTTL,
@@ -63,6 +59,10 @@ from apps.api.services.profile_service import profile_service
 from apps.api.services.run_query import run_detail_payload, run_events_payload
 from apps.api.services.run_service import run_service
 from apps.api.services.run_stream import stream_run_updates
+from apps.api.services.source_service import (
+    enrich_evidence_papers,
+    get_run_source_documents,
+)
 from apps.api.services.validation_metrics_service import validation_metrics_service
 from apps.api.settings import get_settings
 from apps.api.workers.tasks import process_recommendation_run
@@ -369,9 +369,7 @@ def get_run_source_documents_endpoint(run_id: uuid.UUID, db: Session = Depends(g
     return [SourceDocumentResponse.model_validate(item) for item in data]
 
 
-@router.get(
-    "/recommendation-runs/{run_id}/recommendations", response_model=list[RecommendationResponse]
-)
+@router.get("/recommendation-runs/{run_id}/recommendations", response_model=list[RecommendationResponse])
 def get_recommendations(
     run_id: uuid.UUID,
     include_refinement: bool = False,
@@ -388,17 +386,13 @@ def get_recommendations(
     if not is_terminal_run(run.status):
         return [
             RecommendationResponse.model_validate(item)
-            for item in _run_recommendations_payload(
-                db, run_id, include_refinement=include_refinement
-            )
+            for item in _run_recommendations_payload(db, run_id, include_refinement=include_refinement)
         ]
 
     data = cache_service.get_or_load(
         CacheKeys.run_recommendations(run_key) + cache_suffix,
         CacheTTL.RECOMMENDATIONS,
-        lambda: _run_recommendations_payload(
-            db, run_id, include_refinement=include_refinement
-        ),
+        lambda: _run_recommendations_payload(db, run_id, include_refinement=include_refinement),
     )
     return [RecommendationResponse.model_validate(item) for item in data]
 
@@ -473,9 +467,9 @@ def ready(db: Session = Depends(get_db)):
 
     try:
         db.execute(__import__("sqlalchemy").text("SELECT 1"))
-        ext = db.execute(__import__("sqlalchemy").text(
-            "SELECT extversion FROM pg_extension WHERE extname = 'vector'"
-        )).scalar()
+        ext = db.execute(
+            __import__("sqlalchemy").text("SELECT extversion FROM pg_extension WHERE extname = 'vector'")
+        ).scalar()
         checks["postgres"] = "ok" if ext else "fail: pgvector extension missing"
         if ext:
             checks["pgvector"] = f"ok ({ext})"

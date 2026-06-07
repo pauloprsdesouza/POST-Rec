@@ -71,10 +71,7 @@ def extract_proposal_facets(recommendation: dict[str, Any]) -> dict[str, str]:
     """Resolve facet deltas from explicit fields or fall back to proposal structure."""
     explicit = recommendation.get("facet_deltas")
     if isinstance(explicit, dict) and any(explicit.values()):
-        return {
-            facet.value: str(explicit.get(facet.value) or "").strip()
-            for facet in FacetType.all_ordered()
-        }
+        return {facet.value: str(explicit.get(facet.value) or "").strip() for facet in FacetType.all_ordered()}
 
     datasets = recommendation.get("datasets") or []
     metrics = recommendation.get("evaluation_metrics") or []
@@ -87,9 +84,11 @@ def extract_proposal_facets(recommendation: dict[str, Any]) -> dict[str, str]:
             )
             if part
         ).strip(),
-        FacetType.METHOD.value: str(recommendation.get("proposed_method") or recommendation.get("technique_name") or ""),
+        FacetType.METHOD.value: str(
+            recommendation.get("proposed_method") or recommendation.get("technique_name") or ""
+        ),
         FacetType.DATA.value: ", ".join(str(d) for d in datasets) if datasets else "",
-        FacetType.EVALUATION.value: ", ".join(str(m) for m in metrics) if metrics else str(
-            recommendation.get("experimental_plan") or ""
-        )[:180],
+        FacetType.EVALUATION.value: ", ".join(str(m) for m in metrics)
+        if metrics
+        else str(recommendation.get("experimental_plan") or "")[:180],
     }

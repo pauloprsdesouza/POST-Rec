@@ -49,7 +49,5 @@ def anchor_hit_rate(recommendations: list[dict[str, Any]], valid_titles: set[str
 def refinement_rate(recommendations: list[dict[str, Any]]) -> float:
     if not recommendations:
         return 0.0
-    refined = sum(
-        1 for rec in recommendations if rec.get("_publication_status") == "needs_refinement"
-    )
+    refined = sum(1 for rec in recommendations if rec.get("_publication_status") == "needs_refinement")
     return round(refined / len(recommendations), 4)

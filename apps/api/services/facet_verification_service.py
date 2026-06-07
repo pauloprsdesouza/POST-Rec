@@ -93,9 +93,7 @@ class FacetVerificationService:
         corpus_facet_embeddings: dict[str, list[list[float]]] = {}
 
         try:
-            facet_embeddings, corpus_facet_embeddings = self._embed_facets(
-                db, run_id, recommendation, lfm
-            )
+            facet_embeddings, corpus_facet_embeddings = self._embed_facets(db, run_id, recommendation, lfm)
         except Exception:
             pass
 

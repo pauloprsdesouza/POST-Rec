@@ -4,8 +4,8 @@ from unittest.mock import MagicMock
 
 from apps.api.services.cache_service import (
     CacheKeys,
-    CacheTTL,
     CacheService,
+    CacheTTL,
     _cache_redis_url,
     is_terminal_run,
     run_detail_ttl,

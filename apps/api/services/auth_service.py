@@ -123,10 +123,7 @@ class AuthService:
         db.add(challenge)
         db.commit()
 
-        message = (
-            f"POST-Rec sign-in code: {code}. "
-            f"Valid for {otp_ttl_minutes} minutes. Do not share this code."
-        )
+        message = f"POST-Rec sign-in code: {code}. Valid for {otp_ttl_minutes} minutes. Do not share this code."
         dev_code: str | None = None
         try:
             evolution_service.send_text(phone, message)
@@ -186,9 +183,7 @@ class AuthService:
         if not user.phone_number:
             raise AuthError("Add a WhatsApp number in your profile to receive sign-in codes.")
         if not user.whatsapp_opt_in:
-            raise AuthError(
-                "WhatsApp notifications are disabled. Enable them in your profile to sign in."
-            )
+            raise AuthError("WhatsApp notifications are disabled. Enable them in your profile to sign in.")
 
         return self._send_otp_to_phone(db, phone=user.phone_number, purpose="login")
 
@@ -250,22 +245,14 @@ class AuthService:
 
         if email is not None:
             normalized_email = normalize_email(email)
-            existing = (
-                db.query(User)
-                .filter(User.email == normalized_email, User.id != user.id)
-                .first()
-            )
+            existing = db.query(User).filter(User.email == normalized_email, User.id != user.id).first()
             if existing:
                 raise AuthError("This email is already used by another account.")
             user.email = normalized_email
 
         if phone_number is not None:
             phone = normalize_phone(phone_number)
-            existing = (
-                db.query(User)
-                .filter(User.phone_number == phone, User.id != user.id)
-                .first()
-            )
+            existing = db.query(User).filter(User.phone_number == phone, User.id != user.id).first()
             if existing:
                 raise AuthError("This WhatsApp number is already used by another account.")
             user.phone_number = phone

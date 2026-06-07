@@ -79,9 +79,7 @@ class NoveltyVerificationService:
         recommendation["_publication_status"] = validation.publication_status
 
         critic = {"accept": True, "issues": []}
-        if self._settings.critic_enabled and (
-            mode.uses_full_sota_pipeline or mode == RunMode.QUICK
-        ):
+        if self._settings.critic_enabled and (mode.uses_full_sota_pipeline or mode == RunMode.QUICK):
             critic = gemini_service.critic_recommendation(
                 db=db,
                 run_id=run_id,

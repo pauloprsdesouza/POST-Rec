@@ -14,12 +14,12 @@ from apps.api.observability.logging import get_logger
 from apps.api.services.embedding_config import resolve_embedding_model
 from apps.api.services.run_cost import add_usage_cost
 from apps.api.settings import get_settings
+from packages.postrec_core.prompts.facet_critic import FACET_CRITIC_USER_TEMPLATE
+from packages.postrec_core.prompts.facet_pipeline import FGGV_PROPOSAL_USER_TEMPLATE
 from packages.postrec_core.prompts.recommendation_prompt import (
     RECOMMENDATION_SYSTEM_PROMPT,
     RECOMMENDATION_USER_TEMPLATE,
 )
-from packages.postrec_core.prompts.facet_critic import FACET_CRITIC_USER_TEMPLATE
-from packages.postrec_core.prompts.facet_pipeline import FGGV_PROPOSAL_USER_TEMPLATE
 from packages.postrec_core.prompts.sota_pipeline import (
     SOTA_CRITIC_USER_TEMPLATE,
     SOTA_GAP_MATRIX_USER_TEMPLATE,
@@ -87,9 +87,7 @@ class GeminiService:
         add_usage_cost(db, run_uuid, cost)
         return cost
 
-    def generate_embeddings(
-        self, db: Session, run_id: str, texts: list[str]
-    ) -> list[list[float]]:
+    def generate_embeddings(self, db: Session, run_id: str, texts: list[str]) -> list[list[float]]:
         if not texts:
             return []
 
@@ -106,9 +104,7 @@ class GeminiService:
             result = self.client.models.embed_content(
                 model=model,
                 contents=text,
-                config=types.EmbedContentConfig(
-                    output_dimensionality=settings.gemini_embedding_dimensions
-                ),
+                config=types.EmbedContentConfig(output_dimensionality=settings.gemini_embedding_dimensions),
             )
             embeddings.append(list(result.embeddings[0].values))
             total_input += max(1, len(text) // 4)
@@ -149,9 +145,7 @@ class GeminiService:
             ),
         )
         input_tokens = response.usage_metadata.prompt_token_count if response.usage_metadata else 0
-        output_tokens = (
-            response.usage_metadata.candidates_token_count if response.usage_metadata else 0
-        )
+        output_tokens = response.usage_metadata.candidates_token_count if response.usage_metadata else 0
         self._record_usage(db, run_id, operation, model, input_tokens, output_tokens)
         return self._parse_json(response.text or "{}")
 
@@ -232,7 +226,15 @@ class GeminiService:
         sota_landscape: dict[str, Any],
     ) -> dict[str, Any]:
         if not self.settings.gemini_api_key:
-            return {"gaps": [{"gap": "Under-explored combinations of recent methods", "supporting_limitations": [], "suggested_direction": "Benchmark and extend recent approaches"}]}
+            return {
+                "gaps": [
+                    {
+                        "gap": "Under-explored combinations of recent methods",
+                        "supporting_limitations": [],
+                        "suggested_direction": "Benchmark and extend recent approaches",
+                    }
+                ]
+            }
         prompt = SOTA_GAP_MATRIX_USER_TEMPLATE.format(
             research_area=research_area or "General",
             seed_topics=", ".join(seed_topics),
@@ -409,9 +411,7 @@ class GeminiService:
                 return json.loads(match.group())
             raise
 
-    def _fallback_recommendations(
-        self, seed_topics: list[str], papers: list[dict], max_recs: int
-    ) -> dict[str, Any]:
+    def _fallback_recommendations(self, seed_topics: list[str], papers: list[dict], max_recs: int) -> dict[str, Any]:
         """Deterministic fallback when Gemini is unavailable (dev/demo)."""
         recs = []
         for i, topic in enumerate(seed_topics[:max_recs]):

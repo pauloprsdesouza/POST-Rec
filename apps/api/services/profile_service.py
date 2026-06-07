@@ -27,21 +27,17 @@ class ProfileService:
         profile.professional_role = participant.professional_role or profile.professional_role
         profile.experience_with_ai = participant.experience_with_ai or profile.experience_with_ai
         profile.experience_with_recommender_systems = (
-            participant.experience_with_recommender_systems
-            or profile.experience_with_recommender_systems
+            participant.experience_with_recommender_systems or profile.experience_with_recommender_systems
         )
         profile.experience_with_scientific_writing = (
-            participant.experience_with_scientific_writing
-            or profile.experience_with_scientific_writing
+            participant.experience_with_scientific_writing or profile.experience_with_scientific_writing
         )
         profile.goal_with_postrec = participant.goal_with_postrec or profile.goal_with_postrec
         db.commit()
         db.refresh(profile)
         return profile
 
-    def update_profile(
-        self, db: Session, user_id: uuid.UUID, data: dict
-    ) -> UserResearchProfile:
+    def update_profile(self, db: Session, user_id: uuid.UUID, data: dict) -> UserResearchProfile:
         profile = self.get_or_create(db, user_id)
         for field in (
             "research_area",

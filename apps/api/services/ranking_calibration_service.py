@@ -50,11 +50,7 @@ class RankingCalibrationService:
 
         by_mode: dict[str, list[tuple[float, float, float, bool]]] = {}
         for feedback in feedback_rows:
-            candidate = (
-                db.query(RecommendationCandidate)
-                .filter_by(id=feedback.recommendation_id)
-                .first()
-            )
+            candidate = db.query(RecommendationCandidate).filter_by(id=feedback.recommendation_id).first()
             if not candidate or not candidate.scores:
                 continue
             run = candidate.run
@@ -63,9 +59,7 @@ class RankingCalibrationService:
             novelty_verified = float(scores.get("novelty_verified") or 0) / 100.0
             sota_fit = float(scores.get("sota_fit") or 0) / 100.0
             feasibility = float(scores.get("feasibility") or 0) / 100.0
-            by_mode.setdefault(mode, []).append(
-                (novelty_verified, sota_fit, feasibility, _positive_label(feedback))
-            )
+            by_mode.setdefault(mode, []).append((novelty_verified, sota_fit, feasibility, _positive_label(feedback)))
 
         calibrated: dict[str, dict[str, float]] = {}
         for mode, rows in by_mode.items():

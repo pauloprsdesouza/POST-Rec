@@ -4,10 +4,7 @@ from packages.postrec_core.retrieval.tier_quota import apply_tier_quotas
 
 
 def test_apply_tier_quotas_respects_max_papers():
-    papers = [
-        {"title": f"P{i}", "tier": "sota_recent" if i < 4 else "seminal"}
-        for i in range(10)
-    ]
+    papers = [{"title": f"P{i}", "tier": "sota_recent" if i < 4 else "seminal"} for i in range(10)]
     selected = apply_tier_quotas(papers, 5, sota_quota=0.6)
     assert len(selected) == 5
 

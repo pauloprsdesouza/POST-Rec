@@ -85,8 +85,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       whatsappOptIn: response.whatsapp_opt_in,
     };
 
-    let profileDone = false;
-    let consentDone = false;
+    let profileDone: boolean;
+    let consentDone: boolean;
     try {
       const [profile, consent] = await Promise.all([
         profileService.getProfile(response.access_token),

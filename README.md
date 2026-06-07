@@ -77,15 +77,72 @@ npm run dev
 | Web UI | http://localhost:5173 |
 | API docs | http://localhost:8000/docs |
 
-### Docker (API + worker + web only)
+### Docker (recommended when homelab is offline)
+
+POST-Rec needs **PostgreSQL + pgvector**, **Redis**, **RabbitMQ**, and **MinIO**. All are included in `docker-compose.yml`.
+
+**Option A — infrastructure only** (run API/worker/web on the host):
 
 ```powershell
-docker compose up --build
+copy .env.local.infra.example .env
+# Edit .env: GEMINI_API_KEY, optional API keys
+.\scripts\docker_bootstrap.ps1
+py -m alembic upgrade head   # if bootstrap did not migrate
+uvicorn apps.api.main:app --reload --port 8000
+celery -A apps.api.workers.celery_app worker --loglevel=INFO
+cd apps/web; npm run dev
 ```
 
-Broker, database, and Redis are **not** included in `docker-compose.yml`; point `.env` at your own instances.
+**Option B — full stack in Docker**:
 
-## Homelab deployment
+```powershell
+copy .env.docker.example .env
+# Edit .env: GEMINI_API_KEY
+.\scripts\docker_bootstrap.ps1 -FullStack
+# Or: docker compose up --build
+```
+
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| API | http://localhost:8000 | — |
+| Web UI | http://localhost:5173 | — |
+| PostgreSQL | localhost:5432 | `postrec` / `postrec` |
+| Redis | localhost:6379 | no auth |
+| RabbitMQ | localhost:5672 | `postrec` / `postrec` |
+| RabbitMQ UI | http://localhost:15672 | `postrec` / `postrec` |
+| MinIO | localhost:9000 | `minioadmin` / `minioadmin` |
+| MinIO console | http://localhost:9001 | `minioadmin` / `minioadmin` |
+| Evolution API | http://localhost:8080 | apikey `dev-evolution-api-key` |
+| Evolution Manager (QR) | http://localhost:3000 | pair instance `postrec` |
+
+**WhatsApp OTP:** Evolution API starts with the infra stack. After first boot, open **Evolution Manager** at http://localhost:3000, select instance `postrec`, and scan the QR code with WhatsApp. Until paired, OTP sends will fail (dev mode still logs codes in the API).
+
+Stop everything: `docker compose down`. Remove data volumes: `docker compose down -v`.
+
+### GitHub automation
+
+Branch prefixes (`feature/`, `bug/`, `hotfix/`, etc.) open pull requests automatically. Bumping `version` in `pyproject.toml` on `main` creates release tags (`v0.1.0`). See [.github/README.md](.github/README.md).
+
+**Verify the stack** (after `docker compose up`):
+
+```powershell
+docker compose exec api python scripts/verify_stack.py
+docker compose exec worker celery -A apps.api.workers.celery_app inspect ping
+Invoke-RestMethod http://localhost:8000/api/v1/health
+```
+
+For **infra in Docker + app on the host**, copy `.env.local.infra.example` to `.env` (your old homelab credentials will not match local Postgres/RabbitMQ/Redis), then:
+
+```powershell
+py scripts/verify_stack.py
+```
+
+When the **homelab** (`192.168.10.13`) is back online, copy `.env.remote.example` to `.env` and run `py scripts/bootstrap_homelab.py` or `py scripts/verify_stack.py`.
+
+### Docker (legacy note)
+
+If you still use a remote homelab host, point `.env` at that host and run only `docker compose up api worker web` — or skip Docker entirely and use the three-terminal flow above.
+
 
 For a shared infrastructure host (PostgreSQL, Redis, RabbitMQ, MinIO), configure hosts in `.env` and use:
 
@@ -109,6 +166,8 @@ py scripts/run_offline_evaluation.py --ablations
 ```
 
 See [docs/fggv-evaluation.md](docs/fggv-evaluation.md) for baselines and human-study protocol.
+
+Retrieval uses circuit breakers, full-jitter backoff, and Redis caching for 429 resilience — see [docs/retrieval-resilience.md](docs/retrieval-resilience.md).
 
 ## Configuration
 

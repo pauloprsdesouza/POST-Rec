@@ -30,9 +30,7 @@ def build_source_lookup(documents: list[SourceDocument]) -> tuple[dict, dict]:
     return by_doi, by_title
 
 
-def enrich_evidence_papers(
-    evidence_papers: list | None, documents: list[SourceDocument]
-) -> list[dict]:
+def enrich_evidence_papers(evidence_papers: list | None, documents: list[SourceDocument]) -> list[dict]:
     if not evidence_papers:
         return []
 

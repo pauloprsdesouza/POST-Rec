@@ -12,25 +12,32 @@ from sqlalchemy.orm import Session
 
 from apps.api.models import SourceDocument
 from apps.api.observability.logging import get_logger
+from apps.api.services.corpus_retrieval_service import corpus_retrieval_service
 from apps.api.services.fetch_queue import FetchJob, FetchQueueProcessor
 from apps.api.services.http_retry import RetryableFetchError, get_with_retry
 from apps.api.services.relevance_service import filter_and_rank_papers
+from apps.api.services.resilience.registry import get_source_circuit_breaker
+from apps.api.services.retrieval_cache import retrieval_cache_service
 from apps.api.settings import get_settings
 from packages.postrec_core.retrieval.dual_pass import merge_dual_pass_results
 from packages.postrec_core.retrieval.paper_enrichment import enrich_paper_metadata
 from packages.postrec_core.retrieval.paper_tier import current_year
 from packages.postrec_core.retrieval.query_expansion import expand_retrieval_queries
+from packages.postrec_core.retrieval.retrieval_plan import build_retrieval_plan
 
 logger = get_logger("postrec-retrieval")
 
 ARXIV_API_URL = "https://export.arxiv.org/api/query"
 OPENALEX_API_URL = "https://api.openalex.org/works"
 SEMANTIC_SCHOLAR_API_URL = "https://api.semanticscholar.org/graph/v1/paper/search"
+SEMANTIC_SCHOLAR_RECOMMENDATIONS_URL = "https://api.semanticscholar.org/recommendations/v1/papers/"
 CROSSREF_API_URL = "https://api.crossref.org/works"
 
-SEMANTIC_SCHOLAR_FIELDS = (
-    "paperId,title,abstract,authors,year,venue,citationCount,externalIds,url,openAccessPdf"
+OPENALEX_SELECT_FIELDS = (
+    "id,title,doi,publication_year,cited_by_count,abstract_inverted_index,authorships,primary_location"
 )
+
+SEMANTIC_SCHOLAR_FIELDS = "paperId,title,abstract,authors,year,venue,citationCount,externalIds,url,openAccessPdf"
 
 SOURCE_FETCHERS = ("openalex", "arxiv", "semantic_scholar", "crossref")
 
@@ -92,11 +99,7 @@ def _normalize_semantic_scholar_paper(paper: dict[str, Any]) -> dict[str, Any] |
     if not title:
         return None
 
-    authors = [
-        str(a.get("name"))
-        for a in paper.get("authors") or []
-        if isinstance(a, dict) and a.get("name")
-    ]
+    authors = [str(a.get("name")) for a in paper.get("authors") or [] if isinstance(a, dict) and a.get("name")]
     external_ids = paper.get("externalIds") or {}
     doi = _normalize_doi(external_ids.get("DOI") if isinstance(external_ids, dict) else None)
     url = paper.get("url")
@@ -185,10 +188,17 @@ def _raise_retryable(exc: Exception, *, source: str) -> None:
     if isinstance(exc, RetryableFetchError):
         raise exc
     if isinstance(exc, httpx.HTTPStatusError):
+        from apps.api.services.http_retry import compute_backoff
+
+        status = exc.response.status_code
         raise RetryableFetchError(
             str(exc) or exc.response.reason_phrase or "HTTP error",
-            retry_after_seconds=10.0 if source == "arxiv" else 5.0,
-            status_code=exc.response.status_code,
+            retry_after_seconds=compute_backoff(
+                attempt=1,
+                base_delay=10.0 if source == "arxiv" else 5.0,
+                status_code=status,
+            ),
+            status_code=status,
         ) from exc
     raise RetryableFetchError(
         f"{type(exc).__name__}: {exc or 'unknown error'}",
@@ -222,17 +232,38 @@ class RetrievalService:
         )
 
         fetch_target = min(max(max_papers * 2, max_papers + 20), 200)
-        per_query = max(fetch_target // max(len(expanded_queries), 1), 10)
-        per_source = max(per_query // 4, 5)
-        jobs = self._build_fetch_jobs(expanded_queries, per_source)
+        raw_papers: list[dict[str, Any]] = []
+
+        if self.settings.retrieval_corpus_prefetch_enabled:
+            raw_papers.extend(
+                corpus_retrieval_service.prefetch_papers(
+                    db,
+                    topics=cleaned_topics,
+                    research_area=research_area,
+                    learned_topics=learned_topics,
+                    min_score=max(self.settings.retrieval_min_relevance_score, 0.28),
+                    max_papers=min(fetch_target, max_papers + 10),
+                )
+            )
+
+        jobs = self._build_fetch_jobs(
+            cleaned_topics,
+            fetch_target,
+            research_area=research_area,
+            learned_topics=learned_topics,
+            expanded_queries=expanded_queries,
+        )
+        jobs.sort(key=lambda job: (job.priority, job.source, job.query, job.job_type))
 
         async with httpx.AsyncClient(timeout=45.0, follow_redirects=True) as client:
             processor = FetchQueueProcessor(
                 lambda job: self._dispatch_job(client, job),
                 max_attempts=self.settings.retrieval_fetch_max_attempts,
+                circuit_breaker=get_source_circuit_breaker(),
+                min_unique_papers=self.settings.retrieval_min_papers_before_skip,
             )
             queue_result = await processor.process(jobs)
-            raw_papers = list(queue_result.papers)
+            raw_papers.extend(queue_result.papers)
 
             if queue_result.exhausted_jobs:
                 deferred = await self._retry_exhausted_fetches(client, queue_result.exhausted_jobs)
@@ -243,9 +274,18 @@ class RetrievalService:
                     recovered=len(deferred),
                 )
 
+            recommendation_papers = await self._fetch_semantic_scholar_recommendations(
+                client,
+                raw_papers,
+                fetch_target,
+            )
+            raw_papers.extend(recommendation_papers)
+
         if self.settings.dual_retrieval_enabled:
             sota_papers = [p for p in raw_papers if p.get("retrieval_pass") == "sota"]
-            foundation_papers = [p for p in raw_papers if p.get("retrieval_pass") == "foundation"]
+            foundation_papers = [
+                p for p in raw_papers if p.get("retrieval_pass") in ("foundation", "corpus", "recommendations")
+            ]
             papers = merge_dual_pass_results(
                 sota_papers,
                 foundation_papers,
@@ -277,8 +317,12 @@ class RetrievalService:
             sources_collected=len(papers),
             fetch_jobs=len(jobs),
             expanded_queries=len(expanded_queries),
+            corpus_prefetched=bool(self.settings.retrieval_corpus_prefetch_enabled),
+            recommendations_added=len(recommendation_papers),
             fetch_requeued=queue_result.requeued_jobs,
             fetch_exhausted=len(queue_result.exhausted_jobs),
+            fetch_skipped_circuit=queue_result.skipped_circuit_jobs,
+            fetch_early_stopped=queue_result.early_stopped,
             relevance_input=filter_stats["input"],
             relevance_filtered_out=filter_stats["filtered_out"],
             relevance_kept=filter_stats["kept"],
@@ -292,35 +336,185 @@ class RetrievalService:
             job = FetchJob(source=source, query=query, limit=limit, pass_kind=pass_kind)
             return await self._dispatch_job(client, job)
 
-    def _build_fetch_jobs(self, queries: list[str], per_source: int) -> list[FetchJob]:
+    def _source_priority_map(self) -> dict[str, int]:
+        order = [part.strip() for part in self.settings.retrieval_source_priority.split(",") if part.strip()]
+        return {source: index for index, source in enumerate(order)}
+
+    def _build_fetch_jobs(
+        self,
+        topics: list[str],
+        fetch_target: int,
+        *,
+        research_area: str | None,
+        learned_topics: list[str] | None,
+        expanded_queries: list[str],
+    ) -> list[FetchJob]:
+        if self.settings.retrieval_consolidated_plan_enabled:
+            return self._build_jobs_from_plan(
+                topics,
+                fetch_target,
+                research_area=research_area,
+                learned_topics=learned_topics,
+            )
+        per_query = max(fetch_target // max(len(expanded_queries), 1), 10)
+        per_source = max(per_query // 4, 5)
+        return self._build_jobs_legacy(expanded_queries, per_source)
+
+    def _primary_source_limit(self, fetch_target: int) -> int:
+        return min(
+            self.settings.retrieval_openalex_per_page_max,
+            max(30, fetch_target // 2),
+        )
+
+    def _crossref_limit(self, fetch_target: int) -> int:
+        return min(
+            self.settings.retrieval_crossref_rows_max,
+            max(20, fetch_target // 3),
+        )
+
+    def _semantic_scholar_limit(self, fetch_target: int) -> int:
+        return min(
+            self.settings.retrieval_semantic_scholar_limit_max,
+            max(25, fetch_target // 2),
+        )
+
+    def _build_jobs_from_plan(
+        self,
+        topics: list[str],
+        fetch_target: int,
+        *,
+        research_area: str | None,
+        learned_topics: list[str] | None,
+    ) -> list[FetchJob]:
+        plan = build_retrieval_plan(
+            topics,
+            research_area=research_area,
+            learned_topics=learned_topics,
+            include_sota_terms=True,
+            learned_topic_cap=self.settings.retrieval_learned_topic_cap,
+            dual_pass=self.settings.dual_retrieval_enabled,
+        )
+        priority_map = self._source_priority_map()
         jobs: list[FetchJob] = []
+        crossref_slots = self.settings.retrieval_crossref_max_queries
+        primary_limit = self._primary_source_limit(fetch_target)
+        crossref_limit = self._crossref_limit(fetch_target)
+        s2_limit = self._semantic_scholar_limit(fetch_target)
+
+        for search in plan.searches:
+            for pass_kind in search.pass_kinds:
+                jobs.append(
+                    FetchJob(
+                        source="openalex",
+                        query=search.query,
+                        limit=primary_limit,
+                        pass_kind=pass_kind,
+                        priority=priority_map.get("openalex", 99),
+                    )
+                )
+                jobs.append(
+                    FetchJob(
+                        source="semantic_scholar",
+                        query=search.query,
+                        limit=s2_limit,
+                        pass_kind=pass_kind,
+                        priority=priority_map.get("semantic_scholar", 99),
+                    )
+                )
+                if search.use_crossref and crossref_slots > 0:
+                    jobs.append(
+                        FetchJob(
+                            source="crossref",
+                            query=search.query,
+                            limit=crossref_limit,
+                            pass_kind=pass_kind,
+                            priority=priority_map.get("crossref", 99),
+                        )
+                    )
+                    crossref_slots -= 1
+
+        for learned in plan.learned_queries:
+            jobs.append(
+                FetchJob(
+                    source="openalex",
+                    query=learned,
+                    limit=primary_limit,
+                    pass_kind="foundation",
+                    priority=priority_map.get("openalex", 99),
+                )
+            )
+            jobs.append(
+                FetchJob(
+                    source="semantic_scholar",
+                    query=learned,
+                    limit=s2_limit,
+                    pass_kind="foundation",
+                    priority=priority_map.get("semantic_scholar", 99),
+                )
+            )
+
+        if plan.arxiv_query:
+            jobs.append(
+                FetchJob(
+                    source="arxiv",
+                    query=plan.arxiv_query,
+                    limit=min(self.settings.retrieval_arxiv_max_results, primary_limit),
+                    pass_kind="sota",
+                    priority=priority_map.get("arxiv", 99),
+                )
+            )
+
+        return jobs
+
+    def _build_jobs_legacy(self, queries: list[str], per_source: int) -> list[FetchJob]:
+        jobs: list[FetchJob] = []
+        priority_map = self._source_priority_map()
         pass_kinds = ("sota", "foundation") if self.settings.dual_retrieval_enabled else ("foundation",)
         for query in queries:
             for pass_kind in pass_kinds:
                 sota_limit = max(per_source // 2, 3)
                 limit = sota_limit if pass_kind == "sota" else per_source
-                jobs.append(FetchJob(source="openalex", query=query, limit=limit, pass_kind=pass_kind))
-                jobs.append(
-                    FetchJob(
-                        source="arxiv",
-                        query=query,
-                        limit=max(limit // 2, 3),
-                        pass_kind=pass_kind,
+                specs = (
+                    ("openalex", limit),
+                    ("arxiv", max(limit // 2, 3)),
+                    ("semantic_scholar", limit),
+                    ("crossref", limit),
+                )
+                for source, source_limit in specs:
+                    jobs.append(
+                        FetchJob(
+                            source=source,
+                            query=query,
+                            limit=source_limit,
+                            pass_kind=pass_kind,
+                            priority=priority_map.get(source, 99),
+                        )
                     )
-                )
-                jobs.append(
-                    FetchJob(source="semantic_scholar", query=query, limit=limit, pass_kind=pass_kind)
-                )
-                jobs.append(FetchJob(source="crossref", query=query, limit=limit, pass_kind=pass_kind))
         return jobs
 
-    async def _dispatch_job(
-        self, client: httpx.AsyncClient, job: FetchJob
-    ) -> list[dict[str, Any]]:
-        if job.source == "openalex":
+    async def _dispatch_job(self, client: httpx.AsyncClient, job: FetchJob) -> list[dict[str, Any]]:
+        cached = retrieval_cache_service.get(
+            job.source,
+            job.query,
+            job.limit,
+            job.pass_kind,
+            job.job_type,
+        )
+        if cached is not None:
+            for paper in cached:
+                paper["retrieval_pass"] = job.pass_kind
+            return cached
+
+        if job.job_type == "recommendations":
+            papers = await self._fetch_semantic_scholar_recommendations_for_seeds(
+                client,
+                list(job.seed_paper_ids),
+                job.limit,
+            )
+        elif job.source == "openalex":
             papers = await self._fetch_openalex(client, job.query, job.limit, job.pass_kind)
         elif job.source == "arxiv":
-            papers = await self._fetch_arxiv(client, job.query, job.limit)
+            papers = await self._fetch_arxiv(client, job.query, job.limit, job.pass_kind)
         elif job.source == "semantic_scholar":
             papers = await self._fetch_semantic_scholar(client, job.query, job.limit, job.pass_kind)
         elif job.source == "crossref":
@@ -330,7 +524,138 @@ class RetrievalService:
 
         for paper in papers:
             paper["retrieval_pass"] = job.pass_kind
+        if papers:
+            retrieval_cache_service.set(
+                job.source,
+                job.query,
+                job.limit,
+                job.pass_kind,
+                papers,
+                job.job_type,
+            )
         return papers
+
+    def _semantic_scholar_seed_ids(self, papers: list[dict[str, Any]]) -> list[str]:
+        ranked = sorted(
+            papers,
+            key=lambda paper: (
+                paper.get("relevance_score") or 0.0,
+                paper.get("citation_count") or 0,
+            ),
+            reverse=True,
+        )
+        seeds: list[str] = []
+        seen: set[str] = set()
+        for paper in ranked:
+            if paper.get("source") != "semantic_scholar":
+                continue
+            paper_id = str(paper.get("external_id") or "").strip()
+            if not paper_id or paper_id in seen:
+                continue
+            seen.add(paper_id)
+            seeds.append(paper_id)
+            if len(seeds) >= self.settings.retrieval_s2_recommendation_seeds:
+                break
+        return seeds
+
+    async def _fetch_semantic_scholar_recommendations(
+        self,
+        client: httpx.AsyncClient,
+        papers: list[dict[str, Any]],
+        fetch_target: int,
+    ) -> list[dict[str, Any]]:
+        if not self.settings.retrieval_s2_recommendations_enabled:
+            return []
+
+        seeds = self._semantic_scholar_seed_ids(papers)
+        if len(seeds) < 2:
+            return []
+
+        limit = min(
+            self.settings.retrieval_s2_recommendation_limit,
+            max(20, fetch_target),
+        )
+        job = FetchJob(
+            source="semantic_scholar",
+            query="|".join(seeds),
+            limit=limit,
+            pass_kind="foundation",
+            job_type="recommendations",
+            seed_paper_ids=tuple(seeds),
+            priority=10,
+        )
+        try:
+            from apps.api.services.source_rate_limiter import source_rate_limiter
+
+            await source_rate_limiter.wait_async("semantic_scholar")
+            return await self._dispatch_job(client, job)
+        except Exception as exc:
+            logger.warning(
+                "semantic_scholar_recommendations_failed",
+                seeds=len(seeds),
+                error=f"{type(exc).__name__}: {exc}",
+            )
+            return []
+
+    async def _fetch_semantic_scholar_recommendations_for_seeds(
+        self,
+        client: httpx.AsyncClient,
+        seed_ids: list[str],
+        limit: int,
+    ) -> list[dict[str, Any]]:
+        if not seed_ids:
+            return []
+
+        headers = self._contact_headers("SemanticScholar")
+        headers["Content-Type"] = "application/json"
+        if self.settings.semantic_scholar_api_key:
+            headers["x-api-key"] = self.settings.semantic_scholar_api_key
+
+        params = {
+            "fields": SEMANTIC_SCHOLAR_FIELDS,
+            "limit": min(limit, 500),
+        }
+        body = {"positivePaperIds": seed_ids, "negativePaperIds": []}
+
+        try:
+            resp = await get_with_retry(
+                client,
+                SEMANTIC_SCHOLAR_RECOMMENDATIONS_URL,
+                params=params,
+                headers=headers,
+                json=body,
+                method="POST",
+                retries=self.settings.retrieval_http_retries,
+                base_delay=5.0,
+                source="semantic_scholar",
+            )
+            data = resp.json()
+        except Exception as exc:
+            _raise_retryable(exc, source="semantic_scholar")
+
+        if not isinstance(data, dict):
+            data = {}
+
+        seed_set = set(seed_ids)
+        results: list[dict[str, Any]] = []
+        for paper in data.get("recommendedPapers") or data.get("data") or []:
+            if not isinstance(paper, dict):
+                continue
+            paper_id = str(paper.get("paperId") or "").strip()
+            if paper_id and paper_id in seed_set:
+                continue
+            try:
+                normalized = _normalize_semantic_scholar_paper(paper)
+                if normalized:
+                    normalized["retrieval_pass"] = "recommendations"
+                    results.append(normalized)
+            except Exception as exc:
+                logger.warning(
+                    "semantic_scholar_recommendation_skipped",
+                    paper_id=paper.get("paperId"),
+                    error=str(exc),
+                )
+        return results
 
     async def _retry_exhausted_fetches(
         self, client: httpx.AsyncClient, exhausted_jobs: list[FetchJob]
@@ -412,9 +737,7 @@ class RetrievalService:
 
         return papers
 
-    def _persist_papers(
-        self, db: Session, papers: list[dict[str, Any]], max_papers: int
-    ) -> list[SourceDocument]:
+    def _persist_papers(self, db: Session, papers: list[dict[str, Any]], max_papers: int) -> list[SourceDocument]:
         seen_hashes: set[str] = set()
         seen_dois: set[str] = set()
         saved: list[SourceDocument] = []
@@ -488,20 +811,30 @@ class RetrievalService:
             headers["User-Agent"] = f"POST-Rec/0.1 ({service_name}; mailto:{email})"
         return headers
 
+    def _openalex_filters(self, pass_kind: str) -> str:
+        parts = ["has_abstract:true", "is_paratext:false"]
+        if pass_kind == "sota":
+            cutoff = current_year() - self.settings.sota_recent_years
+            parts.append(f"publication_year:>{cutoff}")
+        return ",".join(parts)
+
     async def _fetch_openalex(
         self, client: httpx.AsyncClient, query: str, limit: int, pass_kind: str = "foundation"
     ) -> list[dict[str, Any]]:
         headers = self._contact_headers("OpenAlex")
+        per_page = min(limit, self.settings.retrieval_openalex_per_page_max)
         params: dict[str, Any] = {
             "search": query,
-            "per_page": min(limit, 25),
+            "per_page": per_page,
+            "select": OPENALEX_SELECT_FIELDS,
+            "filter": self._openalex_filters(pass_kind),
         }
         if pass_kind == "sota":
-            cutoff = current_year() - self.settings.sota_recent_years
             params["sort"] = "publication_date:desc"
-            params["filter"] = f"publication_year:>{cutoff}"
         else:
             params["sort"] = "cited_by_count:desc"
+        if self.settings.openalex_email:
+            params["mailto"] = self.settings.openalex_email
 
         try:
             resp = await get_with_retry(
@@ -510,6 +843,7 @@ class RetrievalService:
                 params=params,
                 headers=headers,
                 source="openalex",
+                retries=self.settings.retrieval_http_retries,
             )
             data = resp.json()
         except Exception as exc:
@@ -537,17 +871,26 @@ class RetrievalService:
         return results
 
     async def _fetch_arxiv(
-        self, client: httpx.AsyncClient, query: str, limit: int
+        self, client: httpx.AsyncClient, query: str, limit: int, pass_kind: str = "sota"
     ) -> list[dict[str, Any]]:
         if limit <= 0:
             return []
+
+        search_query = query if query.startswith(("ti:", "abs:", "cat:", "all:", "(")) else f"all:{query}"
+        params: dict[str, Any] = {
+            "search_query": search_query,
+            "max_results": min(limit, self.settings.retrieval_arxiv_max_results),
+        }
+        if pass_kind == "sota":
+            params["sortBy"] = "submittedDate"
+            params["sortOrder"] = "descending"
 
         try:
             resp = await get_with_retry(
                 client,
                 ARXIV_API_URL,
-                params={"search_query": f"all:{query}", "max_results": min(limit, 10)},
-                retries=5,
+                params=params,
+                retries=self.settings.retrieval_http_retries,
                 base_delay=5.0,
                 source="arxiv",
             )
@@ -579,9 +922,7 @@ class RetrievalService:
                     "source": "arxiv",
                     "title": title,
                     "abstract": str(entry_get("summary", "") or "").replace("\n", " ").strip() or None,
-                    "authors": [
-                        a.name for a in entry_get("authors", []) if getattr(a, "name", None)
-                    ],
+                    "authors": [a.name for a in entry_get("authors", []) if getattr(a, "name", None)],
                     "year": year,
                     "venue": "arXiv",
                     "doi": None,
@@ -602,14 +943,23 @@ class RetrievalService:
         if self.settings.semantic_scholar_api_key:
             headers["x-api-key"] = self.settings.semantic_scholar_api_key
 
+        params: dict[str, Any] = {
+            "query": query,
+            "limit": min(limit, self.settings.retrieval_semantic_scholar_limit_max),
+            "fields": SEMANTIC_SCHOLAR_FIELDS,
+        }
+        if pass_kind == "sota":
+            cutoff = current_year() - self.settings.sota_recent_years
+            params["year"] = f"{cutoff}-"
+
         try:
             resp = await get_with_retry(
                 client,
                 SEMANTIC_SCHOLAR_API_URL,
-                params={"query": query, "limit": min(limit, 20), "fields": SEMANTIC_SCHOLAR_FIELDS},
+                params=params,
                 headers=headers,
-                retries=5,
-                base_delay=3.0,
+                retries=self.settings.retrieval_http_retries,
+                base_delay=5.0,
                 source="semantic_scholar",
             )
             data = resp.json()
@@ -620,19 +970,13 @@ class RetrievalService:
             data = {}
 
         results: list[dict[str, Any]] = []
-        cutoff = current_year() - self.settings.sota_recent_years
         for paper in data.get("data") or []:
             if not isinstance(paper, dict):
                 continue
             try:
                 normalized = _normalize_semantic_scholar_paper(paper)
-                if not normalized:
-                    continue
-                if pass_kind == "sota":
-                    year = normalized.get("year")
-                    if isinstance(year, int) and year < cutoff:
-                        continue
-                results.append(normalized)
+                if normalized:
+                    results.append(normalized)
             except Exception as exc:
                 logger.warning(
                     "semantic_scholar_record_skipped",
@@ -650,18 +994,22 @@ class RetrievalService:
             return []
 
         headers = self._contact_headers("Crossref")
+        filters = ["has-abstract:true"]
         params: dict[str, Any] = {
             "query": query,
-            "rows": min(limit, 20),
+            "rows": min(limit, self.settings.retrieval_crossref_rows_max),
+            "filter": ",".join(filters),
         }
         if pass_kind == "sota":
             cutoff = current_year() - self.settings.sota_recent_years
-            params["filter"] = f"from-pub-date:{cutoff}"
+            params["filter"] = f"{params['filter']},from-pub-date:{cutoff}-01-01"
             params["sort"] = "published"
             params["order"] = "desc"
         else:
             params["sort"] = "is-referenced-by-count"
             params["order"] = "desc"
+        if self.settings.crossref_email:
+            params["mailto"] = self.settings.crossref_email
         try:
             resp = await get_with_retry(
                 client,
@@ -669,6 +1017,7 @@ class RetrievalService:
                 params=params,
                 headers=headers,
                 source="crossref",
+                retries=self.settings.retrieval_http_retries,
             )
             data = resp.json()
         except Exception as exc:

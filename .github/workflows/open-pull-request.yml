@@ -1,0 +1,166 @@
+# Branch prefixes → automatic pull requests to `main`
+#
+#   feature/add-whatsapp-otp   →  PR: "Feature: Add Whatsapp Otp"
+#   bug/fix-retrieval-429      →  PR: "Bug fix: Fix Retrieval 429"
+#   hotfix/redis-timeout       →  PR: "Hotfix: Redis Timeout"
+#
+# Supported prefixes: feature, bug, bugfix, fix, hotfix, chore, docs, refactor
+#
+# Skips: main, master, develop, release/* (release branch uses release workflow)
+
+name: Open Pull Request
+
+on:
+  push:
+    branches:
+      - "feature/**"
+      - "bug/**"
+      - "bugfix/**"
+      - "fix/**"
+      - "hotfix/**"
+      - "chore/**"
+      - "docs/**"
+      - "refactor/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  open-pull-request:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Create or skip pull request
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.BOT_PAT || github.token }}
+          script: |
+            const branch = context.ref.replace("refs/heads/", "");
+            const { owner, repo } = context.repo;
+
+            const repoMeta = await github.rest.repos.get({ owner, repo });
+            const base = repoMeta.data.default_branch || "main";
+
+            if (branch === base || branch === "develop") {
+              core.info(`Skipping PR automation for integration branch '${branch}'.`);
+              return;
+            }
+
+            const parsed = parseBranch(branch);
+            if (!parsed) {
+              core.info(`Branch '${branch}' does not match supported prefixes.`);
+              return;
+            }
+
+            function parseBranch(name) {
+              const match = name.match(
+                /^(feature|bug|bugfix|fix|hotfix|chore|docs|refactor)\/(.+)$/i,
+              );
+              if (!match) {
+                return null;
+              }
+
+              const type = match[1].toLowerCase();
+              const slug = match[2];
+              const words = slug
+                .replace(/[-_]+/g, " ")
+                .trim()
+                .split(/\s+/)
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(" ");
+
+              const titles = {
+                feature: `Feature: ${words}`,
+                bug: `Bug fix: ${words}`,
+                bugfix: `Bug fix: ${words}`,
+                fix: `Bug fix: ${words}`,
+                hotfix: `Hotfix: ${words}`,
+                chore: `Chore: ${words}`,
+                docs: `Docs: ${words}`,
+                refactor: `Refactor: ${words}`,
+              };
+
+              const summaries = {
+                feature: `Adds or improves: ${words}.`,
+                bug: `Fixes: ${words}.`,
+                bugfix: `Fixes: ${words}.`,
+                fix: `Fixes: ${words}.`,
+                hotfix: `Production hotfix: ${words}.`,
+                chore: `Maintenance: ${words}.`,
+                docs: `Documentation update: ${words}.`,
+                refactor: `Refactors: ${words}.`,
+              };
+
+              return {
+                type,
+                title: titles[type] ?? `Update: ${words}`,
+                summary: summaries[type] ?? `Changes for ${words}.`,
+                draft: type === "feature" || type === "refactor",
+              };
+            }
+
+            const existing = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: "open",
+              head: `${owner}:${branch}`,
+              base,
+            });
+
+            if (existing.data.length > 0) {
+              core.info(`Open PR already exists: #${existing.data[0].number}`);
+              return;
+            }
+
+            let commitLines = "_No commits ahead of base yet._";
+            try {
+              const compare = await github.rest.repos.compareCommitsWithBasehead({
+                owner,
+                repo,
+                basehead: `${base}...${branch}`,
+              });
+              const commits = compare.data.commits ?? [];
+              commitLines = commits
+                .slice(-12)
+                .map((commit) => `- ${commit.commit.message.split("\n")[0]} (${commit.sha.slice(0, 7)})`)
+                .join("\n") || commitLines;
+            } catch (error) {
+              core.warning(`Could not compare ${base}...${branch}: ${error.message}`);
+            }
+
+            const body = [
+              "## Summary",
+              "",
+              parsed.summary,
+              "",
+              "## Branch",
+              "",
+              `- **Type:** \`${parsed.type}\``,
+              `- **Branch:** \`${branch}\``,
+              `- **Base:** \`${base}\``,
+              "",
+              "## Commits",
+              "",
+              commitLines || "_No commits ahead of base yet._",
+              "",
+              "## Checklist",
+              "",
+              "- [ ] CI checks pass",
+              "- [ ] Test plan completed",
+              "",
+              "---",
+              "_Opened automatically by [Open Pull Request](.github/workflows/open-pull-request.yml)._",
+            ].join("\n");
+
+            const pr = await github.rest.pulls.create({
+              owner,
+              repo,
+              title: parsed.title,
+              head: branch,
+              base,
+              body,
+              draft: parsed.draft,
+            });
+
+            core.info(`Created PR #${pr.data.number}: ${pr.data.title}`);

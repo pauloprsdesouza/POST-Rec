@@ -17,14 +17,7 @@ def compute_eas(feedback: dict[str, Any]) -> float:
     trust = float(feedback.get("trust_score", 3))
     would_use = would_use_to_score(feedback.get("would_use_in_real_paper"))
 
-    return (
-        0.25 * usefulness
-        + 0.20 * relevance
-        + 0.20 * clarity
-        + 0.15 * feasibility
-        + 0.10 * trust
-        + 0.10 * would_use
-    )
+    return 0.25 * usefulness + 0.20 * relevance + 0.20 * clarity + 0.15 * feasibility + 0.10 * trust + 0.10 * would_use
 
 
 def compute_final_ranking_score(scores: dict[str, float]) -> float:
