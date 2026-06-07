@@ -17,6 +17,7 @@ interface RecommendationPreferencesFormProps {
   researchArea?: string;
   onResearchAreaChange?: (value: string) => void;
   formId?: string;
+  submitDataCoach?: string;
 }
 
 export function RecommendationPreferencesForm({
@@ -30,6 +31,7 @@ export function RecommendationPreferencesForm({
   researchArea = "",
   onResearchAreaChange,
   formId,
+  submitDataCoach,
 }: RecommendationPreferencesFormProps) {
   const { t } = useTranslation();
   const [topicsText, setTopicsText] = useState(() => formatSeedTopics(defaults.seed_topics));
@@ -146,7 +148,14 @@ export function RecommendationPreferencesForm({
 
       {onSubmit ? (
         <>
-          <Button type="submit" variant="primary" size="lg" className="w-100" disabled={submitting}>
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            className="w-100"
+            disabled={submitting}
+            {...(submitDataCoach ? { "data-coach": submitDataCoach } : {})}
+          >
             {submitting ? t("common.saving") : buttonLabel}
           </Button>
           {submitHint ? <p className="form-submit-hint">{submitHint}</p> : null}

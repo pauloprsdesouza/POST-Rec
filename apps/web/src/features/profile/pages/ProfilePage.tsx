@@ -239,16 +239,20 @@ export function ProfilePage() {
 
         <Tab.Container activeKey={activeTab} onSelect={(key) => key && setTab(key as ProfileTab)}>
           <div className="profile-hub panel">
-            <div className="profile-hub__tabs">
+            <div className="profile-hub__tabs" data-coach="coach-profile-tabs">
               <Nav variant="tabs" className="border-0">
                 <Nav.Item>
                   <Nav.Link eventKey="account">{t("profile.tabAccount")}</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="research">{t("profile.tabResearch")}</Nav.Link>
+                  <Nav.Link eventKey="research" data-coach="coach-profile-research-tab">
+                    {t("profile.tabResearch")}
+                  </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="preferences">{t("profile.tabPreferences")}</Nav.Link>
+                  <Nav.Link eventKey="preferences" data-coach="coach-profile-preferences-tab">
+                    {t("profile.tabPreferences")}
+                  </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
                   <Nav.Link eventKey="consent">{t("profile.tabConsent")}</Nav.Link>

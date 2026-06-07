@@ -33,7 +33,7 @@ export function RunsEmptyHero() {
         </ol>
 
         <div className="runs-empty-hero__actions">
-          <Link to="/runs/new" className="btn btn-primary btn-lg runs-empty-hero__cta">
+          <Link to="/runs/new" className="btn btn-primary btn-lg runs-empty-hero__cta" data-coach="coach-runs-new-run">
             {t("runs.emptyHeroCta")}
           </Link>
           <Link to="/how-it-works" className="runs-empty-hero__link">

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { useCoachMarks } from "@/shared/coachmarks/CoachMarkProvider";
 import { useApiHealth } from "@/shared/hooks/useApiHealth";
 import { LanguageSwitcher } from "@/shared/ui/LanguageSwitcher";
 import { ThemeToggle } from "@/shared/ui/ThemeToggle";
@@ -19,6 +20,7 @@ const DESKTOP_NAV = [
 export function AppLayout() {
   const { t } = useTranslation();
   const { user, signOut, consentDone, profileDone } = useAuth();
+  const { startTourForCurrentPage, resetTours } = useCoachMarks();
   const online = useApiHealth();
   const navigate = useNavigate();
 
@@ -43,7 +45,13 @@ export function AppLayout() {
             <Nav className="me-auto app-nav d-none d-lg-flex">
               {setupComplete ? (
                 DESKTOP_NAV.map((item) => (
-                  <Nav.Link as={NavLink} to={item.to} key={item.to} end={item.to === "/runs"}>
+                  <Nav.Link
+                    as={NavLink}
+                    to={item.to}
+                    key={item.to}
+                    end={item.to === "/runs"}
+                    {...(item.to === "/runs/new" ? { "data-coach": "coach-nav-new-run" } : {})}
+                  >
                     {t(item.labelKey)}
                   </Nav.Link>
                 ))
@@ -92,6 +100,21 @@ export function AppLayout() {
                   </Dropdown.Item>
                   <Dropdown.Item as={Link} to="/profile?tab=consent">
                     {t("nav.consent")}
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => {
+                      startTourForCurrentPage();
+                    }}
+                  >
+                    {t("coachmarks.replay")}
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => {
+                      resetTours();
+                      startTourForCurrentPage();
+                    }}
+                  >
+                    {t("coachmarks.replayAll")}
                   </Dropdown.Item>
                   <Dropdown.Divider />
                   <Dropdown.Item

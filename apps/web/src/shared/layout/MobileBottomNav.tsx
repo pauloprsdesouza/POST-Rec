@@ -68,7 +68,7 @@ export function MobileBottomNav() {
   }
 
   return (
-    <nav className="bottom-nav d-lg-none" aria-label={t("nav.mainNavigation")}>
+    <nav className="bottom-nav d-lg-none" aria-label={t("nav.mainNavigation")} data-coach="coach-bottom-nav">
       {MAIN_ITEMS.map((item) => {
         const active = item.match(pathname);
         const classNames = [

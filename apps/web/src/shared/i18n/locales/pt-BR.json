@@ -75,6 +75,82 @@
       "firstRun": "Primeira execução"
     }
   },
+  "coachmarks": {
+    "progress": "Etapa {{current}} de {{total}}",
+    "next": "Próximo",
+    "back": "Voltar",
+    "done": "Entendi",
+    "skip": "Pular tour",
+    "replay": "Tour guiado",
+    "replayAll": "Reiniciar todos os tours",
+    "targetMissing": "Esta dica não está disponível na sua tela atual. Continue para a próxima etapa.",
+    "runsHome": {
+      "newRun": {
+        "title": "Iniciar uma nova execução",
+        "body": "Crie uma execução sempre que quiser novas ideias de pesquisa a partir da literatura."
+      },
+      "filters": {
+        "title": "Filtrar execuções",
+        "body": "Alterne entre todas, prontas para revisar e ainda em geração."
+      },
+      "ready": {
+        "title": "Prontas para revisar",
+        "body": "Execuções concluídas com ideias aparecem aqui. Abra uma para ler recomendações e avaliá-las."
+      },
+      "mobileNav": {
+        "title": "Navegação rápida",
+        "body": "No celular, acesse execuções, nova execução, insights e perfil pela barra inferior."
+      }
+    },
+    "newRun": {
+      "topics": {
+        "title": "Tópicos iniciais",
+        "body": "Descreva o que você quer explorar. O POST-Rec usa esses tópicos para buscar e analisar artigos."
+      },
+      "mode": {
+        "title": "Modo de geração",
+        "body": "Escolha a profundidade da análise. SOTA-grounded é um bom padrão para a maioria dos pesquisadores."
+      },
+      "submit": {
+        "title": "Gerar ideias",
+        "body": "Inicie a execução aqui. Os resultados costumam ficar prontos em poucos minutos."
+      }
+    },
+    "runReview": {
+      "carousel": {
+        "title": "Navegar pelas ideias",
+        "body": "Alterne entre as ideias geradas. Marcas indicam ideias que você já avaliou."
+      },
+      "rating": {
+        "title": "Avalie cada ideia",
+        "body": "Use polegares ou estrelas para indicar o que é útil. Seu feedback melhora recomendações futuras."
+      },
+      "sources": {
+        "title": "Evidências por trás das ideias",
+        "body": "Expanda as fontes para ver os artigos usados. Cada ideia deve estar ligada à literatura real."
+      }
+    },
+    "profile": {
+      "tabs": {
+        "title": "Central do perfil",
+        "body": "Gerencie conta, pesquisa, preferências de recomendação e consentimento em um só lugar."
+      },
+      "research": {
+        "title": "Perfil de pesquisa",
+        "body": "Abra a aba Pesquisa para definir sua área e experiência. Isso molda como as ideias são apresentadas."
+      },
+      "preferences": {
+        "title": "Preferências padrão",
+        "body": "Abra Preferências para definir tópicos, profundidade e filtros padrão das novas execuções."
+      }
+    },
+    "insights": {
+      "overview": {
+        "title": "Suas métricas de pesquisa",
+        "body": "Acompanhe taxas de aprovação, alinhamento e resultados das execuções ao usar o POST-Rec."
+      }
+    }
+  },
   "auth": {
     "brandPanelLabel": "Sobre o POST-Rec",
     "eyebrow": "Para pesquisadores",

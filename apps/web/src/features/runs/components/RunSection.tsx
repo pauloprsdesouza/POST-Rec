@@ -7,6 +7,7 @@ interface RunSectionProps {
   description?: string;
   count: number;
   variant?: RunOutcome | "other";
+  dataCoach?: string;
   children: ReactNode;
 }
 
@@ -18,7 +19,7 @@ const VARIANT_CLASS: Record<string, string> = {
   other: "run-section--other",
 };
 
-export function RunSection({ title, description, count, variant = "other", children }: RunSectionProps) {
+export function RunSection({ title, description, count, variant = "other", dataCoach, children }: RunSectionProps) {
   if (count === 0) {
     return null;
   }
@@ -26,7 +27,7 @@ export function RunSection({ title, description, count, variant = "other", child
   const variantClass = VARIANT_CLASS[variant] ?? VARIANT_CLASS.other;
 
   return (
-    <section className={`run-section panel ${variantClass}`}>
+    <section className={`run-section panel ${variantClass}`} {...(dataCoach ? { "data-coach": dataCoach } : {})}>
       <header className="panel__header run-section__header">
         <div className="run-section__header-text">
           <h2 className="panel__title run-section__heading">{title}</h2>

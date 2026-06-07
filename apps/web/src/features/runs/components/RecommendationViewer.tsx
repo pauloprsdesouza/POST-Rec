@@ -186,13 +186,15 @@ export function RecommendationViewer({
       {!blind ? <RunUsagePanel run={run} /> : null}
 
       {recommendations.length ? (
-        <IdeaCarousel
-          items={recommendations}
-          activeIndex={activeIndex}
-          ratedIds={ratedIds}
-          skippedIds={skippedIds}
-          onSelect={onActiveIndexChange}
-        />
+        <div data-coach="coach-run-carousel">
+          <IdeaCarousel
+            items={recommendations}
+            activeIndex={activeIndex}
+            ratedIds={ratedIds}
+            skippedIds={skippedIds}
+            onSelect={onActiveIndexChange}
+          />
+        </div>
       ) : null}
 
       {active ? (
@@ -222,7 +224,7 @@ export function RecommendationViewer({
       ) : null}
 
       {sources.length > 0 ? (
-        <details className="idea-sources-all">
+        <details className="idea-sources-all" data-coach="coach-run-sources">
           <summary>{t("runs.allSources", { count: sources.length })}</summary>
           <SourceCatalog sources={sources} />
         </details>

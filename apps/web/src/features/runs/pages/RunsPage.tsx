@@ -76,11 +76,12 @@ export function RunsPage() {
               completed: groups.completed.length,
             })}
             action={
-              <Link to="/runs/new" className="btn btn-primary">
+              <Link to="/runs/new" className="btn btn-primary" data-coach="coach-runs-new-run">
                 {t("common.newRun")}
               </Link>
             }
           />
+          <div data-coach="coach-runs-filters">
           <RunsStatsStrip
             total={runs.length}
             active={groups.active.length}
@@ -88,6 +89,7 @@ export function RunsPage() {
             filter={filter}
             onFilterChange={setFilter}
           />
+          </div>
         </header>
 
         {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
@@ -105,6 +107,7 @@ export function RunsPage() {
             description={t("runs.sectionReadyDesc")}
             count={completed.length}
             variant="ready"
+            dataCoach="coach-runs-ready"
           >
             {completed.map((run) => (
               <RunListCard key={run.id} run={run} recommendationCount={run.recommendation_count} />

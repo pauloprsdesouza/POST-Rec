@@ -149,8 +149,11 @@ export function NewRunPage() {
           {blindExperimentEnrolled ? (
             <InlineAlert variant="info">{t("newRun.experimentBlindNotice")}</InlineAlert>
           ) : (
-            <RunModeSelector value={runMode} onChange={setRunMode} disabled={submitting} />
+            <div data-coach="coach-newrun-mode">
+              <RunModeSelector value={runMode} onChange={setRunMode} disabled={submitting} />
+            </div>
           )}
+          <div data-coach="coach-newrun-topics">
           <RecommendationPreferencesForm
             formId="new-run-form"
             defaults={preferences}
@@ -162,7 +165,9 @@ export function NewRunPage() {
             showResearchArea
             researchArea={researchArea}
             onResearchAreaChange={setResearchArea}
+            submitDataCoach="coach-newrun-submit"
           />
+          </div>
           </div>
         </div>
 
@@ -173,7 +178,7 @@ export function NewRunPage() {
         ) : null}
       </div>
 
-      <div className="sticky-form-cta d-lg-none">
+      <div className="sticky-form-cta d-lg-none" data-coach="coach-newrun-submit">
         <p className="sticky-form-cta__hint">{t("newRun.stickyHint")}</p>
         <Button
           type="submit"

@@ -80,7 +80,9 @@ export function InsightsPage() {
   return (
     <div className="page-shell insights-page">
       <div className="page-stack">
-        <PageHeader title={t("insights.title")} subtitle={t("insights.subtitle")} />
+        <div data-coach="coach-insights-overview">
+          <PageHeader title={t("insights.title")} subtitle={t("insights.subtitle")} />
+        </div>
 
         {!hasFeedback ? (
           <EmptyState

@@ -75,6 +75,82 @@
       "firstRun": "First run"
     }
   },
+  "coachmarks": {
+    "progress": "Step {{current}} of {{total}}",
+    "next": "Next",
+    "back": "Back",
+    "done": "Got it",
+    "skip": "Skip tour",
+    "replay": "Guided tour",
+    "replayAll": "Restart all tours",
+    "targetMissing": "This tip is not available on your current screen. Continue to the next step.",
+    "runsHome": {
+      "newRun": {
+        "title": "Start a new run",
+        "body": "Create a run whenever you want fresh research ideas from the literature."
+      },
+      "filters": {
+        "title": "Filter your runs",
+        "body": "Switch between all runs, ones ready to review, and runs still generating."
+      },
+      "ready": {
+        "title": "Ready to review",
+        "body": "Completed runs with ideas appear here. Open one to read evidence-backed recommendations and rate them."
+      },
+      "mobileNav": {
+        "title": "Quick navigation",
+        "body": "On mobile, jump between runs, new run, insights, and profile from the bottom bar."
+      }
+    },
+    "newRun": {
+      "topics": {
+        "title": "Seed topics",
+        "body": "Describe what you want to explore. POST-Rec uses these topics to search and analyze papers."
+      },
+      "mode": {
+        "title": "Generation mode",
+        "body": "Choose how deeply POST-Rec analyzes the literature. SOTA-grounded is a good default for most researchers."
+      },
+      "submit": {
+        "title": "Generate ideas",
+        "body": "Start the run here. Results usually take a few minutes — you can track progress on the run page."
+      }
+    },
+    "runReview": {
+      "carousel": {
+        "title": "Browse ideas",
+        "body": "Move between generated research ideas. Checkmarks show ideas you already rated."
+      },
+      "rating": {
+        "title": "Rate each idea",
+        "body": "Use thumbs or stars to tell POST-Rec what is useful. Your feedback improves future recommendations."
+      },
+      "sources": {
+        "title": "Evidence behind ideas",
+        "body": "Expand sources to see the papers POST-Rec used. Every idea should trace back to real literature."
+      }
+    },
+    "profile": {
+      "tabs": {
+        "title": "Your profile hub",
+        "body": "Manage account details, research background, recommendation defaults, and consent in one place."
+      },
+      "research": {
+        "title": "Research background",
+        "body": "Open the Research tab to set your field and experience. This shapes how ideas are framed for you."
+      },
+      "preferences": {
+        "title": "Recommendation defaults",
+        "body": "Open Preferences to set default topics, depth, and filters for new runs."
+      }
+    },
+    "insights": {
+      "overview": {
+        "title": "Your research metrics",
+        "body": "Track approval rates, alignment scores, and run outcomes as you use POST-Rec over time."
+      }
+    }
+  },
   "auth": {
     "brandPanelLabel": "About POST-Rec",
     "eyebrow": "For researchers",

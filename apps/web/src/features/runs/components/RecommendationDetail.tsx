@@ -122,6 +122,7 @@ export function RecommendationDetail({
         <p className="idea-detail__technique">{recommendation.technique_name}</p>
       ) : null}
 
+      <div data-coach="coach-run-rating">
       <QuickFeedbackPanel
         rating={savedRating}
         wouldUse={wouldUse}
@@ -146,6 +147,7 @@ export function RecommendationDetail({
           }
         }}
       />
+      </div>
 
       <nav className="idea-tabs" aria-label={t("ideas.sectionNav")}>
         {(
