@@ -10,10 +10,7 @@ class _FakeResponse:
 
 def test_compute_backoff_ceiling_grows_with_attempt():
     """Full jitter is random; verify the upper bound increases with attempt."""
-    samples = {
-        attempt: [compute_backoff(attempt=attempt, base_delay=2.0) for _ in range(40)]
-        for attempt in (1, 2, 3)
-    }
+    samples = {attempt: [compute_backoff(attempt=attempt, base_delay=2.0) for _ in range(40)] for attempt in (1, 2, 3)}
     assert max(samples[3]) > max(samples[1])
     for attempt, values in samples.items():
         ceiling = min(2.0 * (2 ** max(attempt - 1, 0)), 120.0)

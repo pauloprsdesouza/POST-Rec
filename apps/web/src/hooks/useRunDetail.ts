@@ -33,7 +33,6 @@ export function useRunDetail({ token, runId, onRunUpdate }: UseRunDetailOptions)
     }
 
     let active = true;
-    let stream: EventSource | undefined;
     let pollTimer: number | undefined;
 
     setRun(null);
@@ -142,7 +141,7 @@ export function useRunDetail({ token, runId, onRunUpdate }: UseRunDetailOptions)
       }, FALLBACK_POLL_MS);
     };
 
-    stream = openRunStream(token, runId, {
+    const stream = openRunStream(token, runId, {
       onUpdate: (payload) => {
         if (!active) {
           return;
