@@ -17,6 +17,23 @@ Workflow: [open-pull-request.yml](workflows/open-pull-request.yml)
 
 Features and refactors open as **draft** PRs; fixes and hotfixes open as ready for review.
 
+### One-time repo setup (required)
+
+In **Settings → Actions → General → Workflow permissions**:
+
+1. Select **Read and write permissions**
+2. Enable **Allow GitHub Actions to create and approve pull requests**
+
+Or via CLI (repo admin):
+
+```bash
+gh api repos/OWNER/REPO/actions/permissions/workflow -X PUT \
+  -f default_workflow_permissions=write \
+  -F can_approve_pull_request_reviews=true
+```
+
+Optional: add a `BOT_PAT` repository secret (fine-grained PAT with pull requests + contents write) if your org blocks the setting above.
+
 ## Release tags
 
 Version is read from `pyproject.toml` (`version = "0.1.0"` → tag `v0.1.0`).
