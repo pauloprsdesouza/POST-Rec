@@ -3,7 +3,7 @@
 import uuid
 from unittest.mock import MagicMock
 
-from apps.api.services.source_service import enrich_evidence_papers
+from apps.api.features.recommendations.sources import enrich_evidence_papers
 
 
 def _mock_doc(*, doi=None, title="Sample Paper", source="openalex", citations=42):

@@ -1,6 +1,6 @@
 """Tests for academic retrieval normalization."""
 
-from apps.api.services.retrieval_service import (
+from apps.api.features.retrieval.normalizers import (
     _normalize_crossref_work,
     _normalize_doi,
     _normalize_openalex_work,

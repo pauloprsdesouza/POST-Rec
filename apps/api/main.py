@@ -5,13 +5,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from apps.api.database import init_db
-from apps.api.observability.logging import configure_logging, get_logger
-from apps.api.routers.api import router
-from apps.api.routers.auth import router as auth_router
-from apps.api.routers.users import router as users_router
-from apps.api.services.embedding_config import validate_embedding_configuration
-from apps.api.settings import get_settings
+from apps.api.shared.database import init_db
+from apps.api.shared.observability.logging import configure_logging, get_logger
+from apps.api.features import api_router, auth_router, users_router
+from apps.api.shared.infra.embedding_config import validate_embedding_configuration
+from apps.api.shared.settings import get_settings
 
 configure_logging()
 logger = get_logger("postrec-api")
@@ -42,6 +40,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router)
+app.include_router(api_router)
 app.include_router(auth_router)
 app.include_router(users_router)

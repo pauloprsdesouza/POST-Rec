@@ -3,7 +3,7 @@
 
 from sqlalchemy import create_engine, inspect, text
 
-from apps.api.settings import get_settings
+from apps.api.shared.settings import get_settings
 
 
 def main() -> int:

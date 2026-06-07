@@ -3,8 +3,8 @@
 from decimal import Decimal
 from uuid import uuid4
 
-from apps.api.models import LLMUsage, RecommendationRun
-from apps.api.services.run_cost import add_usage_cost, get_run_estimated_cost, get_run_usage_summary
+from apps.api.shared.models import LLMUsage, RecommendationRun
+from apps.api.features.runs.cost import add_usage_cost, get_run_estimated_cost, get_run_usage_summary
 
 
 class _FakeRun:

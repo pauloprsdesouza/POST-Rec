@@ -1,6 +1,6 @@
 """Gemini settings and embedding model normalization tests."""
 
-from apps.api.settings import (
+from apps.api.shared.settings import (
     DEFAULT_GEMINI_EMBEDDING_DIMENSIONS,
     DEFAULT_GEMINI_EMBEDDING_MODEL,
     Settings,

@@ -1,6 +1,6 @@
 """Tests for relevance filtering."""
 
-from apps.api.services.relevance_service import compute_relevance_score, filter_and_rank_papers
+from apps.api.features.retrieval.relevance import compute_relevance_score, filter_and_rank_papers
 
 
 def test_relevant_paper_scores_high():

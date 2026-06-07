@@ -1,6 +1,6 @@
 """Tests for HTTP retry helpers."""
 
-from apps.api.services.http_retry import compute_backoff, full_jitter_backoff, parse_retry_after
+from apps.api.shared.infra.http_retry import compute_backoff, full_jitter_backoff, parse_retry_after
 
 
 class _FakeResponse:

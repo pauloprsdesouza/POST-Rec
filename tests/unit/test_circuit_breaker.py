@@ -1,6 +1,6 @@
 """Tests for source circuit breaker."""
 
-from apps.api.services.resilience.circuit_breaker import SourceCircuitBreaker
+from apps.api.shared.infra.resilience.circuit_breaker import SourceCircuitBreaker
 
 
 def test_circuit_opens_after_threshold():

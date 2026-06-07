@@ -3,7 +3,7 @@
 import json
 from unittest.mock import MagicMock
 
-from apps.api.services.ranking_calibration_service import RankingCalibrationService
+from apps.api.features.feedback.calibration import RankingCalibrationService
 
 
 def test_load_calibrated_weights_reads_modes_key(tmp_path, monkeypatch):
@@ -30,7 +30,7 @@ def test_load_calibrated_weights_reads_modes_key(tmp_path, monkeypatch):
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        "apps.api.services.ranking_calibration_service.CALIBRATION_PATH",
+        "apps.api.features.feedback.calibration.CALIBRATION_PATH",
         path,
     )
     service = RankingCalibrationService()
@@ -40,9 +40,9 @@ def test_load_calibrated_weights_reads_modes_key(tmp_path, monkeypatch):
 
 
 def test_compute_sota_quality_metrics_empty_db():
-    from apps.api.services.sota_metrics_service import compute_sota_quality_metrics
+    from apps.api.features.validation.metrics import compute_sota_quality_metrics
 
     db = MagicMock()
-    db.query.return_value.all.return_value = []
+    db.query.return_value.scalar.return_value = 0
     metrics = compute_sota_quality_metrics(db)
     assert metrics["sota_anchor_rate"] == 0.0

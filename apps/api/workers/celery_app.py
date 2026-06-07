@@ -6,9 +6,9 @@ from celery import Celery
 from celery.signals import worker_process_init
 from kombu import Exchange, Queue
 
-from apps.api.observability.logging import configure_logging, get_logger
-from apps.api.services.embedding_config import validate_embedding_configuration
-from apps.api.settings import get_settings
+from apps.api.shared.observability.logging import configure_logging, get_logger
+from apps.api.shared.infra.embedding_config import validate_embedding_configuration
+from apps.api.shared.settings import get_settings
 
 configure_logging()
 logger = get_logger("postrec-celery")
@@ -43,11 +43,6 @@ TASK_QUEUES = tuple(
     for name in (
         "postrec.recommendation.default",
         "postrec.recommendation.retrieval",
-        "postrec.recommendation.embedding",
-        "postrec.recommendation.ranking",
-        "postrec.recommendation.llm",
-        "postrec.recommendation.export",
-        "postrec.validation.metrics",
     )
 )
 
@@ -70,7 +65,5 @@ celery_app.conf.update(
     task_routes={
         "apps.api.workers.tasks.process_recommendation_run": {"queue": "postrec.recommendation.default"},
         "apps.api.workers.tasks.deferred_source_fetch": {"queue": "postrec.recommendation.retrieval"},
-        "apps.api.workers.tasks.generate_embeddings_task": {"queue": "postrec.recommendation.embedding"},
-        "apps.api.workers.tasks.generate_recommendations_task": {"queue": "postrec.recommendation.llm"},
     },
 )

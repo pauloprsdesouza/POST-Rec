@@ -2,7 +2,7 @@
 
 import pytest
 
-from apps.api.services.auth_service import AuthError, normalize_phone
+from apps.api.features.auth.service import AuthError, normalize_phone
 
 
 def test_normalize_phone_strips_formatting():

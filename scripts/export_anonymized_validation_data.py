@@ -7,8 +7,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from apps.api.database import SessionLocal
-from apps.api.models import RecommendationFeedback, SessionFinalSurvey, VolunteerSession
+from apps.api.shared.database import SessionLocal
+from apps.api.shared.models import RecommendationFeedback, SessionFinalSurvey, VolunteerSession
 
 
 def export_anonymized(output_path: str = "validation_export.json") -> None:

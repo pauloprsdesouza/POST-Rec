@@ -2,8 +2,8 @@
 
 import pytest
 
-from apps.api.services.fetch_queue import FetchJob, FetchQueueProcessor
-from apps.api.services.http_retry import RetryableFetchError
+from apps.api.features.retrieval.fetch_queue import FetchJob, FetchQueueProcessor
+from apps.api.shared.infra.http_retry import RetryableFetchError
 
 
 @pytest.mark.asyncio
@@ -20,7 +20,7 @@ async def test_fetch_queue_requeues_retryable_errors(monkeypatch):
         return None
 
     monkeypatch.setattr(
-        "apps.api.services.fetch_queue.source_rate_limiter.wait_async",
+        "apps.api.features.retrieval.fetch_queue.source_rate_limiter.wait_async",
         noop_wait,
     )
 
@@ -42,7 +42,7 @@ async def test_fetch_queue_exhausts_after_max_attempts(monkeypatch):
         return None
 
     monkeypatch.setattr(
-        "apps.api.services.fetch_queue.source_rate_limiter.wait_async",
+        "apps.api.features.retrieval.fetch_queue.source_rate_limiter.wait_async",
         noop_wait,
     )
 

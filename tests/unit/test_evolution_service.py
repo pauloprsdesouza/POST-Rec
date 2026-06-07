@@ -5,10 +5,10 @@ from unittest.mock import MagicMock, patch
 import httpx
 import pytest
 
-from apps.api.services.evolution_service import EvolutionError, evolution_service
+from apps.api.features.auth.evolution import EvolutionError, evolution_service
 
 
-@patch("apps.api.services.evolution_service.get_settings")
+@patch("apps.api.features.auth.evolution.get_settings")
 def test_send_text_success(mock_settings):
     settings = MagicMock()
     settings.evolution_api_url = "http://192.168.10.13:8080"
@@ -30,7 +30,7 @@ def test_send_text_success(mock_settings):
         assert call_kwargs[1]["headers"]["apikey"] == "test-key"
 
 
-@patch("apps.api.services.evolution_service.get_settings")
+@patch("apps.api.features.auth.evolution.get_settings")
 def test_send_text_not_configured_in_production(mock_settings):
     settings = MagicMock()
     settings.evolution_api_url = ""
@@ -43,7 +43,7 @@ def test_send_text_not_configured_in_production(mock_settings):
         evolution_service.send_text("5582999999999", "hello")
 
 
-@patch("apps.api.services.evolution_service.get_settings")
+@patch("apps.api.features.auth.evolution.get_settings")
 def test_send_text_http_error(mock_settings):
     settings = MagicMock()
     settings.evolution_api_url = "http://192.168.10.13:8080"

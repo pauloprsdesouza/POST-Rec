@@ -48,5 +48,3 @@ POST-Rec uses fewer, higher-yield API calls (no paid OpenAlex semantic search):
 | **Corpus prefetch** | Reuse matching `source_document` rows (free, no API) |
 | **S2 recommendations** | One POST from top Semantic Scholar seeds (free API) |
 | **Targeted arXiv** | Single CS/ML preprint query with `ti`/`abs` fields |
-
-Disable legacy fan-out: `RETRIEVAL_CONSOLIDATED_PLAN_ENABLED=false`

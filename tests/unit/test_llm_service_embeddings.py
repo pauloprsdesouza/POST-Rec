@@ -2,12 +2,12 @@
 
 from unittest.mock import MagicMock, patch
 
-from apps.api.services.llm_service import GeminiService
-from apps.api.settings import DEFAULT_GEMINI_EMBEDDING_MODEL, Settings
+from apps.api.features.recommendations.llm import GeminiService
+from apps.api.shared.settings import DEFAULT_GEMINI_EMBEDDING_MODEL, Settings
 
 
-@patch("apps.api.services.llm_service.get_settings")
-@patch("apps.api.services.llm_service.genai.Client")
+@patch("apps.api.features.recommendations.llm.get_settings")
+@patch("apps.api.features.recommendations.llm.genai.Client")
 def test_generate_embeddings_never_uses_text_embedding_004(mock_client_cls, mock_get_settings):
     mock_get_settings.return_value = Settings(
         gemini_embedding_model="text-embedding-004",
