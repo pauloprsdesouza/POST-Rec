@@ -31,17 +31,31 @@ class RetrievalCacheService:
                 logger.warning("retrieval_cache_redis_unavailable", error=str(exc))
                 self._redis = None
 
-    def _key(self, source: str, query: str, limit: int, pass_kind: str) -> str:
+    def _key(
+        self,
+        source: str,
+        query: str,
+        limit: int,
+        pass_kind: str,
+        job_type: str = "search",
+    ) -> str:
         digest = hashlib.sha256(
-            f"{source}|{query.strip().lower()}|{limit}|{pass_kind}".encode("utf-8")
+            f"{job_type}|{source}|{query.strip().lower()}|{limit}|{pass_kind}".encode()
         ).hexdigest()[:24]
         return f"{self._prefix}:fetch:{source}:{digest}"
 
-    def get(self, source: str, query: str, limit: int, pass_kind: str) -> list[dict[str, Any]] | None:
+    def get(
+        self,
+        source: str,
+        query: str,
+        limit: int,
+        pass_kind: str,
+        job_type: str = "search",
+    ) -> list[dict[str, Any]] | None:
         if not self._redis:
             return None
         try:
-            raw = self._redis.get(self._key(source, query, limit, pass_kind))
+            raw = self._redis.get(self._key(source, query, limit, pass_kind, job_type))
             if not raw:
                 return None
             payload = json.loads(raw)
@@ -59,12 +73,13 @@ class RetrievalCacheService:
         limit: int,
         pass_kind: str,
         papers: list[dict[str, Any]],
+        job_type: str = "search",
     ) -> None:
         if not self._redis or not papers:
             return
         try:
             self._redis.set(
-                self._key(source, query, limit, pass_kind),
+                self._key(source, query, limit, pass_kind, job_type),
                 json.dumps(papers, default=str),
                 ex=self._ttl,
             )

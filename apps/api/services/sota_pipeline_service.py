@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -236,9 +235,7 @@ class SotaPipelineService:
             gap_matrix=gap_matrix,
             facet_map=facet_map,
         )
-        published = [
-            rec for rec in verified if rec.get("_publication_status", "published") == "published"
-        ]
+        published = [rec for rec in verified if rec.get("_publication_status", "published") == "published"]
         diverse = select_facet_diverse(
             published or verified,
             max_items=max_recommendations,

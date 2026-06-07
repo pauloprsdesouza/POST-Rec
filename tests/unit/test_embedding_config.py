@@ -18,10 +18,7 @@ def test_settings_field_validator_normalizes_legacy_env_value():
 
 
 def test_validate_embedding_configuration_accepts_current_model():
-    assert (
-        validate_embedding_configuration(DEFAULT_GEMINI_EMBEDDING_MODEL)
-        == DEFAULT_GEMINI_EMBEDDING_MODEL
-    )
+    assert validate_embedding_configuration(DEFAULT_GEMINI_EMBEDDING_MODEL) == DEFAULT_GEMINI_EMBEDDING_MODEL
 
 
 def test_legacy_env_value_is_safe_at_runtime(monkeypatch):
@@ -35,6 +32,4 @@ def test_legacy_env_value_is_safe_at_runtime(monkeypatch):
 
 
 def test_resolve_embedding_model_handles_models_prefix():
-    assert (
-        resolve_embedding_model("models/text-embedding-004") == DEFAULT_GEMINI_EMBEDDING_MODEL
-    )
+    assert resolve_embedding_model("models/text-embedding-004") == DEFAULT_GEMINI_EMBEDDING_MODEL

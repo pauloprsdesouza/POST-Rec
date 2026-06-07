@@ -1,36 +1,296 @@
-# POST-Rec application services only.
-# Infrastructure (Postgres/pgvector, Redis, RabbitMQ, MinIO) runs in portainer-stack @ 192.168.10.13
+# POST-Rec — local Docker stack (infrastructure + application).
+#
+# Full stack:
+#   copy .env.docker.example .env   # add GEMINI_API_KEY
+#   docker compose up --build
+#
+# Infra only (app on host with uvicorn/celery/npm):
+#   copy .env.local.infra.example .env
+#   docker compose up -d postgres redis rabbitmq minio minio-init
+#   py -m alembic upgrade head
+#
+# Management UI: http://localhost:15672  (postrec / postrec)
+# MinIO console: http://localhost:9001   (minioadmin / minioadmin)
+# Evolution API: http://localhost:8080   (apikey in .env — default dev-evolution-api-key)
+# Evolution Manager (QR pairing): http://localhost:3000
+
+name: post-rec
+
+x-postrec-env: &postrec-env
+  DATABASE_URL: postgresql+psycopg://postrec:postrec@postgres:5432/postrec
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_USER: postrec
+  RABBITMQ_PASSWORD: postrec
+  CELERY_BROKER_URL: pyamqp://postrec:postrec@rabbitmq:5672//
+  REDIS_URL: redis://redis:6379/0
+  CELERY_RESULT_BACKEND: redis://redis:6379/1
+  CACHE_ENABLED: "true"
+  CACHE_REDIS_DB: "2"
+  MINIO_ENDPOINT: minio:9000
+  MINIO_ACCESS_KEY: minioadmin
+  MINIO_SECRET_KEY: minioadmin
+  MINIO_USE_SSL: "false"
+  MINIO_BUCKET: postrec-artifacts
+  OTEL_ENABLED: "false"
+  EVOLUTION_API_URL: http://evolution-api:8080
+  EVOLUTION_API_KEY: ${EVOLUTION_API_KEY:-dev-evolution-api-key}
+  EVOLUTION_INSTANCE_NAME: ${EVOLUTION_INSTANCE_NAME:-postrec}
+  WHATSAPP_NOTIFICATIONS_ENABLED: ${WHATSAPP_NOTIFICATIONS_ENABLED:-true}
+  RETRIEVAL_CACHE_ENABLED: "true"
+  RETRIEVAL_USE_CELERY_DEFERRED: "true"
+
 services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postrec
+      POSTGRES_USER: postrec
+      POSTGRES_PASSWORD: postrec
+    ports:
+      - "5432:5432"
+    volumes:
+      - postrec_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postrec -d postrec"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - "6379:6379"
+    volumes:
+      - postrec_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: postrec
+      RABBITMQ_DEFAULT_PASS: postrec
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - postrec_rabbitmq_data:/var/lib/rabbitmq
+      - ./docker/rabbitmq/99-celery-compat.conf:/etc/rabbitmq/conf.d/99-celery-compat.conf:ro
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  minio:
+    image: minio/minio:RELEASE.2025-01-20T14-49-07Z
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - postrec_minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  minio-init:
+    image: minio/mc:RELEASE.2025-01-17T23-25-50Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 minioadmin minioadmin &&
+      mc mb --ignore-existing local/postrec-artifacts &&
+      echo 'MinIO bucket postrec-artifacts ready'
+      "
+    restart: "no"
+
+  evolution-postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: evolution
+      POSTGRES_USER: evolution
+      POSTGRES_PASSWORD: evolution
+    volumes:
+      - postrec_evolution_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evolution -d evolution"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  evolution-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --loglevel warning
+    volumes:
+      - postrec_evolution_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  evolution-api:
+    image: evoapicloud/evolution-api:v2.3.7
+    restart: unless-stopped
+    depends_on:
+      evolution-postgres:
+        condition: service_healthy
+      evolution-redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    volumes:
+      - postrec_evolution_instances:/evolution/instances
+    env_file:
+      - path: docker/evolution/.env
+        required: false
+    environment:
+      SERVER_URL: http://localhost:8080
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY:-dev-evolution-api-key}
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://evolution:evolution@evolution-postgres:5432/evolution?schema=evolution_api
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://evolution-redis:6379/1
+      CACHE_REDIS_PREFIX_KEY: evolution
+      LOG_LEVEL: ERROR,WARN,INFO
+      LANGUAGE: en
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 45s
+
+  evolution-manager:
+    image: evoapicloud/evolution-manager:latest
+    restart: unless-stopped
+    depends_on:
+      evolution-api:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+
+  evolution-init:
+    build: .
+    command: python scripts/evolution_init.py
+    environment:
+      EVOLUTION_API_URL: http://evolution-api:8080
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY:-dev-evolution-api-key}
+      EVOLUTION_INSTANCE_NAME: ${EVOLUTION_INSTANCE_NAME:-postrec}
+    depends_on:
+      evolution-api:
+        condition: service_healthy
+    restart: "no"
+
+  migrate:
+    build: .
+    command: python scripts/docker_migrate.py
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      <<: *postrec-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
   api:
     build: .
     command: uvicorn apps.api.main:app --host 0.0.0.0 --port 8000 --reload
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      <<: *postrec-env
     ports:
       - "8000:8000"
     volumes:
       - .:/app
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+      migrate:
+        condition: service_completed_successfully
+      evolution-api:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
-      interval: 10s
+      interval: 15s
       timeout: 5s
-      retries: 5
+      retries: 8
+      start_period: 30s
+
+  worker:
+    build: .
+    command: >
+      celery -A apps.api.workers.celery_app worker --loglevel=INFO
+      -Q postrec.recommendation.default,postrec.recommendation.retrieval,postrec.recommendation.embedding,postrec.recommendation.ranking,postrec.recommendation.llm,postrec.recommendation.export,postrec.validation.metrics
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      <<: *postrec-env
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      api:
+        condition: service_started
 
   web:
     build:
       context: ./apps/web
       dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ""
     ports:
       - "5173:80"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
-  worker:
-    build: .
-    command: celery -A apps.api.workers.celery_app worker --loglevel=INFO -Q postrec.recommendation.default,postrec.recommendation.retrieval,postrec.recommendation.embedding,postrec.recommendation.ranking,postrec.recommendation.llm,postrec.recommendation.export,postrec.validation.metrics
-    env_file: .env
-    volumes:
-      - .:/app
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+volumes:
+  postrec_postgres_data:
+  postrec_redis_data:
+  postrec_rabbitmq_data:
+  postrec_minio_data:
+  postrec_evolution_postgres_data:
+  postrec_evolution_redis_data:
+  postrec_evolution_instances:

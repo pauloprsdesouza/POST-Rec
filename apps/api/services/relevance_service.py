@@ -4,14 +4,70 @@ import math
 import re
 from typing import Any
 
-STOPWORDS = frozenset({
-    "a", "an", "the", "and", "or", "of", "in", "on", "for", "to", "with", "by",
-    "from", "at", "is", "are", "was", "were", "be", "been", "being", "have", "has",
-    "had", "do", "does", "did", "will", "would", "could", "should", "may", "might",
-    "this", "that", "these", "those", "it", "its", "as", "we", "our", "their", "they",
-    "using", "based", "study", "analysis", "approach", "model", "models", "method",
-    "methods", "paper", "review", "survey", "research", "new", "towards", "via",
-})
+STOPWORDS = frozenset(
+    {
+        "a",
+        "an",
+        "the",
+        "and",
+        "or",
+        "of",
+        "in",
+        "on",
+        "for",
+        "to",
+        "with",
+        "by",
+        "from",
+        "at",
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "being",
+        "have",
+        "has",
+        "had",
+        "do",
+        "does",
+        "did",
+        "will",
+        "would",
+        "could",
+        "should",
+        "may",
+        "might",
+        "this",
+        "that",
+        "these",
+        "those",
+        "it",
+        "its",
+        "as",
+        "we",
+        "our",
+        "their",
+        "they",
+        "using",
+        "based",
+        "study",
+        "analysis",
+        "approach",
+        "model",
+        "models",
+        "method",
+        "methods",
+        "paper",
+        "review",
+        "survey",
+        "research",
+        "new",
+        "towards",
+        "via",
+    }
+)
 
 TOKEN_PATTERN = re.compile(r"[a-z0-9]+")
 
@@ -19,11 +75,7 @@ TOKEN_PATTERN = re.compile(r"[a-z0-9]+")
 def tokenize(text: str | None) -> set[str]:
     if not text:
         return set()
-    return {
-        token
-        for token in TOKEN_PATTERN.findall(text.lower())
-        if len(token) > 2 and token not in STOPWORDS
-    }
+    return {token for token in TOKEN_PATTERN.findall(text.lower()) if len(token) > 2 and token not in STOPWORDS}
 
 
 def _overlap_score(text_tokens: set[str], query_tokens: set[str]) -> float:

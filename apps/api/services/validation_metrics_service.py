@@ -44,9 +44,7 @@ class ValidationMetricsService:
             }
 
         eas_values = [
-            float(f.expectation_alignment_score)
-            for f in feedbacks
-            if f.expectation_alignment_score is not None
+            float(f.expectation_alignment_score) for f in feedbacks if f.expectation_alignment_score is not None
         ]
         approved = sum(1 for f in feedbacks if f.decision == "approved")
         would_use = sum(1 for f in feedbacks if f.would_use_in_real_paper == "yes")
@@ -63,9 +61,7 @@ class ValidationMetricsService:
             "run_failure_rate": failed / total_runs if total_runs else 0.0,
             "total_runs": total_runs,
             "total_feedback": len(feedbacks),
-            "rejection_reasons": [
-                f.comment for f in feedbacks if f.decision == "rejected" and f.comment
-            ],
+            "rejection_reasons": [f.comment for f in feedbacks if f.decision == "rejected" and f.comment],
             **sota_metrics,
         }
 

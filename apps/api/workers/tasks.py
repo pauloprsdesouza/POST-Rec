@@ -13,8 +13,8 @@ from apps.api.services.hybrid_ranking_service import hybrid_ranking_service
 from apps.api.services.llm_service import gemini_service
 from apps.api.services.retrieval_service import retrieval_service
 from apps.api.services.run_events import failure_user_message, retry_user_message
-from apps.api.services.run_stream_service import run_stream_service
 from apps.api.services.run_service import run_service
+from apps.api.services.run_stream_service import run_stream_service
 from apps.api.services.sota_pipeline_service import sota_pipeline_service
 from apps.api.settings import get_settings
 from apps.api.workers.celery_app import celery_app
@@ -73,11 +73,7 @@ def process_recommendation_run(self, run_id: str) -> dict:
             from apps.api.services.profile_service import profile_service
 
             try:
-                profile = (
-                    db.query(UserResearchProfile)
-                    .filter_by(user_id=uuid.UUID(run.user_id))
-                    .first()
-                )
+                profile = db.query(UserResearchProfile).filter_by(user_id=uuid.UUID(run.user_id)).first()
                 if profile:
                     research_area = research_area or profile.research_area
                     learned_topics = list(profile.learned_topics or [])
@@ -136,9 +132,7 @@ def process_recommendation_run(self, run_id: str) -> dict:
                 )
         db.commit()
 
-        embedding_by_paper_id = {
-            str(paper.id): emb for paper, emb in zip(papers, embeddings, strict=False)
-        }
+        embedding_by_paper_id = {str(paper.id): emb for paper, emb in zip(papers, embeddings, strict=False)}
 
         run_service.update_status(db, run, RunStatus.RANKING_CANDIDATES, 60, "Ranking")
 
@@ -163,9 +157,7 @@ def process_recommendation_run(self, run_id: str) -> dict:
         db.commit()
 
         ranked_embeddings = [
-            embedding_by_paper_id[str(paper.id)]
-            for paper in papers
-            if str(paper.id) in embedding_by_paper_id
+            embedding_by_paper_id[str(paper.id)] for paper in papers if str(paper.id) in embedding_by_paper_id
         ]
 
         run_service.update_status(

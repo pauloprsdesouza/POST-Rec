@@ -22,6 +22,7 @@ def validate_worker_embedding_configuration(**_kwargs) -> None:
     validate_embedding_configuration(current.gemini_embedding_model)
     logger.info("worker_embedding_model_validated", model=current.gemini_embedding_model)
 
+
 celery_app = Celery(
     "postrec",
     broker=settings.celery_broker_url,
@@ -67,17 +68,9 @@ celery_app.conf.update(
     worker_disable_mingle=True,
     task_create_missing_queues=True,
     task_routes={
-        "apps.api.workers.tasks.process_recommendation_run": {
-            "queue": "postrec.recommendation.default"
-        },
-        "apps.api.workers.tasks.deferred_source_fetch": {
-            "queue": "postrec.recommendation.retrieval"
-        },
-        "apps.api.workers.tasks.generate_embeddings_task": {
-            "queue": "postrec.recommendation.embedding"
-        },
-        "apps.api.workers.tasks.generate_recommendations_task": {
-            "queue": "postrec.recommendation.llm"
-        },
+        "apps.api.workers.tasks.process_recommendation_run": {"queue": "postrec.recommendation.default"},
+        "apps.api.workers.tasks.deferred_source_fetch": {"queue": "postrec.recommendation.retrieval"},
+        "apps.api.workers.tasks.generate_embeddings_task": {"queue": "postrec.recommendation.embedding"},
+        "apps.api.workers.tasks.generate_recommendations_task": {"queue": "postrec.recommendation.llm"},
     },
 )

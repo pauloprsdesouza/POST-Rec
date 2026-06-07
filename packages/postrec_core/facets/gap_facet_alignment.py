@@ -74,9 +74,7 @@ def compute_gap_facet_alignment(
     if isinstance(aligned_gaps, list):
         gaps = [str(g) for g in aligned_gaps if g] + gaps
 
-    proposal_text = " ".join(
-        proposal_facets.get(facet.value, "") for facet in FacetType.all_ordered()
-    )
+    proposal_text = " ".join(proposal_facets.get(facet.value, "") for facet in FacetType.all_ordered())
     proposal_tokens = _content_tokens(proposal_text)
     if not proposal_tokens:
         return 0.0

@@ -15,11 +15,7 @@ class EvolutionError(Exception):
 class EvolutionService:
     def is_configured(self) -> bool:
         settings = get_settings()
-        return bool(
-            settings.evolution_api_url
-            and settings.evolution_api_key
-            and settings.evolution_instance_name
-        )
+        return bool(settings.evolution_api_url and settings.evolution_api_key and settings.evolution_instance_name)
 
     def send_text(self, phone_number: str, text: str) -> None:
         settings = get_settings()
@@ -33,10 +29,7 @@ class EvolutionService:
                 return
             raise EvolutionError("WhatsApp messaging is not configured")
 
-        url = (
-            f"{settings.evolution_api_url.rstrip('/')}"
-            f"/message/sendText/{settings.evolution_instance_name}"
-        )
+        url = f"{settings.evolution_api_url.rstrip('/')}/message/sendText/{settings.evolution_instance_name}"
         headers = {
             "apikey": settings.evolution_api_key,
             "Content-Type": "application/json",

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from apps.api.database import get_db
 from apps.api.dependencies import get_current_user_required
-from apps.api.models import RecommendationCandidate, RecommendationRun, User, ParticipantConsent
+from apps.api.models import ParticipantConsent, RecommendationCandidate, RecommendationRun, User
 from apps.api.schemas.common import (
     RecommendationDefaults,
     RunSummaryResponse,
@@ -72,11 +72,7 @@ def _load_runs(db: Session, user_id: uuid.UUID, limit: int) -> list[RunSummaryRe
 
     summaries: list[RunSummaryResponse] = []
     for run in runs:
-        rec_count = (
-            db.query(RecommendationCandidate)
-            .filter_by(run_id=run.id, status="published")
-            .count()
-        )
+        rec_count = db.query(RecommendationCandidate).filter_by(run_id=run.id, status="published").count()
         summaries.append(
             RunSummaryResponse(
                 id=run.id,

@@ -7,7 +7,6 @@ from typing import Any
 
 from packages.postrec_core.facets.extraction import extract_proposal_facets
 from packages.postrec_core.facets.facet_map import LiteratureFacetMap
-from packages.postrec_core.facets.gap_facet_alignment import compute_gap_facet_alignment
 from packages.postrec_core.facets.saturation import (
     saturation_adjusted_weights,
     saturation_novelty_multiplier,

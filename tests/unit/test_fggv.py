@@ -1,6 +1,6 @@
 """Unit tests for facet extraction and FGGV scoring."""
 
-from packages.postrec_core.facets.extraction import extract_paper_facets, extract_proposal_facets
+from packages.postrec_core.facets.extraction import extract_paper_facets
 from packages.postrec_core.facets.facet_map import build_literature_facet_map
 from packages.postrec_core.facets.gap_facet_alignment import compute_gap_facet_alignment
 from packages.postrec_core.scoring.facet_grounded_ranking import compute_facet_novelty_index, compute_fggv_score

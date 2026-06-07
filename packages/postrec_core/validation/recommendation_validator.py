@@ -104,8 +104,7 @@ def validate_recommendation(
     if mode == RunMode.FGGV:
         facet_deltas = recommendation.get("facet_deltas")
         if not isinstance(facet_deltas, dict) or not any(
-            str(facet_deltas.get(k) or "").strip()
-            for k in ("problem", "method", "data", "evaluation")
+            str(facet_deltas.get(k) or "").strip() for k in ("problem", "method", "data", "evaluation")
         ):
             issues.append("Missing facet_deltas (problem/method/data/evaluation).")
         aligned = recommendation.get("aligned_gaps") or []

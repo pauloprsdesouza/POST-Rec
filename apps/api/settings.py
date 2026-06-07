@@ -78,6 +78,17 @@ class Settings(BaseSettings):
     retrieval_semantic_scholar_min_interval: float = 5.0
     retrieval_arxiv_min_interval: float = 4.0
     retrieval_source_priority: str = "openalex,crossref,semantic_scholar,arxiv"
+    retrieval_consolidated_plan_enabled: bool = True
+    retrieval_corpus_prefetch_enabled: bool = True
+    retrieval_s2_recommendations_enabled: bool = True
+    retrieval_s2_recommendation_seeds: int = 5
+    retrieval_s2_recommendation_limit: int = 50
+    retrieval_learned_topic_cap: int = 2
+    retrieval_crossref_max_queries: int = 2
+    retrieval_openalex_per_page_max: int = 100
+    retrieval_crossref_rows_max: int = 80
+    retrieval_semantic_scholar_limit_max: int = 100
+    retrieval_arxiv_max_results: int = 40
     hybrid_retrieval_enabled: bool = True
     hybrid_sparse_weight: float = 0.4
     sota_recent_years: int = 3
@@ -149,9 +160,7 @@ class Settings(BaseSettings):
         user = quote_plus(self.rabbitmq_user)
 
         if not self.celery_broker_url and self.rabbitmq_password:
-            self.celery_broker_url = (
-                f"pyamqp://{user}:{pwd}@{self.rabbitmq_host}:{self.rabbitmq_port}//"
-            )
+            self.celery_broker_url = f"pyamqp://{user}:{pwd}@{self.rabbitmq_host}:{self.rabbitmq_port}//"
         if not self.redis_url and self.rabbitmq_password:
             self.redis_url = f"redis://:{pwd}@{self.rabbitmq_host}:6379/0"
         if not self.celery_result_backend and self.rabbitmq_password:

@@ -35,3 +35,18 @@ CROSSREF_EMAIL=
 2. Ensure **Redis** is reachable — shared rate limiter, circuit state, and fetch cache.
 3. Re-run similar topics within cache TTL to avoid duplicate 429 storms.
 4. If one source stays open, runs still complete using papers from other sources.
+
+## Consolidated retrieval strategy (`feature/retrieval-strategy`)
+
+POST-Rec uses fewer, higher-yield API calls (no paid OpenAlex semantic search):
+
+| Technique | Benefit |
+|-----------|---------|
+| **Consolidated query plan** | ~10–20 jobs/run instead of 80+ keyword fan-out |
+| **Larger page sizes** | OpenAlex `per_page=100`, Crossref `rows=80`, S2 `limit=100` |
+| **Server-side filters** | `has_abstract`, OpenAlex `is_paratext:false`, S2 `year=` for SOTA |
+| **Corpus prefetch** | Reuse matching `source_document` rows (free, no API) |
+| **S2 recommendations** | One POST from top Semantic Scholar seeds (free API) |
+| **Targeted arXiv** | Single CS/ML preprint query with `ti`/`abs` fields |
+
+Disable legacy fan-out: `RETRIEVAL_CONSOLIDATED_PLAN_ENABLED=false`

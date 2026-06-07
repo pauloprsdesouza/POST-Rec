@@ -38,9 +38,7 @@ class User(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    research_profile: Mapped["UserResearchProfile | None"] = relationship(
-        back_populates="user", uselist=False
-    )
+    research_profile: Mapped["UserResearchProfile | None"] = relationship(back_populates="user", uselist=False)
 
 
 class AuthOtpChallenge(Base):
@@ -199,9 +197,7 @@ class RecommendationRunEvent(Base):
     __tablename__ = "recommendation_run_event"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    run_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("recommendation_run.id"), nullable=False
-    )
+    run_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("recommendation_run.id"), nullable=False)
     session_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("volunteer_session.id"), nullable=True
     )
@@ -244,9 +240,7 @@ class DocumentEmbedding(Base):
     __tablename__ = "document_embedding"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    document_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("source_document.id"), nullable=False
-    )
+    document_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("source_document.id"), nullable=False)
     embedding = mapped_column(Vector(768), nullable=False)  # must match GEMINI_EMBEDDING_DIMENSIONS
     embedding_model: Mapped[str] = mapped_column(Text, nullable=False)
     content_hash: Mapped[str] = mapped_column(Text, nullable=False)
@@ -259,9 +253,7 @@ class RecommendationCandidate(Base):
     __tablename__ = "recommendation_candidate"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    run_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("recommendation_run.id"), nullable=False
-    )
+    run_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("recommendation_run.id"), nullable=False)
     title: Mapped[str] = mapped_column(Text, nullable=False)
     technique_name: Mapped[str | None] = mapped_column(Text, nullable=True)
     research_gap: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -304,9 +296,7 @@ class RecommendationFeedback(Base):
     session_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("volunteer_session.id"), nullable=False
     )
-    run_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("recommendation_run.id"), nullable=False
-    )
+    run_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("recommendation_run.id"), nullable=False)
     recommendation_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("recommendation_candidate.id"), nullable=False
     )
@@ -347,11 +337,7 @@ class UserInteractionEvent(Base):
 
 class SessionFinalSurvey(Base):
     __tablename__ = "session_final_survey"
-    __table_args__ = (
-        CheckConstraint(
-            "expectation_met_score BETWEEN 1 AND 5", name="ck_expectation_met_score"
-        ),
-    )
+    __table_args__ = (CheckConstraint("expectation_met_score BETWEEN 1 AND 5", name="ck_expectation_met_score"),)
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id: Mapped[str | None] = mapped_column(Text, nullable=True)

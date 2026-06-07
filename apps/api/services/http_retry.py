@@ -73,6 +73,8 @@ async def get_with_retry(
     *,
     params: dict[str, Any] | None = None,
     headers: dict[str, str] | None = None,
+    json: dict[str, Any] | None = None,
+    method: str = "GET",
     retries: int = 5,
     base_delay: float = 2.0,
     max_delay: float = 120.0,
@@ -88,7 +90,10 @@ async def get_with_retry(
 
     for attempt in range(retries):
         try:
-            response = await client.get(url, params=params, headers=headers)
+            if method.upper() == "POST":
+                response = await client.post(url, params=params, headers=headers, json=json)
+            else:
+                response = await client.get(url, params=params, headers=headers)
             last_response = response
             if response.status_code not in RETRYABLE_STATUS_CODES:
                 response.raise_for_status()

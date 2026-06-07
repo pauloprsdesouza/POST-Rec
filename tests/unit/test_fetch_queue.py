@@ -1,8 +1,5 @@
 """Tests for fetch queue scheduling."""
 
-import asyncio
-from unittest.mock import AsyncMock
-
 import pytest
 
 from apps.api.services.fetch_queue import FetchJob, FetchQueueProcessor

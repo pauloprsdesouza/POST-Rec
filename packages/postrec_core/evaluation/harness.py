@@ -94,8 +94,10 @@ def _score_proposal(
     scores = dict(proposal.get("scores") or {})
     doc_novelty = _document_novelty(proposal, papers)
     sota_fit = compute_sota_fit(proposal, papers)
-    mode = RunMode.FGGV if method.value.startswith("m_fggv") else (
-        RunMode.SOTA if method != BaselineMethod.B1_QUICK else RunMode.QUICK
+    mode = (
+        RunMode.FGGV
+        if method.value.startswith("m_fggv")
+        else (RunMode.SOTA if method != BaselineMethod.B1_QUICK else RunMode.QUICK)
     )
 
     validation = validate_recommendation(proposal, papers, mode=mode)
@@ -199,12 +201,8 @@ def run_offline_evaluation(
             "separation_ratio": disc.separation_ratio,
         }
         if method == BaselineMethod.M_FGGV and false_novel_good:
-            entry["false_novel_facet_count_good_mean"] = round(
-                sum(false_novel_good) / len(false_novel_good), 2
-            )
-            entry["false_novel_facet_count_weak_mean"] = round(
-                sum(false_novel_weak) / len(false_novel_weak), 2
-            )
+            entry["false_novel_facet_count_good_mean"] = round(sum(false_novel_good) / len(false_novel_good), 2)
+            entry["false_novel_facet_count_weak_mean"] = round(sum(false_novel_weak) / len(false_novel_weak), 2)
         summary[method.value] = entry
 
     return {
