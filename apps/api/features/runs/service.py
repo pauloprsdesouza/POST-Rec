@@ -73,7 +73,7 @@ class RunService:
             input={"topics": topics, "constraints": constraints},
             mode=mode,
             status=RunStatus.QUEUED,
-            progress=0,
+            progress=2,
             max_papers=max_papers,
             max_recommendations=max_recommendations,
             experiment_id=experiment_id,
@@ -130,6 +130,20 @@ class RunService:
             RunStatus.FAILED_SCHEMA_VALIDATION,
         ):
             cache_service.invalidate_validation_dashboard()
+
+    def bump_progress(self, db: Session, run: RecommendationRun, progress: int) -> None:
+        """Raise progress without changing status (e.g. long-running substeps)."""
+        if progress <= run.progress:
+            return
+        run.progress = progress
+        db.commit()
+
+        cache_service.invalidate_run(str(run.id))
+
+        if run.user_id:
+            cache_service.invalidate_user_runs(str(run.user_id))
+
+        run_stream_service.publish(db, run)
 
     def cancel_run(self, db: Session, run: RecommendationRun) -> None:
         if run.status in (RunStatus.COMPLETED, RunStatus.FAILED, RunStatus.CANCELLED):

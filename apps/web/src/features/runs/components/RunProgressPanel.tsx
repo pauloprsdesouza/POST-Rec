@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import type { RecommendationRun, RunEvent } from "@/shared/types/api";
 
-import { getRunOutcome } from "@/features/runs/utils/runs";
+import { getRunDisplayProgress, getRunOutcome } from "@/features/runs/utils/runs";
 
 import { formatEstimatedCost } from "@/features/runs/utils/formatCost";
 
@@ -39,6 +39,7 @@ export function RunProgressPanel({ run, events, live = true }: RunProgressPanelP
     defaultValue: t("statusDescriptions.default", { step: stepLabel }),
   });
   const isActive = outcome === "in_progress";
+  const displayProgress = getRunDisplayProgress(run);
   const costFormatted = formatEstimatedCost(run.estimated_cost_usd ?? 0, i18n.language);
 
   return (
@@ -52,7 +53,7 @@ export function RunProgressPanel({ run, events, live = true }: RunProgressPanelP
       ) : null}
 
       <RunProgressBar
-        value={run.progress}
+        value={displayProgress}
         tone={outcome === "failed" ? "danger" : outcome === "ready" ? "success" : "default"}
         label={t("progress.progressLabel")}
       />
@@ -60,7 +61,7 @@ export function RunProgressPanel({ run, events, live = true }: RunProgressPanelP
         <div className="run-progress__stats">
           <div className="run-progress__stat">
             <span className="run-progress__stat-label">{t("progress.progressLabel")}</span>
-            <span className="run-progress__stat-value">{run.progress}%</span>
+            <span className="run-progress__stat-value">{displayProgress}%</span>
           </div>
           <div className="run-progress__stat">
             <span className="run-progress__stat-label">{t("progress.estCost")}</span>

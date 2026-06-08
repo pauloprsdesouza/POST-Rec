@@ -133,6 +133,9 @@ def process_recommendation_run(self, run_id: str) -> dict:
             db.commit()
             _invalidate_run_caches(run)
 
+        if run.status == RunStatus.QUEUED:
+            run_service.update_status(db, run, RunStatus.STARTED, 5, "Starting run")
+
         run_input = run.input or {}
         topics = run_input.get("topics", [])
         constraints = run_input.get("constraints") or {}
@@ -173,6 +176,7 @@ def process_recommendation_run(self, run_id: str) -> dict:
         db.commit()
         _invalidate_run_caches(run)
         run_stream_service.publish(db, run)
+        run_service.bump_progress(db, run, 30)
 
         run_service.update_status(db, run, RunStatus.GENERATING_EMBEDDINGS, 45, "Embedding papers")
         texts = [f"{p.title}. {p.abstract or ''}" for p in papers]

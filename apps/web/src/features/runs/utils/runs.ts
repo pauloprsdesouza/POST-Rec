@@ -52,6 +52,28 @@ export function isRunActive(status: string): boolean {
   return !["completed", ...FAILED_STATUSES].includes(status);
 }
 
+const STATUS_PROGRESS_FLOORS: Record<string, number> = {
+  queued: 2,
+  started: 5,
+  searching_papers: 10,
+  normalizing_documents: 20,
+  deduplicating_documents: 25,
+  generating_embeddings: 40,
+  ranking_candidates: 55,
+  generating_recommendations: 75,
+  validating_output: 88,
+};
+
+/** Minimum visible progress for active runs so the bar never sits at 0% while work is underway. */
+export function getRunDisplayProgress(run: Pick<RecommendationRun, "status" | "progress">): number {
+  const progress = run.progress ?? 0;
+  if (!isRunActive(run.status)) {
+    return Math.min(Math.max(progress, 0), 100);
+  }
+  const floor = STATUS_PROGRESS_FLOORS[run.status] ?? 0;
+  return Math.min(Math.max(progress, floor), 100);
+}
+
 export type RunOutcome = "ready" | "reviewed" | "in_progress" | "failed" | "incomplete";
 
 export function getRunOutcome(run: RecommendationRun): RunOutcome {

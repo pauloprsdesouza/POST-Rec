@@ -5,6 +5,7 @@ import {
   formatRelativeRunTime,
   formatRunDateTime,
   formatRunTopics,
+  getRunDisplayProgress,
   getRunOutcome,
   type RunOutcome,
 } from "@/features/runs/utils/runs";
@@ -50,6 +51,7 @@ export function RunListCard({ run, recommendationCount, showSearchMeta = false }
   const isReady = outcome === "ready";
   const isReviewed = outcome === "reviewed";
   const isActive = outcome === "in_progress";
+  const displayProgress = getRunDisplayProgress(run);
   const blind = isBlindRun(run);
   const topics = (run.topics ?? []).filter(Boolean);
   const displayTopics = topics.slice(0, 3);
@@ -119,9 +121,9 @@ export function RunListCard({ run, recommendationCount, showSearchMeta = false }
         {isActive ? (
           <div className="run-card__progress">
             <div className="run-card__progress-bar">
-              <div className="run-card__progress-fill" style={{ width: `${run.progress}%` }} />
+              <div className="run-card__progress-fill" style={{ width: `${displayProgress}%` }} />
             </div>
-            <span className="run-card__progress-label">{run.progress}%</span>
+            <span className="run-card__progress-label">{displayProgress}%</span>
           </div>
         ) : null}
 
