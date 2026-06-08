@@ -9,12 +9,16 @@ from google import genai
 from google.genai import types
 from sqlalchemy.orm import Session
 
+from apps.api.features.runs.cost import add_usage_cost
+from apps.api.shared.infra.embedding_config import resolve_embedding_model
 from apps.api.shared.models import LLMUsage
 from apps.api.shared.observability.logging import get_logger
-from apps.api.shared.infra.embedding_config import resolve_embedding_model
-from apps.api.features.runs.cost import add_usage_cost
 from apps.api.shared.settings import get_settings
 from packages.postrec_core.domain.expectation_context import format_user_expectations
+from packages.postrec_core.prompts.article_validation import (
+    ARTICLE_VALIDATION_SYSTEM_PROMPT,
+    ARTICLE_VALIDATION_USER_TEMPLATE,
+)
 from packages.postrec_core.prompts.facet_critic import FACET_CRITIC_USER_TEMPLATE
 from packages.postrec_core.prompts.facet_pipeline import FGGV_PROPOSAL_USER_TEMPLATE
 from packages.postrec_core.prompts.recommendation_prompt import (
@@ -125,11 +129,20 @@ class GeminiService:
 
     @staticmethod
     def _papers_context(papers: list[dict], limit: int = 30) -> str:
-        return "\n".join(
-            f"- {p.get('title', 'Unknown')} ({p.get('year', 'N/A')}) "
-            f"tier={p.get('tier', 'unknown')} DOI: {p.get('doi', 'N/A')}"
-            for p in papers[:limit]
-        )
+        lines: list[str] = []
+        for index, paper in enumerate(papers[:limit]):
+            paper_id = paper.get("paper_id") or f"P{index + 1}"
+            abstract = str(paper.get("abstract") or "").strip()
+            if len(abstract) > 420:
+                abstract = abstract[:417] + "..."
+            relevance = paper.get("llm_relevance_score", paper.get("relevance_score", "n/a"))
+            lines.append(
+                f"[{paper_id}] {paper.get('title', 'Unknown')} ({paper.get('year', 'N/A')}) "
+                f"tier={paper.get('tier', 'unknown')} relevance={relevance}\n"
+                f"  Abstract: {abstract or 'N/A'}\n"
+                f"  DOI: {paper.get('doi', 'N/A')}"
+            )
+        return "\n".join(lines)
 
     def _generate_json(
         self,
@@ -159,6 +172,40 @@ class GeminiService:
         output_tokens = response.usage_metadata.candidates_token_count if response.usage_metadata else 0
         self._record_usage(db, run_id, operation, model, input_tokens, output_tokens)
         return self._parse_json(response.text or "{}")
+
+    def validate_retrieved_papers(
+        self,
+        db: Session,
+        run_id: str,
+        *,
+        papers: list[dict],
+        research_area: str,
+        seed_topics: list[str],
+        avoided_topics: list[str],
+        min_score: float,
+        min_valid_papers: int,
+    ) -> dict[str, Any]:
+        papers = assign_paper_ids(papers)
+        if not self.settings.gemini_api_key:
+            return {"papers": papers, "validations": [], "sufficient_evidence": len(papers) >= min_valid_papers}
+
+        prompt = ARTICLE_VALIDATION_USER_TEMPLATE.format(
+            research_area=research_area or "General",
+            seed_topics=", ".join(seed_topics) or "unspecified",
+            avoided_topics=", ".join(avoided_topics) if avoided_topics else "none",
+            papers_context=self._papers_context(papers, limit=40),
+            min_score=min_score,
+            min_valid_papers=min_valid_papers,
+        )
+        result = self._generate_json(
+            db,
+            run_id,
+            operation="article_validation",
+            system_prompt=ARTICLE_VALIDATION_SYSTEM_PROMPT,
+            user_prompt=prompt,
+            temperature=0.1,
+        )
+        return self._merge_paper_validations(papers, result)
 
     def generate_recommendations(
         self,
@@ -403,6 +450,46 @@ class GeminiService:
         result.setdefault("revised_scores", {})
         return result
 
+    @staticmethod
+    def _merge_paper_validations(papers: list[dict], result: dict[str, Any]) -> dict[str, Any]:
+        by_id = {paper.get("paper_id") or f"P{index + 1}": paper for index, paper in enumerate(papers)}
+        validations = result.get("validations") if isinstance(result.get("validations"), list) else []
+        merged: list[dict[str, Any]] = []
+
+        for entry in validations:
+            if not isinstance(entry, dict):
+                continue
+            paper_id = str(entry.get("paper_id") or "")
+            paper = by_id.get(paper_id)
+            if not paper:
+                continue
+            score = entry.get("relevance_score")
+            try:
+                llm_score = float(score) if score is not None else None
+            except (TypeError, ValueError):
+                llm_score = None
+            enriched = {
+                **paper,
+                "llm_relevance_score": llm_score,
+                "llm_passes_validation": bool(entry.get("passes_validation")),
+                "llm_matched_topics": entry.get("matched_topics") or [],
+                "llm_match_rationale": entry.get("match_rationale"),
+                "llm_avoided_topic_hit": bool(entry.get("avoided_topic_hit")),
+            }
+            merged.append(enriched)
+            by_id.pop(paper_id, None)
+
+        for paper in by_id.values():
+            merged.append(paper)
+
+        return {
+            "papers": merged,
+            "validations": validations,
+            "scope_summary": result.get("scope_summary"),
+            "sufficient_evidence": bool(result.get("sufficient_evidence", True)),
+            "insufficient_evidence_reason": result.get("insufficient_evidence_reason"),
+        }
+
     def _fallback_landscape(self, papers: list[dict]) -> dict[str, Any]:
         titles = [p.get("title") for p in papers[:5] if p.get("title")]
         return {
@@ -465,6 +552,16 @@ class GeminiService:
                 }
             )
         return {"recommendations": recs}
+
+
+def assign_paper_ids(papers: list[dict]) -> list[dict]:
+    """Attach stable paper_id labels for grounded citation in prompts."""
+    enriched: list[dict] = []
+    for index, paper in enumerate(papers):
+        if not isinstance(paper, dict):
+            continue
+        enriched.append({**paper, "paper_id": paper.get("paper_id") or f"P{index + 1}"})
+    return enriched
 
 
 gemini_service = GeminiService()

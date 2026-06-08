@@ -5,9 +5,9 @@ from __future__ import annotations
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
+from apps.api.features.retrieval.relevance import compute_relevance_score, tokenize
 from apps.api.shared.models import SourceDocument
 from apps.api.shared.observability.logging import get_logger
-from apps.api.features.retrieval.relevance import compute_relevance_score, tokenize
 
 logger = get_logger("postrec-corpus-retrieval")
 

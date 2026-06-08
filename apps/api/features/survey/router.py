@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 
 from apps.api.shared.database import get_db
 from apps.api.shared.models import SessionFinalSurvey, StudySession
-from packages.postrec_core.domain.enums import SessionStatus
 from apps.api.shared.schemas.common import FinalSurveyCreate
+from packages.postrec_core.domain.enums import SessionStatus
 
 router = APIRouter(prefix="/api/v1")
 

@@ -1,3 +1,5 @@
+@use "./mixins" as *;
+
 // Validation metrics dashboard — panel grouping, flat metrics.
 
 .insights-page .page-stack {
@@ -43,11 +45,18 @@
   flex-direction: column;
   gap: 0.25rem;
   min-height: 5rem;
+  min-width: 0;
+  overflow: hidden;
   padding: var(--postrec-space-4);
 }
 
 .insight-metric--highlight {
   border-color: color-mix(in srgb, var(--postrec-primary) 30%, var(--postrec-border-subtle));
+}
+
+.insight-metric__label {
+  @include card-title-clamp(2);
+  line-height: 1.35;
 }
 
 .insight-metric__value {

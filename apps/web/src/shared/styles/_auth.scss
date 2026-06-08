@@ -302,6 +302,13 @@
   gap: var(--postrec-space-4);
 }
 
+.auth-otp-step__status {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-sm);
+  margin: var(--postrec-space-3) 0 0;
+  text-align: center;
+}
+
 .auth-otp-step__field {
   margin-bottom: 0;
 }

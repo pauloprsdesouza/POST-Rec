@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from apps.api.shared.database import get_db
+from apps.api.shared.infra.cache import _cache_redis_url
 from apps.api.shared.schemas.common import HealthResponse, ReadyResponse
 from apps.api.shared.settings import get_settings
-from apps.api.shared.infra.cache import _cache_redis_url
 
 router = APIRouter(prefix="/api/v1")
 

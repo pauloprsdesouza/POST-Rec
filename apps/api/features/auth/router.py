@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from apps.api.features.auth.service import AuthError, auth_service
 from apps.api.shared.database import get_db
 from apps.api.shared.dependencies import get_current_user_required
 from apps.api.shared.models import User
@@ -14,7 +15,6 @@ from apps.api.shared.schemas.common import (
     RegisterRequest,
     UserMeResponse,
 )
-from apps.api.features.auth.service import AuthError, auth_service
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 

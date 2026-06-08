@@ -3,13 +3,13 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from apps.api.shared.models import RecommendationRunEvent
 from apps.api.features.runs.events import (
     format_events_for_user,
     retry_user_message,
     sanitize_error_for_user,
     sanitize_run_error_message,
 )
+from apps.api.shared.models import RecommendationRunEvent
 from packages.postrec_core.domain.enums import RunStatus
 
 

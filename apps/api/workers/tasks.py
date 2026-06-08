@@ -5,13 +5,6 @@ import uuid
 
 from sqlalchemy.orm import Session
 
-from apps.api.shared.database import SessionLocal
-from apps.api.shared.models import DocumentEmbedding, RecommendationRun, SessionExpectation, UserResearchProfile
-from apps.api.shared.observability.logging import configure_logging, get_logger
-from apps.api.shared.infra.cache import cache_service
-from apps.api.shared.infra.embedding_config import resolve_embedding_model
-from apps.api.shared.infra.http_retry import RetryableFetchError
-from packages.postrec_core.domain.expectation_context import merge_expectation_into_constraints
 from apps.api.features.notifications.service import notification_service
 from apps.api.features.profile.service import profile_service
 from apps.api.features.recommendations.llm import gemini_service
@@ -21,9 +14,16 @@ from apps.api.features.retrieval.service import retrieval_service
 from apps.api.features.runs.events import failure_user_message, retry_user_message
 from apps.api.features.runs.service import run_service
 from apps.api.features.runs.stream_service import run_stream_service
+from apps.api.shared.database import SessionLocal
+from apps.api.shared.infra.cache import cache_service
+from apps.api.shared.infra.embedding_config import resolve_embedding_model
+from apps.api.shared.infra.http_retry import RetryableFetchError
+from apps.api.shared.models import DocumentEmbedding, RecommendationRun, SessionExpectation, UserResearchProfile
+from apps.api.shared.observability.logging import configure_logging, get_logger
 from apps.api.shared.settings import get_settings
 from apps.api.workers.celery_app import celery_app
 from packages.postrec_core.domain.enums import RunStatus
+from packages.postrec_core.domain.expectation_context import merge_expectation_into_constraints
 from packages.postrec_core.domain.run_mode import RunMode
 
 configure_logging()
@@ -71,7 +71,15 @@ def _resolve_run_context(
                 if defaults.get("max_article_age_years") is not None:
                     max_article_age_years = int(defaults["max_article_age_years"])
 
-    return expanded_topics, constraints, expectation, research_area, learned_topics, avoided_topics, max_article_age_years
+    return (
+        expanded_topics,
+        constraints,
+        expectation,
+        research_area,
+        learned_topics,
+        avoided_topics,
+        max_article_age_years,
+    )
 
 
 def _persist_embeddings(
@@ -82,11 +90,7 @@ def _persist_embeddings(
 ) -> dict[str, list[float]]:
     paper_ids = [paper.id for paper in papers]
     existing_rows = (
-        db.query(DocumentEmbedding)
-        .filter(DocumentEmbedding.document_id.in_(paper_ids))
-        .all()
-        if paper_ids
-        else []
+        db.query(DocumentEmbedding).filter(DocumentEmbedding.document_id.in_(paper_ids)).all() if paper_ids else []
     )
     existing_keys = {(row.document_id, row.content_hash or "") for row in existing_rows}
 
@@ -132,9 +136,15 @@ def process_recommendation_run(self, run_id: str) -> dict:
         run_input = run.input or {}
         topics = run_input.get("topics", [])
         constraints = run_input.get("constraints") or {}
-        expanded_topics, constraints, expectation, research_area, learned_topics, avoided_topics, max_article_age_years = (
-            _resolve_run_context(db, run, topics, constraints)
-        )
+        (
+            expanded_topics,
+            constraints,
+            expectation,
+            research_area,
+            learned_topics,
+            avoided_topics,
+            max_article_age_years,
+        ) = _resolve_run_context(db, run, topics, constraints)
 
         run_service.update_status(db, run, RunStatus.SEARCHING_PAPERS, 15, "Searching papers")
 
@@ -206,18 +216,21 @@ def process_recommendation_run(self, run_id: str) -> dict:
 
         paper_dicts = [
             {
+                "paper_id": f"P{index + 1}",
+                "source_document_id": str(p.id),
                 "title": p.title,
                 "year": p.year,
                 "doi": p.doi,
                 "url": p.url,
                 "abstract": p.abstract,
                 "citation_count": p.citation_count or 0,
+                "relevance_score": (p.metadata_ or {}).get("relevance_score"),
                 "tier": (p.metadata_ or {}).get("tier"),
                 "retrieval_pass": (p.metadata_ or {}).get("retrieval_pass"),
                 "methods": (p.metadata_ or {}).get("methods"),
                 "limitations": (p.metadata_ or {}).get("limitations"),
             }
-            for p in papers
+            for index, p in enumerate(papers)
         ]
 
         recommendations = sota_pipeline_service.generate(
@@ -232,6 +245,7 @@ def process_recommendation_run(self, run_id: str) -> dict:
             papers=paper_dicts,
             paper_embeddings=ranked_embeddings,
             max_recommendations=run.max_recommendations,
+            avoided_topics=avoided_topics,
         )
 
         run_service.update_status(db, run, RunStatus.VALIDATING_OUTPUT, 90, "Validating output")

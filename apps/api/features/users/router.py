@@ -5,8 +5,14 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from apps.api.features.auth.service import AuthError, auth_service
+from apps.api.features.profile.service import profile_service
+from apps.api.features.runs.query import run_summaries_payload
+from apps.api.features.runs.search import normalize_search_query, search_run_summaries_payload
 from apps.api.shared.database import get_db
 from apps.api.shared.dependencies import get_current_user_required
+from apps.api.shared.infra.cache import CacheKeys, CacheTTL, cache_service
+from apps.api.shared.infra.cache_helpers import load_cached_json
 from apps.api.shared.models import SessionConsent, User
 from apps.api.shared.schemas.common import (
     RecommendationDefaults,
@@ -17,11 +23,6 @@ from apps.api.shared.schemas.common import (
     UserProfileResponse,
     UserProfileUpdate,
 )
-from apps.api.features.auth.service import AuthError, auth_service
-from apps.api.shared.infra.cache import CacheKeys, CacheTTL, cache_service
-from apps.api.shared.infra.cache_helpers import load_cached_json
-from apps.api.features.profile.service import profile_service
-from apps.api.features.runs.query import run_summaries_payload
 
 router = APIRouter(prefix="/api/v1/users/me", tags=["users"])
 
@@ -156,9 +157,14 @@ def list_my_runs(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_required),
     limit: int = 50,
+    q: str | None = None,
 ):
-    user_id = str(current_user.id)
     capped = min(limit, 100)
+    if q and normalize_search_query(q):
+        data = search_run_summaries_payload(db, current_user.id, q, capped)
+        return [RunSummaryResponse.model_validate(item) for item in data]
+
+    user_id = str(current_user.id)
     key = CacheKeys.user_runs(user_id, capped)
 
     def load() -> list[dict]:

@@ -7,6 +7,20 @@ import uuid
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from apps.api.features.experiments.presentation import (
+    blind_event_payload,
+    blind_recommendation_payload,
+    blind_run_detail_payload,
+    blind_run_summary_payload,
+    is_blind_run,
+)
+from apps.api.features.recommendations.sources import (
+    enrich_evidence_papers,
+    get_run_source_documents,
+    serialize_source_documents,
+)
+from apps.api.features.runs.cost import get_run_usage_summary
+from apps.api.features.runs.events import format_events_for_user, sanitize_run_error_message
 from apps.api.shared.models import (
     RecommendationCandidate,
     RecommendationFeedback,
@@ -17,20 +31,6 @@ from apps.api.shared.schemas.common import (
     RecommendationResponse,
     RunDetailResponse,
     RunSummaryResponse,
-)
-from apps.api.features.runs.cost import get_run_usage_summary
-from apps.api.features.runs.events import format_events_for_user, sanitize_run_error_message
-from apps.api.features.recommendations.sources import (
-    enrich_evidence_papers,
-    get_run_source_documents,
-    serialize_source_documents,
-)
-from apps.api.features.experiments.presentation import (
-    blind_event_payload,
-    blind_recommendation_payload,
-    blind_run_detail_payload,
-    blind_run_summary_payload,
-    is_blind_run,
 )
 from packages.postrec_core.domain.enums import RunStatus
 
@@ -59,11 +59,7 @@ def user_feedback_map_for_run(
     user_id: uuid.UUID,
     run_id: uuid.UUID,
 ) -> dict[uuid.UUID, RecommendationFeedback]:
-    rows = (
-        db.query(RecommendationFeedback)
-        .filter_by(run_id=run_id, user_id=user_id)
-        .all()
-    )
+    rows = db.query(RecommendationFeedback).filter_by(run_id=run_id, user_id=user_id).all()
     return {row.recommendation_id: row for row in rows}
 
 
@@ -141,11 +137,7 @@ def _candidate_to_response(
 
 
 def run_detail_payload(db: Session, run: RecommendationRun) -> dict:
-    rec_count = (
-        db.query(RecommendationCandidate)
-        .filter_by(run_id=run.id, status="published")
-        .count()
-    )
+    rec_count = db.query(RecommendationCandidate).filter_by(run_id=run.id, status="published").count()
     usage = get_run_usage_summary(db, run, recommendation_count=rec_count)
     payload = RunDetailResponse(
         id=run.id,

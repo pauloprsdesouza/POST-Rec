@@ -5,9 +5,9 @@ from sqlalchemy.orm import Session
 
 from apps.api.shared.database import get_db
 from apps.api.shared.dependencies import get_current_user_required
+from apps.api.shared.infra.cache import cache_service
 from apps.api.shared.models import SessionConsent, User
 from apps.api.shared.schemas.common import ConsentCreate, ConsentResponse
-from apps.api.shared.infra.cache import cache_service
 
 router = APIRouter(prefix="/api/v1")
 

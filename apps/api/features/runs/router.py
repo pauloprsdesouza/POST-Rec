@@ -6,22 +6,8 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
-from apps.api.shared.database import get_db
-from apps.api.shared.dependencies import (
-    get_current_user_optional,
-    get_current_user_required,
-    get_run_stream_access,
-)
-from apps.api.shared.models import RecommendationRun, User
-from apps.api.shared.schemas.common import (
-    RecommendationRunCreate,
-    RecommendationRunResponse,
-    RunDetailResponse,
-    RunEventResponse,
-    SourceDocumentResponse,
-)
-from apps.api.shared.infra.cache import CacheKeys, CacheTTL, cache_service, is_terminal_run, run_detail_ttl, run_events_ttl
-from apps.api.shared.infra.cache_helpers import load_cached_json
+from apps.api.features.experiments.service import experiment_service
+from apps.api.features.recommendations.sources import get_run_source_documents, serialize_source_documents
 from apps.api.features.runs.access import ensure_run_access, get_run_or_404, user_id_optional
 from apps.api.features.runs.query import (
     feedback_counts_by_run,
@@ -31,8 +17,29 @@ from apps.api.features.runs.query import (
 )
 from apps.api.features.runs.service import run_service
 from apps.api.features.runs.stream import stream_run_updates
-from apps.api.features.recommendations.sources import get_run_source_documents, serialize_source_documents
-from apps.api.features.experiments.service import experiment_service
+from apps.api.shared.database import get_db
+from apps.api.shared.dependencies import (
+    get_current_user_optional,
+    get_current_user_required,
+    get_run_stream_access,
+)
+from apps.api.shared.infra.cache import (
+    CacheKeys,
+    CacheTTL,
+    cache_service,
+    is_terminal_run,
+    run_detail_ttl,
+    run_events_ttl,
+)
+from apps.api.shared.infra.cache_helpers import load_cached_json
+from apps.api.shared.models import RecommendationRun, User
+from apps.api.shared.schemas.common import (
+    RecommendationRunCreate,
+    RecommendationRunResponse,
+    RunDetailResponse,
+    RunEventResponse,
+    SourceDocumentResponse,
+)
 
 router = APIRouter(prefix="/api/v1")
 
@@ -95,9 +102,7 @@ def get_run(
     )
     if user_id:
         rec_count = int(data.get("recommendation_count") or 0)
-        feedback_count = (
-            feedback_counts_by_run(db, user_id, [run_id]).get(run_id, 0) if rec_count > 0 else 0
-        )
+        feedback_count = feedback_counts_by_run(db, user_id, [run_id]).get(run_id, 0) if rec_count > 0 else 0
         data = {
             **data,
             "feedback_count": feedback_count,

@@ -9,9 +9,9 @@ from datetime import UTC, datetime, timedelta
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
+from apps.api.features.auth.evolution import EvolutionError, evolution_service
 from apps.api.shared.models import AuthOtpChallenge, User, UserResearchProfile
 from apps.api.shared.observability.logging import get_logger
-from apps.api.features.auth.evolution import EvolutionError, evolution_service
 from apps.api.shared.settings import get_settings
 
 logger = get_logger("postrec-auth")

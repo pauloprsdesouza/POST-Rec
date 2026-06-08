@@ -65,9 +65,7 @@ def blind_recommendation_payload(payload: dict[str, Any]) -> dict[str, Any]:
 
     scores = sanitized.get("scores")
     if isinstance(scores, dict):
-        sanitized["scores"] = {
-            key: value for key, value in scores.items() if key not in _SCORE_KEYS_TO_STRIP
-        }
+        sanitized["scores"] = {key: value for key, value in scores.items() if key not in _SCORE_KEYS_TO_STRIP}
         if not sanitized["scores"]:
             sanitized["scores"] = None
 

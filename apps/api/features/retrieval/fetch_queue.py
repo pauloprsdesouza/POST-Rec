@@ -7,10 +7,10 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-from apps.api.shared.observability.logging import get_logger
 from apps.api.shared.infra.http_retry import RetryableFetchError, compute_backoff
 from apps.api.shared.infra.resilience.circuit_breaker import SourceCircuitBreaker, SourceCircuitOpenError
 from apps.api.shared.infra.source_rate_limiter import source_rate_limiter
+from apps.api.shared.observability.logging import get_logger
 
 logger = get_logger("postrec-retrieval")
 

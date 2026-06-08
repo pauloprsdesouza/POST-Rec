@@ -9,10 +9,10 @@ from collections.abc import AsyncIterator
 import redis.asyncio as aioredis
 from sqlalchemy.orm import Session
 
-from apps.api.shared.models import RecommendationRun
-from apps.api.shared.infra.cache import is_terminal_run
 from apps.api.features.runs.query import run_stream_payload
 from apps.api.features.runs.stream_service import CHANNEL_PREFIX
+from apps.api.shared.infra.cache import is_terminal_run
+from apps.api.shared.models import RecommendationRun
 from apps.api.shared.settings import get_settings
 
 

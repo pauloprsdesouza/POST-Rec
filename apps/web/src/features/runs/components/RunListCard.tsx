@@ -14,6 +14,7 @@ import { isBlindRun } from "@/features/experiments/utils/blindRun";
 interface RunListCardProps {
   run: RecommendationRun;
   recommendationCount?: number;
+  showSearchMeta?: boolean;
 }
 
 function StatusPill({ outcome }: { outcome: RunOutcome }) {
@@ -41,7 +42,7 @@ function IdeaCountBadge({ count }: { count: number }) {
   );
 }
 
-export function RunListCard({ run, recommendationCount }: RunListCardProps) {
+export function RunListCard({ run, recommendationCount, showSearchMeta = false }: RunListCardProps) {
   const { t, i18n } = useTranslation();
   const runId = String(run.id);
   const count = recommendationCount ?? run.recommendation_count ?? 0;
@@ -90,6 +91,15 @@ export function RunListCard({ run, recommendationCount }: RunListCardProps) {
         </div>
 
         <h3 className="run-card__title">{formatRunTopics(run, t("common.noTopics"), 100)}</h3>
+
+        {showSearchMeta && run.search_snippet ? (
+          <p className="run-card__search-snippet">{run.search_snippet}</p>
+        ) : null}
+        {showSearchMeta && (run.search_match_count ?? 0) > 0 ? (
+          <p className="run-card__search-matches">
+            {t("runs.searchMatchCount", { count: run.search_match_count })}
+          </p>
+        ) : null}
 
         {displayTopics.length > 0 ? (
           <ul className="run-card__topics" aria-label={t("runs.topicsLabel")}>

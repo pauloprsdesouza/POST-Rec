@@ -38,6 +38,7 @@ class CacheTTL:
     RECOMMENDATIONS = 604_800  # 7d — frozen after run completes
     SOURCE_DOCUMENTS = 604_800  # 7d — paper metadata is stable
     VALIDATION_DASHBOARD = 600  # 10min — aggregate metrics, expensive to compute
+    RESEARCH_REPORT = 600  # 10min — full statistical report
 
 
 class CacheKeys:
@@ -76,6 +77,10 @@ class CacheKeys:
     @staticmethod
     def validation_dashboard() -> str:
         return "validation:dashboard"
+
+    @staticmethod
+    def research_report() -> str:
+        return "validation:research_report"
 
 
 def run_detail_ttl(status: str) -> int:
@@ -203,7 +208,7 @@ class CacheService:
         )
 
     def invalidate_validation_dashboard(self) -> None:
-        self.delete(CacheKeys.validation_dashboard())
+        self.delete(CacheKeys.validation_dashboard(), CacheKeys.research_report())
 
 
 def _cache_redis_url(redis_url: str, db: int) -> str:

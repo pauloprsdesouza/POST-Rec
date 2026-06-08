@@ -95,6 +95,8 @@ export interface RecommendationRun {
   recommendation_count?: number;
   feedback_count?: number;
   feedback_complete?: boolean;
+  search_match_count?: number | null;
+  search_snippet?: string | null;
   usage?: RunUsageSummary | null;
 }
 
@@ -185,6 +187,177 @@ export interface ValidationDashboard {
   avg_novelty_verified?: number;
   avg_sota_fit?: number;
   experiment?: ExperimentDashboard | null;
+  survey_metrics?: SurveyMetrics;
+  rating_distributions?: RatingDistribution[];
+  weekly_trends?: WeeklyTrendPoint[];
+  ranking_summary?: RankingSummary;
+}
+
+export interface SurveyMetrics {
+  count: number;
+  expectation_met_mean: number;
+  would_use_again_rate: number;
+  would_recommend_rate: number;
+}
+
+export interface RatingDistribution {
+  dimension: string;
+  mean: number;
+  std: number;
+  min: number;
+  max: number;
+  count: number;
+  distribution: Record<string, number>;
+}
+
+export interface WeeklyTrendPoint {
+  week: string;
+  feedback_count: number;
+  runs: number;
+  surveys: number;
+  average_eas: number | null;
+  [key: string]: string | number | null;
+}
+
+export interface RankingSummary {
+  run_count?: number;
+  "ndcg@1"?: number;
+  "ndcg@3"?: number;
+  "ndcg@5"?: number;
+  "ndcg@10"?: number;
+  "err@3"?: number;
+  "err@5"?: number;
+  "err@10"?: number;
+  map?: number;
+  mrr?: number;
+  "precision@1"?: number;
+  "precision@3"?: number;
+  "precision@5"?: number;
+  "precision@10"?: number;
+  "recall@1"?: number;
+  "recall@3"?: number;
+  "recall@5"?: number;
+  "recall@10"?: number;
+  "hit@1"?: number;
+  "hit@3"?: number;
+  "hit@5"?: number;
+  "hit@10"?: number;
+  "success@1"?: number;
+  "success@5"?: number;
+  "success@10"?: number;
+  mean_spearman_rho?: number | null;
+  mean_kendall_tau?: number | null;
+}
+
+export interface AlgorithmHumanRates {
+  feedback_count: number;
+  average_eas: number;
+  approval_rate: number;
+  would_use_rate: number;
+  maybe_use_rate?: number;
+  average_relevance?: number;
+  average_originality?: number;
+  average_clarity?: number;
+  average_feasibility?: number;
+  average_trust?: number;
+  average_usefulness?: number;
+}
+
+export interface AlgorithmAnalysisItem {
+  algorithm: string;
+  human_rates: AlgorithmHumanRates;
+  ranking_metrics: RankingSummary;
+  sota_quality: Record<string, number>;
+  observability: Record<string, number | null>;
+}
+
+export interface LiteratureReference {
+  metric: string;
+  citation: string;
+  use: string;
+}
+
+export interface AlgorithmAnalysis {
+  algorithms: AlgorithmAnalysisItem[];
+  literature_suite: {
+    overall: RankingSummary;
+    by_algorithm: Record<string, RankingSummary>;
+    references: LiteratureReference[];
+  };
+  engagement_funnel: { stage: string; count: number }[];
+}
+
+export interface InsightAnalysis {
+  decision_distribution: Record<string, number>;
+  would_use_distribution: Record<string, number>;
+  cost_vs_quality: {
+    algorithm: string;
+    average_eas: number;
+    avg_cost_per_run_usd: number;
+    feedback_count: number;
+  }[];
+  survey_hit_at_1: { count: number; hit_at_1: number | null };
+}
+
+export interface ObservabilitySummary {
+  overall: Record<string, number | null>;
+  by_algorithm: Record<string, Record<string, number | null>>;
+}
+
+export interface HypothesisTestResult {
+  test_name: string;
+  statistic: number;
+  p_value: number | null;
+  effect_size: number | null;
+  effect_size_name: string | null;
+  group_a_mean: number;
+  group_b_mean: number;
+  group_a_n: number;
+  group_b_n: number;
+  significant_at_005: boolean;
+  interpretation: string;
+}
+
+export interface GroupComparison {
+  label_a: string;
+  label_b: string;
+  mann_whitney: HypothesisTestResult;
+  welch_t_test: HypothesisTestResult;
+  recommended_test: string;
+}
+
+export interface ResearchReport {
+  generated_at: string;
+  schema_version: string;
+  sample: Record<string, number>;
+  primary_outcomes: Record<string, number | null>;
+  descriptive_statistics: RatingDistribution[];
+  survey_outcomes: Record<string, number>;
+  sota_quality: Record<string, number>;
+  ranking_metrics: {
+    overall: RankingSummary;
+    by_algorithm?: Record<string, RankingSummary>;
+    by_mode: Record<string, RankingSummary>;
+    per_run: Record<string, unknown>[];
+  };
+  algorithm_analysis?: AlgorithmAnalysis | null;
+  observability?: ObservabilitySummary | null;
+  insight_analysis?: InsightAnalysis | null;
+  experiment_analysis: {
+    variants: Record<string, unknown>[];
+    hypothesis_tests: Record<string, GroupComparison | HypothesisTestResult> | null;
+  } | null;
+  mode_comparison: Record<string, unknown>[];
+  score_correlations: Record<string, unknown>[];
+  rejection_summary: {
+    rejection_count: number;
+    rejection_rate: number;
+    comments: string[];
+    comment_count: number;
+  };
+  weekly_trends: WeeklyTrendPoint[];
+  expert_label_analysis: Record<string, unknown> | null;
+  methodology_notes: Record<string, unknown>;
 }
 
 export interface ExperimentVariantMetrics {

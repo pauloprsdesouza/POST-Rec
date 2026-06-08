@@ -1,14 +1,14 @@
 """Experiment enrollment routes."""
 
 from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-from apps.api.shared.dependencies import get_current_user_required
-from apps.api.shared.models import User
-from apps.api.shared.schemas.common import ExperimentEnrollmentResponse
 from apps.api.features.experiments.service import experiment_service
 from apps.api.features.profile.service import profile_service
 from apps.api.shared.database import get_db
-from sqlalchemy.orm import Session
+from apps.api.shared.dependencies import get_current_user_required
+from apps.api.shared.models import User
+from apps.api.shared.schemas.common import ExperimentEnrollmentResponse
 
 router = APIRouter(prefix="/api/v1")
 

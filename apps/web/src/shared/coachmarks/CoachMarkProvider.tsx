@@ -11,9 +11,10 @@ import { useLocation } from "react-router-dom";
 
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { CoachMarkOverlay } from "./CoachMarkOverlay";
+import { resolveTourSteps } from "./steps";
 import { isTourCompleted, markTourCompleted, resetCoachMarks } from "./storage";
 import { COACH_MARK_TOURS, tourForPath } from "./tours";
-import type { CoachMarkTourId } from "./types";
+import type { CoachMarkStep, CoachMarkTourId } from "./types";
 
 interface CoachMarkContextValue {
   activeTourId: CoachMarkTourId | null;
@@ -30,15 +31,15 @@ export function CoachMarkProvider({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const { profileDone, consentDone } = useAuth();
   const [activeTourId, setActiveTourId] = useState<CoachMarkTourId | null>(null);
+  const [activeSteps, setActiveSteps] = useState<CoachMarkStep[]>([]);
   const [stepIndex, setStepIndex] = useState(0);
-
-  const activeTour = activeTourId ? COACH_MARK_TOURS[activeTourId] : null;
 
   const closeTour = useCallback((tourId: CoachMarkTourId, completed: boolean) => {
     if (completed) {
       markTourCompleted(tourId);
     }
     setActiveTourId(null);
+    setActiveSteps([]);
     setStepIndex(0);
   }, []);
 
@@ -47,7 +48,15 @@ export function CoachMarkProvider({ children }: { children: ReactNode }) {
     if (!tour) {
       return;
     }
+
+    const steps = resolveTourSteps(tour.steps);
+    if (!steps.length) {
+      markTourCompleted(tourId);
+      return;
+    }
+
     setActiveTourId(tourId);
+    setActiveSteps(steps);
     setStepIndex(0);
   }, []);
 
@@ -61,6 +70,7 @@ export function CoachMarkProvider({ children }: { children: ReactNode }) {
   const resetTours = useCallback(() => {
     resetCoachMarks();
     setActiveTourId(null);
+    setActiveSteps([]);
     setStepIndex(0);
   }, []);
 
@@ -82,15 +92,15 @@ export function CoachMarkProvider({ children }: { children: ReactNode }) {
   }, [activeTourId, consentDone, pathname, profileDone, startTour]);
 
   const handleNext = useCallback(() => {
-    if (!activeTourId || !activeTour) {
+    if (!activeTourId || !activeSteps.length) {
       return;
     }
-    if (stepIndex >= activeTour.steps.length - 1) {
+    if (stepIndex >= activeSteps.length - 1) {
       closeTour(activeTourId, true);
       return;
     }
     setStepIndex((current) => current + 1);
-  }, [activeTour, activeTourId, closeTour, stepIndex]);
+  }, [activeSteps.length, activeTourId, closeTour, stepIndex]);
 
   const handleBack = useCallback(() => {
     setStepIndex((current) => Math.max(current - 1, 0));
@@ -115,10 +125,10 @@ export function CoachMarkProvider({ children }: { children: ReactNode }) {
   return (
     <CoachMarkContext.Provider value={value}>
       {children}
-      {activeTour && activeTourId ? (
+      {activeTourId && activeSteps.length > 0 ? (
         <CoachMarkOverlay
           tourId={activeTourId}
-          steps={activeTour.steps}
+          steps={activeSteps}
           stepIndex={stepIndex}
           onNext={handleNext}
           onBack={handleBack}

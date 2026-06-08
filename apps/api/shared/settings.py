@@ -68,6 +68,10 @@ class Settings(BaseSettings):
     retrieval_use_celery_deferred: bool = True
     retrieval_deferred_timeout_seconds: int = 180
     retrieval_min_relevance_score: float = 0.22
+    article_llm_validation_enabled: bool = True
+    # LLM semantic rubric threshold (0-1). Distinct from retrieval_min_relevance_score (lexical).
+    article_llm_min_relevance_score: float = 0.5
+    article_min_valid_papers: int = 3
     retrieval_cache_enabled: bool = True
     retrieval_cache_ttl_seconds: int = 21_600
     retrieval_circuit_failure_threshold: int = 4

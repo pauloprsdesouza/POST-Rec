@@ -3,8 +3,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from apps.api.features.profile.service import profile_service
+from apps.api.features.runs.access import user_id_optional
 from apps.api.shared.database import get_db
 from apps.api.shared.dependencies import get_current_user_optional
+from apps.api.shared.infra.cache import cache_service
 from apps.api.shared.models import SessionExpectation, SessionProfile, User
 from apps.api.shared.schemas.common import (
     ExpectationCreate,
@@ -12,9 +15,6 @@ from apps.api.shared.schemas.common import (
     ProfileCreate,
     ProfileResponse,
 )
-from apps.api.features.profile.service import profile_service
-from apps.api.features.runs.access import user_id_optional
-from apps.api.shared.infra.cache import cache_service
 
 router = APIRouter(prefix="/api/v1")
 

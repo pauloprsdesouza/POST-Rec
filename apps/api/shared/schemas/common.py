@@ -253,6 +253,31 @@ class ExperimentDashboardSection(BaseModel):
     variants: list[ExperimentVariantMetrics] = Field(default_factory=list)
 
 
+class SurveyMetricsSection(BaseModel):
+    count: int = 0
+    expectation_met_mean: float = 0.0
+    would_use_again_rate: float = 0.0
+    would_recommend_rate: float = 0.0
+
+
+class RatingDistribution(BaseModel):
+    dimension: str
+    mean: float
+    std: float
+    min: float
+    max: float
+    count: int
+    distribution: dict[str, int] = Field(default_factory=dict)
+
+
+class WeeklyTrendPoint(BaseModel):
+    week: str
+    feedback_count: int = 0
+    runs: int = 0
+    surveys: int = 0
+    average_eas: float | None = None
+
+
 class ValidationDashboardResponse(BaseModel):
     average_eas: float
     approval_rate: float
@@ -270,6 +295,50 @@ class ValidationDashboardResponse(BaseModel):
     avg_novelty_verified: float = 0.0
     avg_sota_fit: float = 0.0
     experiment: ExperimentDashboardSection | None = None
+    survey_metrics: SurveyMetricsSection = Field(default_factory=SurveyMetricsSection)
+    rating_distributions: list[RatingDistribution] = Field(default_factory=list)
+    weekly_trends: list[WeeklyTrendPoint] = Field(default_factory=list)
+    ranking_summary: dict = Field(default_factory=dict)
+
+
+class HypothesisTestResultResponse(BaseModel):
+    test_name: str
+    statistic: float
+    p_value: float | None = None
+    effect_size: float | None = None
+    effect_size_name: str | None = None
+    group_a_mean: float
+    group_b_mean: float
+    group_a_n: int
+    group_b_n: int
+    significant_at_005: bool
+    interpretation: str
+
+
+class GroupComparisonResponse(BaseModel):
+    label_a: str
+    label_b: str
+    mann_whitney: HypothesisTestResultResponse
+    welch_t_test: HypothesisTestResultResponse
+    recommended_test: str
+
+
+class ResearchReportResponse(BaseModel):
+    generated_at: str
+    schema_version: str
+    sample: dict
+    primary_outcomes: dict
+    descriptive_statistics: list[dict]
+    survey_outcomes: dict
+    sota_quality: dict
+    ranking_metrics: dict
+    experiment_analysis: dict | None = None
+    mode_comparison: list[dict]
+    score_correlations: list[dict]
+    rejection_summary: dict
+    weekly_trends: list[dict]
+    expert_label_analysis: dict | None = None
+    methodology_notes: dict
 
 
 class HealthResponse(BaseModel):
@@ -369,6 +438,8 @@ class RunSummaryResponse(BaseModel):
     recommendation_count: int = 0
     feedback_count: int = 0
     feedback_complete: bool = False
+    search_match_count: int | None = None
+    search_snippet: str | None = None
 
 
 class ExperimentEnrollmentResponse(BaseModel):

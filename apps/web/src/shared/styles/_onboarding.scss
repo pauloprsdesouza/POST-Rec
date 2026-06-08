@@ -1,3 +1,5 @@
+@use "./mixins" as *;
+
 // Onboarding progress, run mode cards, route loading, UX helpers.
 
 .onboarding-progress {
@@ -190,6 +192,8 @@
   border: 1px solid var(--postrec-border);
   border-radius: var(--postrec-radius);
   cursor: pointer;
+  min-width: 0;
+  overflow: hidden;
   padding: var(--postrec-space-4);
   text-align: left;
   transition: border-color 0.15s, background-color 0.15s;
@@ -221,8 +225,11 @@
 }
 
 .run-mode-card__label {
+  @include card-title-clamp(1);
+  flex: 1;
   font-size: var(--postrec-text-sm);
   font-weight: 600;
+  line-height: 1.35;
 }
 
 .run-mode-card__badge {
@@ -238,10 +245,10 @@
 }
 
 .run-mode-card__hint {
+  @include card-title-clamp(2);
   color: var(--postrec-muted);
   font-size: var(--postrec-text-xs);
-  line-height: 1.4;
-  margin: 0;
+  line-height: 1.35;
 }
 
 .run-mode-selector__advanced-toggle {

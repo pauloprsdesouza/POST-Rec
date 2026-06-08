@@ -98,9 +98,7 @@ class StudySession(Base):
     )
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    status: Mapped[str] = mapped_column(
-        session_status_enum, nullable=False, default=SessionStatus.STARTED
-    )
+    status: Mapped[str] = mapped_column(session_status_enum, nullable=False, default=SessionStatus.STARTED)
     user_agent: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     user: Mapped["User | None"] = relationship(back_populates="study_sessions")
@@ -119,9 +117,7 @@ class SessionConsent(Base):
     user_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("app_user.id", ondelete="SET NULL"), nullable=True
     )
-    session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=False
-    )
+    session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=False)
     consent_version: Mapped[str] = mapped_column(Text, nullable=False)
     accepted: Mapped[bool] = mapped_column(Boolean, nullable=False)
     accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -138,9 +134,7 @@ class SessionProfile(Base):
     user_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("app_user.id", ondelete="SET NULL"), nullable=True
     )
-    session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=False
-    )
+    session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=False)
     research_area: Mapped[str | None] = mapped_column(Text, nullable=True)
     academic_level: Mapped[str | None] = mapped_column(Text, nullable=True)
     professional_role: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -160,9 +154,7 @@ class SessionExpectation(Base):
     user_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("app_user.id", ondelete="SET NULL"), nullable=True
     )
-    session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=False
-    )
+    session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=False)
     research_area: Mapped[str | None] = mapped_column(Text, nullable=True)
     seed_topics: Mapped[list] = mapped_column(JSONB, nullable=False)
     expected_output: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -290,9 +282,7 @@ class RecommendationCandidate(Base):
     confidence_level: Mapped[str | None] = mapped_column(Text, nullable=True)
     scores: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     final_score: Mapped[float | None] = mapped_column(Numeric, nullable=True)
-    status: Mapped[str] = mapped_column(
-        candidate_status_enum, nullable=False, default=CandidateStatus.DRAFT
-    )
+    status: Mapped[str] = mapped_column(candidate_status_enum, nullable=False, default=CandidateStatus.DRAFT)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -318,9 +308,7 @@ class RecommendationFeedback(Base):
     user_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("app_user.id", ondelete="SET NULL"), nullable=True
     )
-    session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=False
-    )
+    session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=False)
     run_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("recommendation_run.id"), nullable=False)
     recommendation_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("recommendation_candidate.id"), nullable=False
@@ -353,9 +341,7 @@ class SessionFinalSurvey(Base):
     user_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("app_user.id", ondelete="SET NULL"), nullable=True
     )
-    session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=False
-    )
+    session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("study_session.id"), nullable=False)
     run_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("recommendation_run.id"), nullable=True
     )

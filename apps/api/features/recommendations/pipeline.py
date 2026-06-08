@@ -6,15 +6,30 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from apps.api.shared.observability.logging import get_logger
+from apps.api.features.recommendations.article_validation import article_validation_service
 from apps.api.features.recommendations.facets import facet_verification_service
-from apps.api.features.recommendations.llm import gemini_service
+from apps.api.features.recommendations.llm import assign_paper_ids, gemini_service
 from apps.api.features.recommendations.novelty import novelty_verification_service
+from apps.api.shared.observability.logging import get_logger
 from packages.postrec_core.domain.run_mode import RunMode
 from packages.postrec_core.facets.saturation import underserved_facets
 from packages.postrec_core.scoring.facet_diversity import select_facet_diverse
 
 logger = get_logger("postrec-sota-pipeline")
+
+
+def _align_embeddings(
+    papers_before: list[dict[str, Any]],
+    papers_after: list[dict[str, Any]],
+    embeddings: list[list[float]],
+) -> list[list[float]]:
+    index_by_id = {paper.get("paper_id"): index for index, paper in enumerate(papers_before) if paper.get("paper_id")}
+    aligned: list[list[float]] = []
+    for paper in papers_after:
+        index = index_by_id.get(paper.get("paper_id"))
+        if index is not None and index < len(embeddings):
+            aligned.append(embeddings[index])
+    return aligned
 
 
 class SotaPipelineService:
@@ -34,7 +49,27 @@ class SotaPipelineService:
         papers: list[dict[str, Any]],
         paper_embeddings: list[list[float]],
         max_recommendations: int,
+        avoided_topics: list[str] | None = None,
     ) -> list[dict[str, Any]]:
+        papers_with_ids = assign_paper_ids(papers)
+        papers, validation_stats = article_validation_service.validate_and_filter(
+            db,
+            run_id,
+            papers_with_ids,
+            research_area=research_area,
+            seed_topics=seed_topics,
+            avoided_topics=avoided_topics,
+        )
+        paper_embeddings = _align_embeddings(papers_with_ids, papers, paper_embeddings)
+        logger.info("article_validation_complete", run_id=run_id, **validation_stats)
+        if not validation_stats.get("sufficient_evidence", True):
+            logger.warning(
+                "insufficient_grounded_evidence",
+                run_id=run_id,
+                reason=validation_stats.get("insufficient_evidence_reason"),
+            )
+            return []
+
         if mode.uses_full_sota_pipeline:
             if mode.uses_fggv_verification:
                 return self._generate_fggv_pipeline(
@@ -272,9 +307,7 @@ class SotaPipelineService:
 
         dict_recommendations = [rec for rec in recommendations if isinstance(rec, dict)]
         proposal_texts = [proposal_text(rec) for rec in dict_recommendations]
-        proposal_embeddings = (
-            gemini_service.generate_embeddings(db, run_id, proposal_texts) if proposal_texts else []
-        )
+        proposal_embeddings = gemini_service.generate_embeddings(db, run_id, proposal_texts) if proposal_texts else []
 
         corpus_facet_embeddings = None
         proposal_facet_embeddings_by_index: list[dict[str, list[float]]] = []

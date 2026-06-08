@@ -6,8 +6,8 @@ from celery import Celery
 from celery.signals import worker_process_init
 from kombu import Exchange, Queue
 
-from apps.api.shared.observability.logging import configure_logging, get_logger
 from apps.api.shared.infra.embedding_config import validate_embedding_configuration
+from apps.api.shared.observability.logging import configure_logging, get_logger
 from apps.api.shared.settings import get_settings
 
 configure_logging()

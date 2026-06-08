@@ -1,3 +1,5 @@
+@use "./mixins" as *;
+
 // Run list, detail, progress panel, usage, activity log.
 
 .run-section {
@@ -86,6 +88,7 @@
 }
 
 .run-card__main {
+  min-width: 0;
   padding: var(--postrec-space-5);
 }
 
@@ -158,6 +161,7 @@
 }
 
 .run-card__title {
+  @include card-title-clamp(2);
   font-size: var(--postrec-text-base);
   font-weight: 600;
   letter-spacing: -0.015em;
@@ -708,6 +712,101 @@
   margin: -0.5rem 0 var(--postrec-space-4);
 }
 
+.runs-page__search-meta {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-sm);
+  margin: 0;
+}
+
+.runs-search {
+  display: flex;
+  flex-direction: column;
+  gap: var(--postrec-space-2);
+}
+
+.runs-search__field {
+  align-items: center;
+  background: var(--postrec-surface);
+  border: 1px solid var(--postrec-border-subtle);
+  border-radius: var(--postrec-radius-pill);
+  display: flex;
+  gap: var(--postrec-space-2);
+  min-width: 0;
+  padding: 0.5rem 0.875rem;
+  transition: border-color var(--postrec-duration) var(--postrec-ease);
+}
+
+.runs-search__field:focus-within {
+  border-color: var(--postrec-primary);
+  box-shadow: var(--postrec-shadow-focus);
+}
+
+.runs-search__icon {
+  color: var(--postrec-muted-light);
+  flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.runs-search__input {
+  background: transparent;
+  border: none;
+  color: var(--postrec-text);
+  flex: 1;
+  font-family: var(--postrec-font);
+  font-size: var(--postrec-text-sm);
+  line-height: 1.35;
+  min-width: 0;
+  outline: none;
+  padding: 0;
+}
+
+.runs-search__input::placeholder {
+  color: var(--postrec-muted-light);
+}
+
+.runs-search__input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.runs-search__clear {
+  background: var(--postrec-surface-muted);
+  border: none;
+  border-radius: var(--postrec-radius-pill);
+  color: var(--postrec-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 1.125rem;
+  height: 1.5rem;
+  line-height: 1;
+  width: 1.5rem;
+}
+
+.runs-search__clear:hover {
+  color: var(--postrec-text);
+}
+
+.runs-search__status {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-xs);
+  margin: 0;
+}
+
+.run-card__search-snippet {
+  @include card-title-clamp(2);
+  color: var(--postrec-text-secondary);
+  font-size: var(--postrec-text-sm);
+  line-height: 1.4;
+  margin: 0 0 var(--postrec-space-2);
+}
+
+.run-card__search-matches {
+  color: var(--postrec-primary-dark);
+  font-size: var(--postrec-text-xs);
+  font-weight: 600;
+  margin: 0 0 var(--postrec-space-2);
+}
+
 .run-card__mode,
 .run-detail__mode {
   color: var(--postrec-muted);
@@ -752,7 +851,9 @@
 }
 
 .refinement-panel__item-title {
+  @include card-title-clamp(2);
   font-weight: 600;
+  line-height: 1.35;
 }
 
 .refinement-panel__issues {

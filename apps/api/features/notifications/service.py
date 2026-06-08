@@ -1,12 +1,10 @@
 """User notifications (WhatsApp via Evolution API)."""
 
-import uuid
-
 from sqlalchemy.orm import Session
 
+from apps.api.features.auth.evolution import EvolutionError, evolution_service
 from apps.api.shared.models import RecommendationRun, User
 from apps.api.shared.observability.logging import get_logger
-from apps.api.features.auth.evolution import EvolutionError, evolution_service
 from apps.api.shared.settings import get_settings
 
 logger = get_logger("postrec-notifications")

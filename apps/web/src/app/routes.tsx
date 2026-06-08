@@ -36,6 +36,11 @@ const TransparencyPage = lazy(() =>
 const InsightsPage = lazy(() =>
   import("@/features/insights/pages/InsightsPage").then((module) => ({ default: module.InsightsPage })),
 );
+const ResearchReportPage = lazy(() =>
+  import("@/features/insights/pages/ResearchReportPage").then((module) => ({
+    default: module.ResearchReportPage,
+  })),
+);
 
 const RecommendationsRedirect = lazy(() =>
   import("@/features/runs/pages/RunsPage").then((module) => ({
@@ -126,6 +131,14 @@ export function AppRoutes() {
             element={
               <ProtectedRoute requireConsent requireProfile={false}>
                 <TransparencyPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/insights/research-report"
+            element={
+              <ProtectedRoute requireConsent requireProfile>
+                <ResearchReportPage />
               </ProtectedRoute>
             }
           />

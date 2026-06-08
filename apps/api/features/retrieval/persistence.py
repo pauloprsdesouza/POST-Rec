@@ -2,12 +2,24 @@
 
 from __future__ import annotations
 
+import uuid
 from typing import Any
 
 from sqlalchemy.orm import Session
 
-from apps.api.shared.models import SourceDocument
 from apps.api.features.retrieval.normalizers import content_hash, normalize_doi
+from apps.api.shared.models import SourceDocument
+
+VALIDATION_METADATA_KEYS = (
+    "article_validation_method",
+    "llm_relevance_score",
+    "deterministic_relevance_score",
+    "llm_passes_validation",
+    "llm_matched_topics",
+    "llm_match_rationale",
+    "llm_avoided_topic_hit",
+    "article_validated_at_run_id",
+)
 
 
 def merge_paper_metadata(doc: SourceDocument, paper: dict[str, Any]) -> None:
@@ -20,6 +32,69 @@ def merge_paper_metadata(doc: SourceDocument, paper: dict[str, Any]) -> None:
         if value is not None:
             metadata[key] = value
     doc.metadata_ = metadata
+
+
+def merge_validation_metadata(
+    doc: SourceDocument,
+    paper: dict[str, Any],
+    *,
+    run_id: str,
+    method: str,
+) -> None:
+    metadata = dict(doc.metadata_ or {})
+    metadata["article_validation_method"] = method
+    metadata["article_validated_at_run_id"] = run_id
+
+    llm_score = paper.get("llm_relevance_score")
+    if llm_score is not None:
+        metadata["llm_relevance_score"] = llm_score
+    det_score = paper.get("relevance_score")
+    if det_score is not None:
+        metadata["deterministic_relevance_score"] = det_score
+    if "llm_passes_validation" in paper:
+        metadata["llm_passes_validation"] = bool(paper["llm_passes_validation"])
+    for key in ("llm_matched_topics", "llm_match_rationale", "llm_avoided_topic_hit"):
+        if key in paper and paper[key] is not None:
+            metadata[key] = paper[key]
+
+    doc.metadata_ = metadata
+
+
+def persist_article_validation_scores(
+    db: Session,
+    papers: list[dict[str, Any]],
+    *,
+    run_id: str,
+    method: str,
+) -> int:
+    """Write article-validation scores onto linked SourceDocument rows."""
+    doc_ids: list[uuid.UUID] = []
+    paper_by_doc_id: dict[uuid.UUID, dict[str, Any]] = {}
+    for paper in papers:
+        raw_id = paper.get("source_document_id")
+        if not raw_id:
+            continue
+        try:
+            doc_id = uuid.UUID(str(raw_id))
+        except (TypeError, ValueError):
+            continue
+        doc_ids.append(doc_id)
+        paper_by_doc_id[doc_id] = paper
+
+    if not doc_ids:
+        return 0
+
+    updated = 0
+    for doc in db.query(SourceDocument).filter(SourceDocument.id.in_(doc_ids)).all():
+        paper = paper_by_doc_id.get(doc.id)
+        if not paper:
+            continue
+        merge_validation_metadata(doc, paper, run_id=run_id, method=method)
+        updated += 1
+
+    if updated:
+        db.commit()
+    return updated
 
 
 def persist_papers(db: Session, papers: list[dict[str, Any]], max_papers: int) -> list[SourceDocument]:

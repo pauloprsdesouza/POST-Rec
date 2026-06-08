@@ -244,15 +244,11 @@ export function ProfilePage() {
                 <Nav.Item>
                   <Nav.Link eventKey="account">{t("profile.tabAccount")}</Nav.Link>
                 </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="research" data-coach="coach-profile-research-tab">
-                    {t("profile.tabResearch")}
-                  </Nav.Link>
+                <Nav.Item data-coach="coach-profile-research-tab">
+                  <Nav.Link eventKey="research">{t("profile.tabResearch")}</Nav.Link>
                 </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="preferences" data-coach="coach-profile-preferences-tab">
-                    {t("profile.tabPreferences")}
-                  </Nav.Link>
+                <Nav.Item data-coach="coach-profile-preferences-tab">
+                  <Nav.Link eventKey="preferences">{t("profile.tabPreferences")}</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
                   <Nav.Link eventKey="consent">{t("profile.tabConsent")}</Nav.Link>

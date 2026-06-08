@@ -14,6 +14,23 @@ def test_verify_citations_flags_unknown_title():
     assert any("Unknown Paper" in issue for issue in issues)
 
 
+def test_verify_citations_flags_unknown_paper_id():
+    papers = [{"paper_id": "P1", "title": "Known Paper", "doi": "10.1/abc"}]
+    rec = {"evidence_papers": [{"paper_id": "P9", "title": "Known Paper"}]}
+    issues = verify_citations(rec, papers)
+    assert any("paper_id not in retrieved set" in issue for issue in issues)
+
+
+def test_verify_citations_accepts_valid_paper_id():
+    papers = [{"paper_id": "P1", "title": "Known Paper", "doi": "10.1/abc"}]
+    rec = {
+        "evidence_papers": [{"paper_id": "P1", "title": "Known Paper"}],
+        "sota_anchors": [{"paper_id": "P1", "title": "Known Paper", "year": 2025}],
+    }
+    issues = verify_citations(rec, papers)
+    assert issues == []
+
+
 def test_validate_good_sota_proposal():
     papers = [{"title": "Recent Paper", "year": 2025, "tier": "sota_recent", "doi": "10.1/x"}]
     rec = {

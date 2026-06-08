@@ -5,14 +5,14 @@ from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
+from apps.api.features.runs.stream_service import run_stream_service
+from apps.api.shared.infra.cache import cache_service
 from apps.api.shared.models import (
     RecommendationCandidate,
     RecommendationRun,
     RecommendationRunEvent,
 )
 from apps.api.shared.observability.logging import get_logger
-from apps.api.shared.infra.cache import cache_service
-from apps.api.features.runs.stream_service import run_stream_service
 from packages.postrec_core.domain.enums import RunStatus
 from packages.postrec_core.scoring.expectation_alignment import compute_final_ranking_score
 

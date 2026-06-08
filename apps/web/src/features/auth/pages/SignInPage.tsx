@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Trans, useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -35,6 +35,7 @@ export function SignInPage() {
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const verifyingRef = useRef(false);
 
   const resetOtpStep = () => {
     setStep("credentials");
@@ -73,21 +74,31 @@ export function SignInPage() {
     }
   };
 
-  const handleVerifyOtp = async (event: FormEvent) => {
-    event.preventDefault();
-    setError(null);
-    setLoading(true);
+  const verifyOtpCode = useCallback(
+    async (otpCode: string) => {
+      const trimmed = otpCode.trim();
+      if (trimmed.length < 6 || verifyingRef.current || loading) {
+        return;
+      }
 
-    try {
-      const response = await authService.verifyOtp(email.trim(), code.trim());
-      await signIn(response);
-      navigate("/");
-    } catch (err) {
-      setError(getErrorMessage(err, t("auth.errorVerify")));
-    } finally {
-      setLoading(false);
-    }
-  };
+      verifyingRef.current = true;
+      setError(null);
+      setLoading(true);
+
+      try {
+        const response = await authService.verifyOtp(email.trim(), trimmed);
+        await signIn(response);
+        navigate("/");
+      } catch (err) {
+        setError(getErrorMessage(err, t("auth.errorVerify")));
+        setCode("");
+      } finally {
+        verifyingRef.current = false;
+        setLoading(false);
+      }
+    },
+    [email, loading, navigate, signIn, t],
+  );
 
   const handleResend = async () => {
     setError(null);
@@ -248,22 +259,24 @@ export function SignInPage() {
             </div>
           )}
 
-          <Form onSubmit={handleVerifyOtp} className="form-stack auth-otp-step__form">
+          <div className="form-stack auth-otp-step__form">
             <Form.Group className="field-group auth-otp-step__field">
               <Form.Label className="visually-hidden">{t("auth.verificationCode")}</Form.Label>
               <OtpInput
                 id="auth-otp"
                 value={code}
                 onChange={setCode}
+                onComplete={verifyOtpCode}
                 autoFocus
                 disabled={loading}
                 aria-label={t("auth.verificationCode")}
               />
+              {loading ? (
+                <p className="auth-otp-step__status" role="status" aria-live="polite">
+                  {t("auth.verifying")}
+                </p>
+              ) : null}
             </Form.Group>
-
-            <Button type="submit" variant="primary" className="w-100" disabled={loading || code.length < 6}>
-              {loading ? t("auth.verifying") : t("auth.verifyAndContinue")}
-            </Button>
 
             <p className="auth-otp-step__help">
               {t("auth.otpNoCode")}{" "}
@@ -271,7 +284,7 @@ export function SignInPage() {
                 {t("auth.resendCode")}
               </button>
             </p>
-          </Form>
+          </div>
         </div>
       )}
     </AuthShell>

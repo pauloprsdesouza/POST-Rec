@@ -8,10 +8,10 @@ import uuid
 import redis
 from sqlalchemy.orm import Session
 
+from apps.api.features.runs.query import run_stream_payload
 from apps.api.shared.database import SessionLocal
 from apps.api.shared.models import RecommendationRun
 from apps.api.shared.observability.logging import get_logger
-from apps.api.features.runs.query import run_stream_payload
 from apps.api.shared.settings import get_settings
 
 logger = get_logger("postrec-run-stream")

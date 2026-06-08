@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, TypeVar
+from typing import TypeVar
 
 from apps.api.shared.infra.cache import cache_service
 

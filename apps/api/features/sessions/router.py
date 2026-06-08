@@ -3,11 +3,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from apps.api.features.runs.access import user_id_optional
 from apps.api.shared.database import get_db
 from apps.api.shared.dependencies import get_current_user_optional
 from apps.api.shared.models import StudySession, User
 from apps.api.shared.schemas.common import SessionCreate, SessionResponse
-from apps.api.features.runs.access import user_id_optional
 
 router = APIRouter(prefix="/api/v1")
 

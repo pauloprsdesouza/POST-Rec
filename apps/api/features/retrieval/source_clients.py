@@ -7,15 +7,15 @@ from typing import Any
 import feedparser
 import httpx
 
-from apps.api.shared.infra.http_retry import RetryableFetchError, get_with_retry
-from apps.api.shared.observability.logging import get_logger
-from apps.api.shared.settings import Settings
 from apps.api.features.retrieval.normalizers import (
     nested_get,
     normalize_crossref_work,
     normalize_openalex_work,
     normalize_semantic_scholar_paper,
 )
+from apps.api.shared.infra.http_retry import RetryableFetchError, get_with_retry
+from apps.api.shared.observability.logging import get_logger
+from apps.api.shared.settings import Settings
 
 logger = get_logger("postrec-retrieval-sources")
 

@@ -5,10 +5,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from apps.api.shared.database import init_db
-from apps.api.shared.observability.logging import configure_logging, get_logger
 from apps.api.features import api_router, auth_router, users_router
+from apps.api.shared.database import init_db
 from apps.api.shared.infra.embedding_config import validate_embedding_configuration
+from apps.api.shared.observability.logging import configure_logging, get_logger
 from apps.api.shared.settings import get_settings
 
 configure_logging()

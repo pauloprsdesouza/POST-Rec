@@ -6,11 +6,11 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from apps.api.shared.models import SourceDocument
-from apps.api.shared.observability.logging import get_logger
 from apps.api.features.recommendations.llm import gemini_service
 from apps.api.features.retrieval.relevance import compute_relevance_score
 from apps.api.features.retrieval.vector import vector_retrieval_service
+from apps.api.shared.models import SourceDocument
+from apps.api.shared.observability.logging import get_logger
 from apps.api.shared.settings import get_settings
 from packages.postrec_core.retrieval.bm25 import Bm25Index, bm25_score_paper
 from packages.postrec_core.retrieval.hybrid_ranking import rank_papers_by_hybrid_score

@@ -147,19 +147,15 @@ export function RecommendationPreferencesForm({
       ) : null}
 
       {onSubmit ? (
-        <>
-          <Button
-            type="submit"
-            variant="primary"
-            size="lg"
-            className="w-100"
-            disabled={submitting}
-            {...(submitDataCoach ? { "data-coach": submitDataCoach } : {})}
-          >
+        <div
+          className={submitDataCoach ? "d-none d-lg-block" : undefined}
+          {...(submitDataCoach ? { "data-coach": submitDataCoach } : {})}
+        >
+          <Button type="submit" variant="primary" size="lg" className="w-100" disabled={submitting}>
             {submitting ? t("common.saving") : buttonLabel}
           </Button>
           {submitHint ? <p className="form-submit-hint">{submitHint}</p> : null}
-        </>
+        </div>
       ) : null}
     </>
   );

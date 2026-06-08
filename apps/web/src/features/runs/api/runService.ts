@@ -8,7 +8,7 @@ import type {
 import type { IHttpClient } from "@/shared/api/httpClient";
 
 export interface IRunService {
-  listMyRuns(token: string, limit?: number): Promise<RecommendationRun[]>;
+  listMyRuns(token: string, limit?: number, query?: string): Promise<RecommendationRun[]>;
   getRun(token: string, runId: string): Promise<RecommendationRun>;
   getRunEvents(token: string, runId: string): Promise<RunEvent[]>;
   getRecommendations(token: string, runId: string, includeRefinement?: boolean): Promise<Recommendation[]>;
@@ -25,8 +25,13 @@ export class RunService implements IRunService {
     this.client = client;
   }
 
-  listMyRuns(token: string, limit = 50): Promise<RecommendationRun[]> {
-    return this.client.get(`/api/v1/users/me/recommendation-runs?limit=${limit}`, { token });
+  listMyRuns(token: string, limit = 50, query?: string): Promise<RecommendationRun[]> {
+    const params = new URLSearchParams({ limit: String(limit) });
+    const trimmed = query?.trim();
+    if (trimmed) {
+      params.set("q", trimmed);
+    }
+    return this.client.get(`/api/v1/users/me/recommendation-runs?${params.toString()}`, { token });
   }
 
   getRun(token: string, runId: string): Promise<RecommendationRun> {

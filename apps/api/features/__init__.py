@@ -4,6 +4,7 @@ from fastapi import APIRouter
 
 from apps.api.features.auth.router import router as auth_router
 from apps.api.features.consent.router import router as consent_router
+from apps.api.features.experiments.router import router as experiments_router
 from apps.api.features.feedback.router import router as feedback_router
 from apps.api.features.health.router import router as health_router
 from apps.api.features.profile.router import router as profile_router
@@ -13,7 +14,6 @@ from apps.api.features.sessions.router import router as sessions_router
 from apps.api.features.survey.router import router as survey_router
 from apps.api.features.users.router import router as users_router
 from apps.api.features.validation.router import router as validation_router
-from apps.api.features.experiments.router import router as experiments_router
 
 api_router = APIRouter()
 for feature_router in (

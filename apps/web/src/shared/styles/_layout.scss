@@ -1,3 +1,5 @@
+@use "./mixins" as *;
+
 // Refactoring UI — layout rhythm, grouping, hierarchy.
 
 .page-stack {
@@ -51,6 +53,7 @@
 }
 
 .panel__title {
+  @include card-title-clamp(2);
   color: var(--postrec-text);
   font-size: var(--postrec-text-base);
   font-weight: 600;

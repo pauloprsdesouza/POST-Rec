@@ -6,6 +6,7 @@ const DEFAULT_LENGTH = 6;
 interface OtpInputProps {
   value: string;
   onChange: (value: string) => void;
+  onComplete?: (value: string) => void;
   length?: number;
   disabled?: boolean;
   autoFocus?: boolean;
@@ -20,6 +21,7 @@ function sanitizeDigits(raw: string, maxLength: number): string {
 export function OtpInput({
   value,
   onChange,
+  onComplete,
   length = DEFAULT_LENGTH,
   disabled = false,
   autoFocus = false,
@@ -44,11 +46,18 @@ export function OtpInput({
     }
   }, [autoFocus, disabled]);
 
-  const applyDigits = (nextDigits: string[], focusAt?: number) => {
-    onChange(nextDigits.join("").slice(0, length));
+  const emitValue = (nextValue: string, focusAt?: number) => {
+    onChange(nextValue);
+    if (nextValue.length === length) {
+      onComplete?.(nextValue);
+    }
     if (focusAt !== undefined) {
       focusCell(focusAt);
     }
+  };
+
+  const applyDigits = (nextDigits: string[], focusAt?: number) => {
+    emitValue(nextDigits.join("").slice(0, length), focusAt);
   };
 
   const handleCellChange = (index: number, raw: string) => {
@@ -123,10 +132,7 @@ export function OtpInput({
     if (sanitized === value) {
       return;
     }
-    onChange(sanitized);
-    if (sanitized.length > 0) {
-      focusCell(Math.min(sanitized.length, length) - 1);
-    }
+    emitValue(sanitized, sanitized.length > 0 ? Math.min(sanitized.length, length) - 1 : undefined);
   };
 
   return (

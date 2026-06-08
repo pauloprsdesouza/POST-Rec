@@ -20,10 +20,11 @@ def _normalize_title(value: str | None) -> str:
     return " ".join(str(value or "").lower().split())
 
 
-def _paper_index(papers: list[dict[str, Any]]) -> tuple[set[str], set[str]]:
+def _paper_index(papers: list[dict[str, Any]]) -> tuple[set[str], set[str], set[str]]:
     titles = {_normalize_title(p.get("title")) for p in papers if p.get("title")}
     dois = {str(p.get("doi")).lower() for p in papers if p.get("doi")}
-    return titles, dois
+    paper_ids = {str(p.get("paper_id")).strip() for p in papers if p.get("paper_id")}
+    return titles, dois, paper_ids
 
 
 def _has_sota_recent_anchor(recommendation: dict[str, Any], papers: list[dict[str, Any]]) -> bool:
@@ -51,10 +52,16 @@ def verify_citations(
     papers: list[dict[str, Any]],
 ) -> list[str]:
     """Return issues for citations not present in retrieved papers."""
-    titles, dois = _paper_index(papers)
+    titles, dois, paper_ids = _paper_index(papers)
     issues: list[str] = []
 
     def check_entry(entry: dict[str, Any], label: str) -> None:
+        paper_id = str(entry.get("paper_id") or "").strip()
+        if paper_id:
+            if paper_id not in paper_ids:
+                issues.append(f"{label} paper_id not in retrieved set: {paper_id}")
+            return
+
         title = _normalize_title(entry.get("title"))
         doi = str(entry.get("doi") or "").lower()
         if title and title not in titles:

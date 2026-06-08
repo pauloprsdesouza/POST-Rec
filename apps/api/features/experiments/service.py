@@ -68,11 +68,7 @@ class ExperimentService:
         if not experiment_id:
             return None
 
-        runs = (
-            db.query(RecommendationRun)
-            .filter(RecommendationRun.experiment_id == experiment_id)
-            .all()
-        )
+        runs = db.query(RecommendationRun).filter(RecommendationRun.experiment_id == experiment_id).all()
         if not runs:
             return None
 

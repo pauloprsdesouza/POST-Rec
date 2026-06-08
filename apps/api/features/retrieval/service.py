@@ -7,20 +7,9 @@ from typing import Any
 import httpx
 from sqlalchemy.orm import Session
 
-from apps.api.shared.models import SourceDocument
-from apps.api.shared.observability.logging import get_logger
+from apps.api.features.retrieval.cache import retrieval_cache_service
 from apps.api.features.retrieval.corpus import corpus_retrieval_service
 from apps.api.features.retrieval.fetch_queue import FetchJob, FetchQueueProcessor
-from apps.api.features.retrieval.persistence import persist_papers
-from apps.api.features.retrieval.relevance import filter_and_rank_papers, filter_papers_by_max_age
-from apps.api.shared.infra.resilience.registry import get_source_circuit_breaker
-from apps.api.features.retrieval.cache import retrieval_cache_service
-from apps.api.features.retrieval.source_clients import AcademicSourceClient
-from apps.api.shared.settings import get_settings
-from packages.postrec_core.retrieval.dual_pass import merge_dual_pass_results
-from packages.postrec_core.retrieval.paper_enrichment import enrich_paper_metadata
-from packages.postrec_core.retrieval.paper_tier import current_year
-from packages.postrec_core.retrieval.retrieval_plan import build_retrieval_plan
 
 # Re-export normalizers for backward-compatible imports in tests and deferred tasks.
 from apps.api.features.retrieval.normalizers import (  # noqa: F401
@@ -31,6 +20,17 @@ from apps.api.features.retrieval.normalizers import (  # noqa: F401
     _normalize_semantic_scholar_paper,
     _reconstruct_abstract,
 )
+from apps.api.features.retrieval.persistence import persist_papers
+from apps.api.features.retrieval.relevance import filter_and_rank_papers, filter_papers_by_max_age
+from apps.api.features.retrieval.source_clients import AcademicSourceClient
+from apps.api.shared.infra.resilience.registry import get_source_circuit_breaker
+from apps.api.shared.models import SourceDocument
+from apps.api.shared.observability.logging import get_logger
+from apps.api.shared.settings import get_settings
+from packages.postrec_core.retrieval.dual_pass import merge_dual_pass_results
+from packages.postrec_core.retrieval.paper_enrichment import enrich_paper_metadata
+from packages.postrec_core.retrieval.paper_tier import current_year
+from packages.postrec_core.retrieval.retrieval_plan import build_retrieval_plan
 
 logger = get_logger("postrec-retrieval")
 
