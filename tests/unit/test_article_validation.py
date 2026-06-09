@@ -79,6 +79,8 @@ def test_llm_validation_merges_scores(mock_gemini, mock_settings, mock_persist):
         gemini_api_key="key",
         article_llm_min_relevance_score=0.5,
         article_min_valid_papers=1,
+        article_sparse_corpus_threshold=12,
+        article_grounding_best_effort_enabled=False,
         retrieval_min_relevance_score=0.22,
     )
     papers = [
@@ -105,6 +107,87 @@ def test_llm_validation_merges_scores(mock_gemini, mock_settings, mock_persist):
     assert len(filtered) == 1
     assert filtered[0]["paper_id"] == "P1"
     mock_persist.assert_called_once()
+
+
+@patch("apps.api.features.recommendations.article_validation.persist_article_validation_scores")
+@patch("apps.api.features.recommendations.article_validation.get_settings")
+@patch("apps.api.features.recommendations.article_validation.gemini_service")
+def test_llm_validation_uses_paper_count_not_llm_flag(mock_gemini, mock_settings, mock_persist):
+    mock_settings.return_value = MagicMock(
+        article_llm_validation_enabled=True,
+        gemini_api_key="key",
+        article_llm_min_relevance_score=0.42,
+        article_min_valid_papers=2,
+        article_sparse_corpus_threshold=12,
+        article_grounding_best_effort_enabled=False,
+        retrieval_min_relevance_score=0.22,
+    )
+    papers = [
+        {"paper_id": "P1", "title": "Recsys GNN", "abstract": "graphs"},
+        {"paper_id": "P2", "title": "Social capital in networks", "abstract": "network analysis"},
+        {"paper_id": "P3", "title": "User engagement", "abstract": "engagement metrics"},
+    ]
+    mock_gemini.validate_retrieved_papers.return_value = {
+        "papers": [
+            {**papers[0], "llm_relevance_score": 0.8, "llm_passes_validation": True},
+            {**papers[1], "llm_relevance_score": 0.7, "llm_passes_validation": True},
+            {**papers[2], "llm_relevance_score": 0.6, "llm_passes_validation": True},
+        ],
+        "validations": [],
+        "sufficient_evidence": False,
+        "insufficient_evidence_reason": "Only 3 papers passed validation, which is less than the required minimum of 3.",
+    }
+
+    filtered, stats = article_validation_service.validate_and_filter(
+        MagicMock(),
+        "run-1",
+        papers,
+        research_area="Recommender Systems",
+        seed_topics=["social capital"],
+    )
+
+    assert stats["method"] == "llm"
+    assert stats["sufficient_evidence"] is True
+    assert len(filtered) == 3
+
+
+@patch("apps.api.features.recommendations.article_validation.persist_article_validation_scores")
+@patch("apps.api.features.recommendations.article_validation.get_settings")
+@patch("apps.api.features.recommendations.article_validation.gemini_service")
+def test_best_effort_proceeds_when_strict_validation_fails(mock_gemini, mock_settings, mock_persist):
+    mock_settings.return_value = MagicMock(
+        article_llm_validation_enabled=True,
+        gemini_api_key="key",
+        article_llm_min_relevance_score=0.42,
+        article_min_valid_papers=2,
+        article_sparse_corpus_threshold=12,
+        article_grounding_best_effort_enabled=True,
+        retrieval_min_relevance_score=0.22,
+    )
+    papers = [
+        {"paper_id": "P1", "title": "Quantum chromodynamics in colliders", "abstract": "particle physics"},
+        {"paper_id": "P2", "title": "Medieval European crop rotation", "abstract": "historical agriculture"},
+    ]
+    mock_gemini.validate_retrieved_papers.return_value = {
+        "papers": [
+            {**papers[0], "llm_relevance_score": 0.35, "llm_passes_validation": False},
+            {**papers[1], "llm_relevance_score": 0.3, "llm_passes_validation": False},
+        ],
+        "validations": [],
+        "sufficient_evidence": False,
+    }
+
+    filtered, stats = article_validation_service.validate_and_filter(
+        MagicMock(),
+        "run-1",
+        papers,
+        research_area="Recommender Systems",
+        seed_topics=["social capital"],
+    )
+
+    assert stats["sufficient_evidence"] is True
+    assert stats["best_effort_grounding"] is True
+    assert len(filtered) >= 1
 
 
 def test_merge_paper_validations_applies_llm_scores():

@@ -10,6 +10,20 @@ from sqlalchemy.orm import Session
 from apps.api.features.retrieval.normalizers import content_hash, normalize_doi
 from apps.api.shared.models import SourceDocument
 
+OPENALEX_METADATA_KEYS = (
+    "openalex_primary_topic",
+    "openalex_field",
+    "openalex_subfield",
+    "openalex_topics",
+    "openalex_fwci",
+    "is_open_access",
+    "open_access_status",
+    "openalex_keywords",
+    "openalex_referenced_works",
+    "openalex_related_works",
+    "work_type",
+)
+
 VALIDATION_METADATA_KEYS = (
     "article_validation_method",
     "llm_relevance_score",
@@ -34,6 +48,7 @@ def merge_paper_metadata(doc: SourceDocument, paper: dict[str, Any]) -> None:
         "dense_score",
         "issn",
         "journal_title",
+        *OPENALEX_METADATA_KEYS,
     ):
         value = paper.get(key)
         if value is None:
@@ -168,7 +183,11 @@ def persist_papers(db: Session, papers: list[dict[str, Any]], max_papers: int) -
             content_hash=paper_hash,
             metadata_={
                 **(paper.get("metadata") or {}),
-                **{key: paper[key] for key in ("issn", "journal_title") if paper.get(key) is not None},
+                **{
+                    key: paper[key]
+                    for key in ("issn", "journal_title", *OPENALEX_METADATA_KEYS)
+                    if paper.get(key) is not None
+                },
             },
         )
         db.add(doc)

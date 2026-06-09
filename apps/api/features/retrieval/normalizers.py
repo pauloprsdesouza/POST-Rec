@@ -69,6 +69,21 @@ def normalize_openalex_work(work: dict[str, Any]) -> dict[str, Any] | None:
         issn = extract_issn_from_list(source.get("issn"))
     journal_title = source.get("display_name") if isinstance(source, dict) else None
 
+    primary_topic = work.get("primary_topic") if isinstance(work.get("primary_topic"), dict) else {}
+    openalex_topics = [
+        item.get("display_name")
+        for item in (work.get("topics") or [])
+        if isinstance(item, dict) and item.get("display_name")
+    ]
+    open_access = work.get("open_access") if isinstance(work.get("open_access"), dict) else {}
+    keywords = [
+        item.get("display_name") or item.get("keyword")
+        for item in (work.get("keywords") or [])
+        if isinstance(item, dict) and (item.get("display_name") or item.get("keyword"))
+    ]
+    referenced = work.get("referenced_works") or []
+    related = work.get("related_works") or []
+
     return {
         "external_id": work.get("id"),
         "source": "openalex",
@@ -82,6 +97,17 @@ def normalize_openalex_work(work: dict[str, Any]) -> dict[str, Any] | None:
         "doi": normalize_doi(work.get("doi")),
         "url": work.get("id") or work.get("doi"),
         "citation_count": work.get("cited_by_count") or 0,
+        "work_type": work.get("type"),
+        "openalex_primary_topic": primary_topic.get("display_name") if primary_topic else None,
+        "openalex_field": nested_get(primary_topic, "field", "display_name"),
+        "openalex_subfield": nested_get(primary_topic, "subfield", "display_name"),
+        "openalex_topics": openalex_topics or None,
+        "openalex_fwci": work.get("fwci"),
+        "is_open_access": open_access.get("is_oa") if open_access else None,
+        "open_access_status": open_access.get("oa_status") if open_access else None,
+        "openalex_keywords": keywords or None,
+        "openalex_referenced_works": referenced[:20] if isinstance(referenced, list) else None,
+        "openalex_related_works": related[:20] if isinstance(related, list) else None,
     }
 
 

@@ -853,7 +853,7 @@
     "incomplete": "The run finished but no ideas were generated.",
     "queued": "Waiting in queue — we'll start searching soon.",
     "started": "Starting your personalized research run…",
-    "searching_papers": "Searching academic databases for papers that match your topics…",
+    "searching_papers": "Searching OpenAlex for papers that match your topics…",
     "normalizing_documents": "Cleaning and organizing retrieved papers…",
     "deduplicating_documents": "Removing duplicate articles from the corpus…",
     "generating_embeddings": "Understanding paper content to find the best matches…",
@@ -929,8 +929,8 @@
           "body": "Your seed topics, research area, depth, run mode, and constraints are stored as a UserExpectation and linked to the run."
         },
         "retrieval": {
-          "title": "Dual-pass multi-source search",
-          "body": "Expanded queries are sent to OpenAlex, arXiv, Semantic Scholar, and Crossref in SOTA (recent) and foundation (highly cited) passes."
+          "title": "Dual-pass OpenAlex search",
+          "body": "Expanded queries are sent to OpenAlex with field, subfield, and topic filters in SOTA (recent) and foundation (highly cited) passes."
         },
         "relevance": {
           "title": "Relevance filtering",

@@ -10,8 +10,8 @@ FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "golden_eval_topics
 
 
 def test_article_llm_min_relevance_score_default_is_semantic_rubric():
-    """0.5 is the LLM rubric midpoint; lexical scores on golden fixtures are much lower."""
-    assert Settings().article_llm_min_relevance_score == 0.5
+    """0.42 accepts partial rubric matches while staying above weak-match band."""
+    assert Settings().article_llm_min_relevance_score == 0.42
 
 
 def test_golden_eval_fixture_papers_score_low_on_lexical_relevance():

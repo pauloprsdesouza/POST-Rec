@@ -3,7 +3,7 @@
 import uuid
 from unittest.mock import MagicMock
 
-from apps.api.features.recommendations.sources import enrich_evidence_papers
+from apps.api.features.recommendations.sources import enrich_evidence_papers, serialize_source_documents
 
 
 def _mock_doc(*, doi=None, title="Sample Paper", source="openalex", citations=42, metadata=None):
@@ -65,6 +65,14 @@ def test_enrich_evidence_includes_qualis_from_matched_catalog_doc():
     assert enriched[0]["qualis_estrato"] == "A1"
     assert enriched[0]["qualis_boost"] == 0.08
     assert enriched[0]["qualis_period"] == "2021-2024"
+
+
+def test_serialize_source_documents_includes_qualis_from_metadata():
+    doc = _mock_doc(metadata={"qualis_estrato": "a2"})
+
+    payload = serialize_source_documents([doc])[0]
+
+    assert payload["qualis_estrato"] == "A2"
 
 
 def test_enrich_evidence_includes_relevance_score_from_metadata():

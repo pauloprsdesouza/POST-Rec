@@ -16,6 +16,12 @@ Validate whether each retrieved paper is relevant to the user's research scope B
 - Seed topics: {seed_topics}
 - Avoided topics (penalize heavily): {avoided_topics}
 
+Papers count as relevant when they substantively support the research area AND at least one seed topic.
+Reject keyword-only matches: papers from a different academic field that share topic words but not the research area's methods, venues, or problem context.
+Example trap: sociology or psychology papers about "social capital" when the research area is Recommender Systems — reject unless the paper connects topics to that area (e.g., computational recommendation, benchmark evaluation).
+Cross-disciplinary work is valid when it explicitly bridges seed topics to the stated research area.
+Use venue, methodology, and abstract cues to infer whether a paper belongs to the same academic context as the research area.
+
 ## Relevance rubric (0.0–1.0)
 | Score | Meaning |
 |-------|---------|
@@ -60,4 +66,6 @@ Return JSON:
   "insufficient_evidence_reason": "null or explanation if too few papers pass"
 }}
 
-Set sufficient_evidence=true only if at least {min_valid_papers} papers have passes_validation=true."""
+Set sufficient_evidence=true only if at least {min_valid_papers} papers have passes_validation=true.
+
+Treat partial matches (score >= {min_score}) as valid supporting evidence when they share the research area or at least one seed topic. Do not require every paper to be a direct match."""

@@ -852,7 +852,7 @@
     "incomplete": "La ejecución terminó pero no se generaron ideas.",
     "queued": "En cola — empezaremos a buscar en breve.",
     "started": "Iniciando tu ejecución de investigación personalizada…",
-    "searching_papers": "Buscando artículos académicos que coincidan con tus temas…",
+    "searching_papers": "Buscando artículos en OpenAlex que coincidan con tus temas…",
     "normalizing_documents": "Organizando y limpiando los artículos recuperados…",
     "deduplicating_documents": "Eliminando artículos duplicados del corpus…",
     "generating_embeddings": "Analizando el contenido para encontrar las mejores coincidencias…",
@@ -955,8 +955,8 @@
           "body": "Tus temas, área, profundidad y restricciones se almacenan como UserExpectation vinculada a la ejecución."
         },
         "retrieval": {
-          "title": "Búsqueda multi-fuente",
-          "body": "Consultas en paralelo a OpenAlex, arXiv, Semantic Scholar y Crossref."
+          "title": "Búsqueda dual-pass en OpenAlex",
+          "body": "Consultas ampliadas a OpenAlex con filtros de campo, subcampo y tema en pasadas SOTA (recientes) y foundation (altamente citadas)."
         },
         "relevance": {
           "title": "Filtrado por relevancia",
