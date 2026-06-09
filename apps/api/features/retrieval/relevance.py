@@ -5,6 +5,8 @@ import re
 from datetime import UTC, datetime
 from typing import Any
 
+from apps.api.features.qualis.service import qualis_service
+
 STOPWORDS = frozenset(
     {
         "a",
@@ -133,6 +135,7 @@ def compute_relevance_score(
     if title_overlap < 0.08 and body_overlap < 0.12:
         score = min(score, 0.18)
 
+    score, _ = qualis_service.apply_relevance_boost(score, paper)
     return max(0.0, min(score, 1.0))
 
 

@@ -1,6 +1,7 @@
 """Tests for academic retrieval normalization."""
 
 from apps.api.features.retrieval.normalizers import (
+    _normalize_core_work,
     _normalize_crossref_work,
     _normalize_doi,
     _normalize_openalex_work,
@@ -74,6 +75,23 @@ def test_normalize_crossref_work():
     assert result["source"] == "crossref"
     assert result["year"] == 2022
     assert "Survey of recommender systems" in (result["abstract"] or "")
+
+
+def test_normalize_core_work():
+    work = {
+        "id": 999,
+        "title": "CORE open access study",
+        "abstract": "Full-text metadata from repositories.",
+        "authors": [{"name": "Researcher One"}],
+        "yearPublished": 2022,
+        "doi": "10.1000/core.doi",
+        "citationCount": 7,
+    }
+    result = _normalize_core_work(work)
+    assert result is not None
+    assert result["source"] == "core"
+    assert result["year"] == 2022
+    assert result["doi"] == "10.1000/core.doi"
 
 
 def test_strip_crossref_abstract():

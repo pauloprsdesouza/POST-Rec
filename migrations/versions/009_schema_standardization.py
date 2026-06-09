@@ -147,24 +147,6 @@ def upgrade() -> None:
             )
         )
 
-    if "recommendation_run" in _tables() and "expectation_id" in _columns("recommendation_run"):
-        op.execute(
-            sa.text(
-                """
-                DO $$
-                BEGIN
-                    IF NOT EXISTS (
-                        SELECT 1 FROM pg_constraint WHERE conname = 'fk_recommendation_run_expectation_id'
-                    ) THEN
-                        ALTER TABLE recommendation_run
-                        ADD CONSTRAINT fk_recommendation_run_expectation_id
-                        FOREIGN KEY (expectation_id) REFERENCES session_expectation(id);
-                    END IF;
-                END $$;
-                """
-            )
-        )
-
     # Unique constraints (skip if duplicates would violate).
     if "recommendation_feedback" in _tables():
         op.execute(
@@ -243,6 +225,24 @@ def upgrade() -> None:
             sa.Column("expects_experimental_plan", sa.Boolean(), nullable=True),
             sa.Column("expects_references", sa.Boolean(), nullable=True),
             sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        )
+
+    if "recommendation_run" in _tables() and "expectation_id" in _columns("recommendation_run"):
+        op.execute(
+            sa.text(
+                """
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM pg_constraint WHERE conname = 'fk_recommendation_run_expectation_id'
+                    ) THEN
+                        ALTER TABLE recommendation_run
+                        ADD CONSTRAINT fk_recommendation_run_expectation_id
+                        FOREIGN KEY (expectation_id) REFERENCES session_expectation(id);
+                    END IF;
+                END $$;
+                """
+            )
         )
 
     _ensure_pipeline_tables(bind)

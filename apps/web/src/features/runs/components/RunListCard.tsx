@@ -18,11 +18,17 @@ interface RunListCardProps {
   showSearchMeta?: boolean;
 }
 
-function StatusPill({ outcome }: { outcome: RunOutcome }) {
+function StatusPill({ outcome, run }: { outcome: RunOutcome; run: RecommendationRun }) {
   const { t } = useTranslation();
+  const isActive = outcome === "in_progress";
+  const stageKey = run.current_step ?? run.status;
+  const label = isActive
+    ? t(`status.${stageKey}`, { defaultValue: t("status.in_progress") })
+    : t(`status.${outcome}`);
+
   return (
     <span className={`run-card__status run-card__status--${outcome}`}>
-      {t(`status.${outcome}`)}
+      {label}
     </span>
   );
 }
@@ -82,7 +88,7 @@ export function RunListCard({ run, recommendationCount, showSearchMeta = false }
       <div className="run-card__main">
         <div className="run-card__top">
           <div className="run-card__meta">
-            <StatusPill outcome={outcome} />
+            <StatusPill outcome={outcome} run={run} />
             {!blind && run.mode ? (
               <span className="run-card__mode">{t(`newRun.runMode.${run.mode}.label`)}</span>
             ) : null}
@@ -135,7 +141,11 @@ export function RunListCard({ run, recommendationCount, showSearchMeta = false }
                 <span className="run-card__feedback-hint">{t("runs.rateIdeasHint")}</span>
               </>
             ) : isActive ? (
-              <span className="run-card__status-hint">{t("runs.generatingHint")}</span>
+              <span className="run-card__status-hint">
+                {t(`statusDescriptions.${run.current_step ?? run.status}`, {
+                  defaultValue: t("runs.generatingHint"),
+                })}
+              </span>
             ) : null}
           </div>
           <span className={`run-card__action ${isReady ? "run-card__action--primary" : ""}`}>

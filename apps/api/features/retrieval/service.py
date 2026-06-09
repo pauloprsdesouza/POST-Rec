@@ -2,6 +2,7 @@
 
 import asyncio
 import sys
+from collections.abc import Callable
 from typing import Any
 
 import httpx
@@ -34,7 +35,7 @@ from packages.postrec_core.retrieval.retrieval_plan import build_retrieval_plan
 
 logger = get_logger("postrec-retrieval")
 
-SOURCE_FETCHERS = ("openalex", "arxiv", "semantic_scholar", "crossref")
+SOURCE_FETCHERS = ("openalex", "arxiv", "semantic_scholar", "crossref", "core")
 
 
 class RetrievalService:
@@ -58,6 +59,7 @@ class RetrievalService:
         learned_topics: list[str] | None = None,
         avoided_topics: list[str] | None = None,
         max_article_age_years: int | None = None,
+        on_milestone: Callable[[str, int], None] | None = None,
     ) -> list[SourceDocument]:
         self._max_article_age_years = max_article_age_years or self.settings.retrieval_max_article_age_years
         cleaned_topics = [t.strip() for t in topics if t and t.strip()]
@@ -87,6 +89,9 @@ class RetrievalService:
         )
         jobs.sort(key=lambda job: (job.priority, job.source, job.query, job.job_type))
 
+        if on_milestone:
+            on_milestone("Querying academic databases (OpenAlex, Semantic Scholar, Crossref, CORE…)", 18)
+
         async with httpx.AsyncClient(timeout=45.0, follow_redirects=True) as client:
             processor = FetchQueueProcessor(
                 lambda job: self._dispatch_job(client, job),
@@ -113,6 +118,9 @@ class RetrievalService:
             )
             raw_papers.extend(recommendation_papers)
 
+        if on_milestone:
+            on_milestone(f"Collected {len(raw_papers)} papers from sources", 24)
+
         if self.settings.dual_retrieval_enabled:
             sota_papers = [p for p in raw_papers if p.get("retrieval_pass") == "sota"]
             foundation_papers = [
@@ -130,6 +138,9 @@ class RetrievalService:
             papers = raw_papers
 
         papers = [enrich_paper_metadata(paper) for paper in papers if isinstance(paper, dict)]
+
+        if on_milestone:
+            on_milestone("Scoring papers for relevance to your topics", 28)
 
         papers, age_stats = filter_papers_by_max_age(
             papers,
@@ -211,6 +222,12 @@ class RetrievalService:
             max(25, fetch_target // 2),
         )
 
+    def _core_limit(self, fetch_target: int) -> int:
+        return min(
+            self.settings.retrieval_core_limit_max,
+            max(20, fetch_target // 3),
+        )
+
     def _build_jobs_from_plan(
         self,
         topics: list[str],
@@ -230,9 +247,11 @@ class RetrievalService:
         priority_map = self._source_priority_map()
         jobs: list[FetchJob] = []
         crossref_slots = self.settings.retrieval_crossref_max_queries
+        core_slots = self.settings.retrieval_core_max_queries if self.settings.core_api_key else 0
         primary_limit = self._primary_source_limit(fetch_target)
         crossref_limit = self._crossref_limit(fetch_target)
         s2_limit = self._semantic_scholar_limit(fetch_target)
+        core_limit = self._core_limit(fetch_target)
 
         for search in plan.searches:
             for pass_kind in search.pass_kinds:
@@ -265,6 +284,17 @@ class RetrievalService:
                         )
                     )
                     crossref_slots -= 1
+                if search.use_crossref and core_slots > 0:
+                    jobs.append(
+                        FetchJob(
+                            source="core",
+                            query=search.query,
+                            limit=core_limit,
+                            pass_kind=pass_kind,
+                            priority=priority_map.get("core", 99),
+                        )
+                    )
+                    core_slots -= 1
 
         for learned in plan.learned_queries:
             jobs.append(
@@ -327,6 +357,8 @@ class RetrievalService:
             papers = await sources.fetch_semantic_scholar(client, job.query, job.limit, job.pass_kind)
         elif job.source == "crossref":
             papers = await sources.fetch_crossref(client, job.query, job.limit, job.pass_kind)
+        elif job.source == "core":
+            papers = await sources.fetch_core(client, job.query, job.limit, job.pass_kind)
         else:
             raise ValueError(f"Unknown source: {job.source}")
 

@@ -515,9 +515,37 @@
     "supportingArticles": "Artículos de apoyo",
     "noArticles": "No hay artículos de apoyo citados para esta recomendación.",
     "articlesCited": "{{count}} artículo(s) citado(s) como evidencia.",
+    "explainedCount": "{{count}} con notas de relevancia",
+    "intro": "Cada artículo incluye una nota sobre cómo apoya esta idea de investigación.",
+    "whyRelevant": "Por qué apoya la idea",
+    "noRelevance": "No se proporcionó explicación de relevancia para esta cita.",
+    "showMore": "Leer explicación completa",
+    "showLess": "Mostrar menos",
+    "relevanceScoreTooltip": "Fuerza de coincidencia temática: {{percent}}%",
+    "relevanceScoreAria": "Coincidencia temática {{percent}} por ciento",
+    "relevanceTier": {
+      "high": "Coincidencia fuerte",
+      "medium": "Buena coincidencia",
+      "low": "Apoyo"
+    },
     "catalogUnavailable": "Catálogo de fuentes no disponible para esta ejecución.",
     "papersUsed": "{{count}} artículos filtrados por relevancia usados como contexto.",
-    "doi": "DOI"
+    "doi": "DOI",
+    "qualisPrefix": "Qualis",
+    "qualisShort": "Qualis {{estrato}}",
+    "qualisLabel": "Clasificación Qualis CAPES: {{estrato}}",
+    "qualisLabelWithPeriod": "Clasificación Qualis CAPES: {{estrato}} ({{period}})",
+    "qualisTooltip": "Clasificación Qualis CAPES de la revista (estrato {{estrato}})",
+    "qualisTooltipWithPeriod": "Clasificación Qualis CAPES de la revista (estrato {{estrato}}, período {{period}})",
+    "sourceLabel": "Recuperado desde {{source}}",
+    "sourceTooltip": "Artículo recuperado vía {{source}}",
+    "sourceShort": {
+      "openalex": "OpenAlex",
+      "crossref": "Crossref",
+      "semantic_scholar": "S2",
+      "arxiv": "arXiv",
+      "unknown": "Otro"
+    }
   },
   "insights": {
     "title": "Métricas",
@@ -839,6 +867,9 @@
   },
   "progress": {
     "step": "Paso: {{step}}",
+    "stageOf": "Paso {{current}} de {{total}}",
+    "elapsed": "{{time}} transcurrido",
+    "pipelineLabel": "Etapas del proceso",
     "progressLabel": "Progreso",
     "estCost": "Coste est.",
     "updating": "Actualizando cada pocos segundos…",

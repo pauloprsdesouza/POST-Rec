@@ -64,6 +64,66 @@ const STATUS_PROGRESS_FLOORS: Record<string, number> = {
   validating_output: 88,
 };
 
+/** Ordered pipeline stages shown in the run progress UI. */
+export const RUN_PIPELINE_STAGES = [
+  "queued",
+  "started",
+  "searching_papers",
+  "generating_embeddings",
+  "ranking_candidates",
+  "generating_recommendations",
+  "validating_output",
+] as const;
+
+export type RunPipelineStage = (typeof RUN_PIPELINE_STAGES)[number];
+
+const PIPELINE_STAGE_INDEX = Object.fromEntries(
+  RUN_PIPELINE_STAGES.map((stage, index) => [stage, index]),
+) as Record<RunPipelineStage, number>;
+
+/** Map backend statuses to a pipeline step for the stepper (non-breaking alias support). */
+export function resolvePipelineStage(status: string): RunPipelineStage | null {
+  if (status === "normalizing_documents" || status === "deduplicating_documents") {
+    return "searching_papers";
+  }
+  if (status in PIPELINE_STAGE_INDEX) {
+    return status as RunPipelineStage;
+  }
+  return null;
+}
+
+export function getRunPipelineStageIndex(status: string): number {
+  const stage = resolvePipelineStage(status);
+  return stage ? PIPELINE_STAGE_INDEX[stage] : -1;
+}
+
+/** Format seconds elapsed since run start for live progress displays. */
+export function formatRunElapsed(
+  startedAt: string | null | undefined,
+  locale: string,
+  nowMs = Date.now(),
+): string | null {
+  if (!startedAt) {
+    return null;
+  }
+  const elapsedSec = Math.max(0, Math.floor((nowMs - new Date(startedAt).getTime()) / 1000));
+  if (elapsedSec < 60) {
+    return new Intl.NumberFormat(locale, { style: "unit", unit: "second", unitDisplay: "narrow" }).format(elapsedSec);
+  }
+  const minutes = Math.floor(elapsedSec / 60);
+  const seconds = elapsedSec % 60;
+  const minuteLabel = new Intl.NumberFormat(locale, { style: "unit", unit: "minute", unitDisplay: "narrow" }).format(
+    minutes,
+  );
+  if (seconds === 0) {
+    return minuteLabel;
+  }
+  const secondLabel = new Intl.NumberFormat(locale, { style: "unit", unit: "second", unitDisplay: "narrow" }).format(
+    seconds,
+  );
+  return `${minuteLabel} ${secondLabel}`;
+}
+
 /** Minimum visible progress for active runs so the bar never sits at 0% while work is underway. */
 export function getRunDisplayProgress(run: Pick<RecommendationRun, "status" | "progress">): number {
   const progress = run.progress ?? 0;

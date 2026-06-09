@@ -36,6 +36,16 @@ def _invalidate_run_caches(run: RecommendationRun) -> None:
         cache_service.invalidate_user_runs(str(run.user_id))
 
 
+def _report_substep(db: Session, run: RecommendationRun, message: str, progress: int | None = None) -> None:
+    """Publish a user-facing pipeline update without changing run status."""
+    run_service._add_event(db, run, "pipeline_progress", message)
+    db.commit()
+    _invalidate_run_caches(run)
+    run_stream_service.publish(db, run)
+    if progress is not None:
+        run_service.bump_progress(db, run, progress)
+
+
 def _resolve_run_context(
     db: Session,
     run: RecommendationRun,
@@ -150,6 +160,10 @@ def process_recommendation_run(self, run_id: str) -> dict:
         ) = _resolve_run_context(db, run, topics, constraints)
 
         run_service.update_status(db, run, RunStatus.SEARCHING_PAPERS, 15, "Searching papers")
+        _report_substep(db, run, "Personalizing search from your topics and profile", 12)
+
+        def _retrieval_milestone(message: str, progress: int) -> None:
+            _report_substep(db, run, message, progress)
 
         papers = asyncio.run(
             retrieval_service.retrieve_papers(
@@ -160,6 +174,7 @@ def process_recommendation_run(self, run_id: str) -> dict:
                 learned_topics=learned_topics,
                 avoided_topics=avoided_topics,
                 max_article_age_years=max_article_age_years,
+                on_milestone=_retrieval_milestone,
             )
         )
         run_service._add_event(
@@ -183,6 +198,7 @@ def process_recommendation_run(self, run_id: str) -> dict:
         embeddings = gemini_service.generate_embeddings(db, run_id, texts)
         embedding_model = resolve_embedding_model(get_settings().gemini_embedding_model)
         embedding_by_paper_id = _persist_embeddings(db, papers, embeddings, embedding_model)
+        _report_substep(db, run, f"Analyzed content of {len(papers)} papers", 52)
 
         run_service.update_status(db, run, RunStatus.RANKING_CANDIDATES, 60, "Ranking")
 
@@ -205,11 +221,13 @@ def process_recommendation_run(self, run_id: str) -> dict:
             payload=ranking_payload,
         )
         db.commit()
+        run_service.bump_progress(db, run, 72)
 
         ranked_embeddings = [
             embedding_by_paper_id[str(paper.id)] for paper in papers if str(paper.id) in embedding_by_paper_id
         ]
 
+        _report_substep(db, run, f"Selected {len(papers)} strongest papers for idea generation")
         run_service.update_status(
             db,
             run,
@@ -252,6 +270,7 @@ def process_recommendation_run(self, run_id: str) -> dict:
             avoided_topics=avoided_topics,
         )
 
+        _report_substep(db, run, "Drafted research ideas — checking quality and feasibility", 86)
         run_service.update_status(db, run, RunStatus.VALIDATING_OUTPUT, 90, "Validating output")
         published = [rec for rec in recommendations if rec.get("_publication_status", "published") == "published"]
         if not recommendations:

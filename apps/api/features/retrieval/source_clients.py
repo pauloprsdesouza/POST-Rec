@@ -9,6 +9,7 @@ import httpx
 
 from apps.api.features.retrieval.normalizers import (
     nested_get,
+    normalize_core_work,
     normalize_crossref_work,
     normalize_openalex_work,
     normalize_semantic_scholar_paper,
@@ -30,6 +31,7 @@ OPENALEX_SELECT_FIELDS = (
 
 SEMANTIC_SCHOLAR_FIELDS = "paperId,title,abstract,authors,year,venue,citationCount,externalIds,url,openAccessPdf"
 CROSSREF_API_URL = "https://api.crossref.org/works"
+CORE_SEARCH_WORKS_PATH = "/search/works/"
 
 
 def raise_retryable(exc: Exception, *, source: str) -> None:
@@ -295,6 +297,65 @@ class AcademicSourceClient:
                     "crossref_record_skipped",
                     query=query,
                     doi=item.get("DOI"),
+                    error=str(exc),
+                )
+
+        return results
+
+    def core_headers(self) -> dict[str, str]:
+        headers = self.contact_headers("CORE")
+        if self.settings.core_api_key:
+            headers["Authorization"] = f"Bearer {self.settings.core_api_key}"
+        return headers
+
+    def core_search_url(self) -> str:
+        base = self.settings.core_api_base_url.rstrip("/")
+        return f"{base}{CORE_SEARCH_WORKS_PATH}"
+
+    async def fetch_core(
+        self, client: httpx.AsyncClient, query: str, limit: int, pass_kind: str = "foundation"
+    ) -> list[dict[str, Any]]:
+        if limit <= 0 or not self.settings.core_api_key:
+            return []
+
+        params: dict[str, Any] = {
+            "q": query,
+            "limit": min(limit, self.settings.retrieval_core_limit_max),
+            "offset": 0,
+        }
+        if pass_kind == "sota":
+            params["sort"] = "recency"
+
+        try:
+            resp = await get_with_retry(
+                client,
+                self.core_search_url(),
+                params=params,
+                headers=self.core_headers(),
+                source="core",
+                retries=self.settings.retrieval_http_retries,
+                base_delay=10.0,
+            )
+            data = resp.json()
+        except Exception as exc:
+            raise_retryable(exc, source="core")
+
+        if not isinstance(data, dict):
+            data = {}
+
+        results: list[dict[str, Any]] = []
+        for work in data.get("results") or []:
+            if not isinstance(work, dict):
+                continue
+            try:
+                normalized = normalize_core_work(work)
+                if normalized:
+                    results.append(normalized)
+            except Exception as exc:
+                logger.warning(
+                    "core_record_skipped",
+                    query=query,
+                    work_id=work.get("id"),
                     error=str(exc),
                 )
 

@@ -15,6 +15,7 @@ DEFAULT_SOURCE_MIN_INTERVAL_SECONDS = {
     "crossref": 0.35,
     "semantic_scholar": 5.0,
     "arxiv": 4.0,
+    "core": 10.0,
 }
 
 
@@ -43,6 +44,7 @@ class SourceRateLimiter:
             "crossref": settings.retrieval_crossref_min_interval,
             "semantic_scholar": settings.retrieval_semantic_scholar_min_interval,
             "arxiv": settings.retrieval_arxiv_min_interval,
+            "core": settings.retrieval_core_min_interval,
         }
         return configured.get(source, DEFAULT_SOURCE_MIN_INTERVAL_SECONDS.get(source, 0.5))
 

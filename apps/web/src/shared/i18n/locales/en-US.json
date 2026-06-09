@@ -516,9 +516,37 @@
     "supportingArticles": "Supporting articles",
     "noArticles": "No supporting articles cited for this recommendation.",
     "articlesCited": "{{count}} article(s) cited as evidence.",
+    "explainedCount": "{{count}} with relevance notes",
+    "intro": "Each paper below includes a short note on how it supports this research idea.",
+    "whyRelevant": "Why this supports the idea",
+    "noRelevance": "No relevance explanation was provided for this citation.",
+    "showMore": "Read full explanation",
+    "showLess": "Show less",
+    "relevanceScoreTooltip": "Topic match strength: {{percent}}%",
+    "relevanceScoreAria": "Topic match {{percent}} percent",
+    "relevanceTier": {
+      "high": "Strong match",
+      "medium": "Good match",
+      "low": "Supporting"
+    },
     "catalogUnavailable": "Source catalog unavailable for this run.",
     "papersUsed": "{{count}} relevance-filtered papers used as context.",
-    "doi": "DOI"
+    "doi": "DOI",
+    "qualisPrefix": "Qualis",
+    "qualisShort": "Qualis {{estrato}}",
+    "qualisLabel": "Qualis CAPES classification: {{estrato}}",
+    "qualisLabelWithPeriod": "Qualis CAPES classification: {{estrato}} ({{period}})",
+    "qualisTooltip": "CAPES Qualis journal classification (estrato {{estrato}})",
+    "qualisTooltipWithPeriod": "CAPES Qualis journal classification (estrato {{estrato}}, period {{period}})",
+    "sourceLabel": "Retrieved from {{source}}",
+    "sourceTooltip": "Paper retrieved via {{source}}",
+    "sourceShort": {
+      "openalex": "OpenAlex",
+      "crossref": "Crossref",
+      "semantic_scholar": "S2",
+      "arxiv": "arXiv",
+      "unknown": "Other"
+    }
   },
   "insights": {
     "title": "Insights",
@@ -840,6 +868,9 @@
   },
   "progress": {
     "step": "Step: {{step}}",
+    "stageOf": "Step {{current}} of {{total}}",
+    "elapsed": "{{time}} elapsed",
+    "pipelineLabel": "Pipeline stages",
     "progressLabel": "Progress",
     "estCost": "Est. cost",
     "updating": "Updating every few seconds…",

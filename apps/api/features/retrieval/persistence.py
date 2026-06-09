@@ -25,7 +25,16 @@ VALIDATION_METADATA_KEYS = (
 def merge_paper_metadata(doc: SourceDocument, paper: dict[str, Any]) -> None:
     metadata = dict(doc.metadata_ or {})
     incoming = paper.get("metadata") if isinstance(paper.get("metadata"), dict) else {}
-    for key in ("tier", "retrieval_pass", "methods", "limitations", "hybrid_score", "dense_score"):
+    for key in (
+        "tier",
+        "retrieval_pass",
+        "methods",
+        "limitations",
+        "hybrid_score",
+        "dense_score",
+        "issn",
+        "journal_title",
+    ):
         value = paper.get(key)
         if value is None:
             value = incoming.get(key)
@@ -157,7 +166,10 @@ def persist_papers(db: Session, papers: list[dict[str, Any]], max_papers: int) -
             url=paper.get("url"),
             citation_count=paper.get("citation_count", 0),
             content_hash=paper_hash,
-            metadata_=paper.get("metadata") or {},
+            metadata_={
+                **(paper.get("metadata") or {}),
+                **{key: paper[key] for key in ("issn", "journal_title") if paper.get(key) is not None},
+            },
         )
         db.add(doc)
         saved.append(doc)

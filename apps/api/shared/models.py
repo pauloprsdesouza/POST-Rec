@@ -12,6 +12,7 @@ from sqlalchemy import (
     Index,
     Integer,
     Numeric,
+    SmallInteger,
     Text,
     UniqueConstraint,
     func,
@@ -400,3 +401,49 @@ Index("idx_recommendation_feedback_session_id", RecommendationFeedback.session_i
 Index("idx_source_document_doi", SourceDocument.doi)
 Index("idx_source_document_content_hash", SourceDocument.content_hash)
 Index("idx_llm_usage_run_id", LLMUsage.run_id)
+
+
+class QualisEvaluationPeriod(Base):
+    """CAPES Qualis four-year evaluation cycle reference."""
+
+    __tablename__ = "qualis_evaluation_period"
+    __table_args__ = (
+        CheckConstraint("start_year < end_year", name="ck_qualis_evaluation_period_years"),
+        CheckConstraint(
+            "start_year >= 1990 AND end_year <= 2100",
+            name="ck_qualis_evaluation_period_range",
+        ),
+        UniqueConstraint("start_year", "end_year", name="uq_qualis_evaluation_period_years"),
+        UniqueConstraint("label", name="uq_qualis_evaluation_period_label"),
+    )
+
+    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    start_year: Mapped[int] = mapped_column(Integer, nullable=False)
+    end_year: Mapped[int] = mapped_column(Integer, nullable=False)
+    label: Mapped[str] = mapped_column(Text, nullable=False)
+
+    journals: Mapped[list["QualisJournal"]] = relationship(back_populates="evaluation_period")
+
+    @property
+    def display_label(self) -> str:
+        return self.label or f"{self.start_year}-{self.end_year}"
+
+
+class QualisJournal(Base):
+    """CAPES Qualis journal classification (Sucupira reference data)."""
+
+    __tablename__ = "qualis_journal"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    issn: Mapped[str | None] = mapped_column(Text, nullable=True)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    title_normalized: Mapped[str] = mapped_column(Text, nullable=False)
+    area: Mapped[str] = mapped_column(Text, nullable=False)
+    estrato: Mapped[str] = mapped_column(Text, nullable=False)
+    period_id: Mapped[int] = mapped_column(
+        SmallInteger,
+        ForeignKey("qualis_evaluation_period.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+
+    evaluation_period: Mapped["QualisEvaluationPeriod"] = relationship(back_populates="journals")

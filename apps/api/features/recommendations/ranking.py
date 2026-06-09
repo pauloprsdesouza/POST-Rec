@@ -6,6 +6,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from apps.api.features.qualis.service import qualis_service
 from apps.api.features.recommendations.llm import gemini_service
 from apps.api.features.retrieval.relevance import compute_relevance_score
 from apps.api.features.retrieval.vector import vector_retrieval_service
@@ -86,11 +87,15 @@ class HybridRankingService:
         bm25_index = Bm25Index.from_documents(corpus_docs) if settings.bm25_sparse_enabled else None
         paper_dicts: list[dict[str, Any]] = []
         for paper in papers:
+            metadata = paper.metadata_ or {}
             paper_payload = {
                 "title": paper.title,
                 "abstract": paper.abstract,
                 "venue": paper.venue,
                 "citation_count": paper.citation_count,
+                "issn": metadata.get("issn"),
+                "journal_title": metadata.get("journal_title") or paper.venue,
+                "metadata": metadata,
             }
             if settings.bm25_sparse_enabled and bm25_index is not None:
                 sparse_score = bm25_score_paper(
@@ -105,7 +110,20 @@ class HybridRankingService:
                     research_area=research_area,
                 )
 
-            metadata = paper.metadata_ or {}
+            if settings.bm25_sparse_enabled and bm25_index is not None:
+                sparse_score, qualis_meta = qualis_service.apply_relevance_boost(sparse_score, paper_payload)
+            else:
+                # compute_relevance_score already applied the boost; capture metadata only.
+                qualis_meta = {}
+                boost, estrato, period = qualis_service.boost_for_paper(paper_payload)
+                if boost > 0.0 or estrato is not None:
+                    qualis_meta = {
+                        "qualis_estrato": estrato,
+                        "qualis_boost": boost,
+                    }
+                    if period:
+                        qualis_meta["qualis_period"] = period
+
             paper_dicts.append(
                 {
                     "id": str(paper.id),
@@ -118,6 +136,7 @@ class HybridRankingService:
                     "retrieval_pass": metadata.get("retrieval_pass"),
                     "methods": metadata.get("methods"),
                     "limitations": metadata.get("limitations"),
+                    **qualis_meta,
                 }
             )
 
@@ -170,6 +189,12 @@ class HybridRankingService:
                     "relevance_score": item.get("relevance_score"),
                 }
             )
+            if item.get("qualis_estrato"):
+                metadata["qualis_estrato"] = item.get("qualis_estrato")
+            if item.get("qualis_boost"):
+                metadata["qualis_boost"] = item.get("qualis_boost")
+            if item.get("qualis_period"):
+                metadata["qualis_period"] = item.get("qualis_period")
             doc.metadata_ = metadata
             ordered.append(doc)
 

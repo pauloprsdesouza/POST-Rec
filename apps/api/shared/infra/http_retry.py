@@ -86,6 +86,7 @@ async def get_with_retry(
     source_min_delay = {
         "arxiv": 8.0,
         "semantic_scholar": 6.0,
+        "core": 10.0,
     }
 
     for attempt in range(retries):

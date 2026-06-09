@@ -10,11 +10,14 @@ def test_build_jobs_from_plan_reduces_fan_out(monkeypatch):
         dual_retrieval_enabled = True
         retrieval_learned_topic_cap = 2
         retrieval_crossref_max_queries = 2
+        retrieval_core_max_queries = 2
         retrieval_openalex_per_page_max = 100
         retrieval_crossref_rows_max = 80
         retrieval_semantic_scholar_limit_max = 100
+        retrieval_core_limit_max = 100
         retrieval_arxiv_max_results = 40
-        retrieval_source_priority = "openalex,crossref,semantic_scholar,arxiv"
+        retrieval_source_priority = "openalex,crossref,semantic_scholar,core,arxiv"
+        core_api_key = ""
 
     monkeypatch.setattr(service, "settings", _Settings())
 
@@ -39,11 +42,14 @@ def test_build_fetch_jobs_uses_consolidated_plan(monkeypatch):
         dual_retrieval_enabled = True
         retrieval_learned_topic_cap = 2
         retrieval_crossref_max_queries = 2
+        retrieval_core_max_queries = 2
         retrieval_openalex_per_page_max = 100
         retrieval_crossref_rows_max = 80
         retrieval_semantic_scholar_limit_max = 100
+        retrieval_core_limit_max = 100
         retrieval_arxiv_max_results = 40
-        retrieval_source_priority = "openalex,crossref,semantic_scholar,arxiv"
+        retrieval_source_priority = "openalex,crossref,semantic_scholar,core,arxiv"
+        core_api_key = ""
 
     monkeypatch.setattr(service, "settings", _Settings())
 

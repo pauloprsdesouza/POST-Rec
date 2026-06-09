@@ -62,6 +62,8 @@ class Settings(BaseSettings):
     openalex_email: str = ""
     crossref_email: str = ""
     semantic_scholar_api_key: str = ""
+    core_api_key: str = ""
+    core_api_base_url: str = "https://api.core.ac.uk/v3"
 
     retrieval_fetch_max_attempts: int = 5
     retrieval_http_retries: int = 4
@@ -81,16 +83,19 @@ class Settings(BaseSettings):
     retrieval_crossref_min_interval: float = 0.35
     retrieval_semantic_scholar_min_interval: float = 5.0
     retrieval_arxiv_min_interval: float = 4.0
-    retrieval_source_priority: str = "openalex,crossref,semantic_scholar,arxiv"
+    retrieval_core_min_interval: float = 10.0
+    retrieval_source_priority: str = "openalex,crossref,semantic_scholar,core,arxiv"
     retrieval_corpus_prefetch_enabled: bool = True
     retrieval_s2_recommendations_enabled: bool = True
     retrieval_s2_recommendation_seeds: int = 5
     retrieval_s2_recommendation_limit: int = 50
     retrieval_learned_topic_cap: int = 2
     retrieval_crossref_max_queries: int = 2
+    retrieval_core_max_queries: int = 2
     retrieval_openalex_per_page_max: int = 100
     retrieval_crossref_rows_max: int = 80
     retrieval_semantic_scholar_limit_max: int = 100
+    retrieval_core_limit_max: int = 100
     retrieval_arxiv_max_results: int = 40
     hybrid_retrieval_enabled: bool = True
     hybrid_sparse_weight: float = 0.4
@@ -106,6 +111,12 @@ class Settings(BaseSettings):
     bm25_sparse_enabled: bool = True
     vector_retrieval_enabled: bool = True
     vector_retrieval_top_k: int = 100
+    qualis_enabled: bool = True
+    qualis_csv_path: str = ""
+    qualis_boost_weight: float = 0.10
+    qualis_use_redis_cache: bool = True
+    qualis_cache_ttl: int = 2_592_000  # 30d reference data; 0 = no expiry
+
     ranking_calibration_enabled: bool = True
     require_sota_fields_quick: bool = True
     fggv_facet_critic_enabled: bool = True

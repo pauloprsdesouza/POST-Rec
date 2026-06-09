@@ -4,9 +4,15 @@ interface RunProgressBarProps {
   value: number;
   tone?: RunProgressTone;
   label?: string;
+  indeterminate?: boolean;
 }
 
-export function RunProgressBar({ value, tone = "default", label }: RunProgressBarProps) {
+export function RunProgressBar({
+  value,
+  tone = "default",
+  label,
+  indeterminate = false,
+}: RunProgressBarProps) {
   const pct = Math.min(Math.max(value, 0), 100);
 
   return (
@@ -16,16 +22,17 @@ export function RunProgressBar({ value, tone = "default", label }: RunProgressBa
         <span className="run-progress-bar-wrap__value">{pct}%</span>
       </div>
       <div
-        className="run-progress-bar"
+        className={`run-progress-bar${indeterminate ? " run-progress-bar--indeterminate" : ""}`}
         role="progressbar"
-        aria-valuenow={pct}
+        aria-valuenow={indeterminate ? undefined : pct}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-label={label}
+        aria-busy={indeterminate || undefined}
       >
         <div
-          className={`run-progress-bar__fill run-progress-bar__fill--${tone}`}
-          style={{ width: `${pct}%` }}
+          className={`run-progress-bar__fill run-progress-bar__fill--${tone}${indeterminate ? " run-progress-bar__fill--indeterminate" : ""}`}
+          style={indeterminate ? undefined : { width: `${pct}%` }}
         />
       </div>
     </div>

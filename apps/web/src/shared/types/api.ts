@@ -89,6 +89,7 @@ export interface RecommendationRun {
   current_step?: string | null;
   topics?: string[];
   created_at?: string;
+  started_at?: string | null;
   finished_at?: string | null;
   estimated_cost_usd?: number;
   error_message?: string | null;
@@ -122,6 +123,11 @@ export interface EvidencePaper {
   citation_count?: number;
   venue?: string;
   abstract?: string;
+  qualis_estrato?: string;
+  qualis_period?: string;
+  qualis_boost?: number;
+  relevance_score?: number;
+  matched_in_catalog?: boolean;
 }
 
 export interface Recommendation {
