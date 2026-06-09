@@ -125,5 +125,24 @@ class ProfileService:
                 merged.append(topic.strip())
         return merged
 
+    def remove_learned_topics(self, db: Session, user_id: uuid.UUID, topics: list[str]) -> UserResearchProfile:
+        profile = self.get_or_create(db, user_id)
+        if not topics:
+            return profile
+
+        remove_keys = {topic.strip().lower() for topic in topics if topic and topic.strip()}
+        if not remove_keys:
+            return profile
+
+        learned = [topic for topic in (profile.learned_topics or []) if topic.strip().lower() not in remove_keys]
+        techniques = [
+            topic for topic in (profile.preferred_techniques or []) if topic.strip().lower() not in remove_keys
+        ]
+        profile.learned_topics = learned
+        profile.preferred_techniques = techniques
+        db.commit()
+        db.refresh(profile)
+        return profile
+
 
 profile_service = ProfileService()

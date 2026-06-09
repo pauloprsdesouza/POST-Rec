@@ -51,7 +51,17 @@ def _resolve_run_context(
     run: RecommendationRun,
     topics: list[str],
     constraints: dict,
-) -> tuple[list[str], dict, SessionExpectation | None, str | None, list[str] | None, list[str] | None, int]:
+) -> tuple[
+    list[str],
+    dict,
+    SessionExpectation | None,
+    str | None,
+    list[str] | None,
+    list[str] | None,
+    int,
+    str,
+    str,
+]:
     expectation = None
     if run.expectation_id:
         expectation = db.query(SessionExpectation).filter_by(id=run.expectation_id).first()
@@ -62,6 +72,8 @@ def _resolve_run_context(
     constraints = merge_expectation_into_constraints(expectation, constraints)
 
     research_area = expectation.research_area if expectation else None
+    expected_output = expectation.expected_output if expectation else ""
+    desired_depth = expectation.desired_depth if expectation else "medium"
     learned_topics: list[str] | None = None
     avoided_topics: list[str] | None = None
     expanded_topics = topics
@@ -76,10 +88,12 @@ def _resolve_run_context(
             learned_topics = list(profile.learned_topics or [])
             avoided_topics = list(profile.avoided_topics or [])
             expanded_topics = profile_service.expanded_seed_topics(profile, topics)
-            if constraints.get("max_article_age_years") is None:
-                defaults = profile.recommendation_defaults or {}
-                if defaults.get("max_article_age_years") is not None:
-                    max_article_age_years = int(defaults["max_article_age_years"])
+            defaults = profile.recommendation_defaults or {}
+            if not expectation:
+                expected_output = expected_output or defaults.get("expected_output") or ""
+                desired_depth = defaults.get("desired_depth") or desired_depth or "medium"
+            if constraints.get("max_article_age_years") is None and defaults.get("max_article_age_years") is not None:
+                max_article_age_years = int(defaults["max_article_age_years"])
 
     return (
         expanded_topics,
@@ -89,6 +103,8 @@ def _resolve_run_context(
         learned_topics,
         avoided_topics,
         max_article_age_years,
+        expected_output or "",
+        desired_depth or "medium",
     )
 
 
@@ -136,7 +152,11 @@ def process_recommendation_run(self, run_id: str) -> dict:
         if run.status == RunStatus.COMPLETED:
             return {"status": "completed"}
 
-        if run.status in (RunStatus.FAILED, RunStatus.FAILED_SCHEMA_VALIDATION):
+        if run.status in (
+            RunStatus.FAILED,
+            RunStatus.FAILED_SCHEMA_VALIDATION,
+            RunStatus.COST_LIMIT_EXCEEDED,
+        ):
             run.error_message = None
             run.finished_at = None
             run.status = run.current_step or RunStatus.SEARCHING_PAPERS
@@ -157,6 +177,8 @@ def process_recommendation_run(self, run_id: str) -> dict:
             learned_topics,
             avoided_topics,
             max_article_age_years,
+            expected_output,
+            desired_depth,
         ) = _resolve_run_context(db, run, topics, constraints)
 
         run_service.update_status(db, run, RunStatus.SEARCHING_PAPERS, 15, "Searching papers")
@@ -259,10 +281,10 @@ def process_recommendation_run(self, run_id: str) -> dict:
             db=db,
             run_id=run_id,
             mode=run_mode,
-            research_area=expectation.research_area if expectation else "",
+            research_area=research_area or "",
             seed_topics=topics,
-            expected_output=expectation.expected_output if expectation else "",
-            desired_depth=expectation.desired_depth if expectation else "medium",
+            expected_output=expected_output,
+            desired_depth=desired_depth,
             constraints=constraints,
             papers=paper_dicts,
             paper_embeddings=ranked_embeddings,

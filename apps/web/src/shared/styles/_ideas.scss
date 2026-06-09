@@ -959,23 +959,30 @@
 .source-catalog__item-head {
   align-items: flex-start;
   display: flex;
+  flex-direction: column;
+  gap: var(--postrec-space-2);
+}
+
+.source-catalog__item-signals {
+  align-items: center;
+  display: flex;
   flex-wrap: wrap;
   gap: var(--postrec-space-2);
 }
 
 .source-catalog__item-title {
-  flex: 1 1 12rem;
   font-size: var(--postrec-text-sm);
   font-weight: 600;
   line-height: 1.45;
   min-width: 0;
+  width: 100%;
 }
 
-.source-catalog__item-year {
+.source-catalog__item-meta {
   color: var(--postrec-muted);
   font-size: var(--postrec-text-xs);
-  font-variant-numeric: tabular-nums;
-  padding-left: calc(0.55rem + var(--postrec-space-2));
+  line-height: var(--postrec-leading);
+  margin: 0;
 }
 
 .evidence-empty {

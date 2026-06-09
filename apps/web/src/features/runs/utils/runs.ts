@@ -48,6 +48,13 @@ const FAILED_STATUSES = new Set([
   "failed_schema_validation",
 ]);
 
+const RETRYABLE_STATUSES = new Set([
+  "failed",
+  "cancelled",
+  "cost_limit_exceeded",
+  "failed_schema_validation",
+]);
+
 export function isRunActive(status: string): boolean {
   return !["completed", ...FAILED_STATUSES].includes(status);
 }
@@ -135,6 +142,21 @@ export function getRunDisplayProgress(run: Pick<RecommendationRun, "status" | "p
 }
 
 export type RunOutcome = "ready" | "reviewed" | "in_progress" | "failed" | "incomplete";
+
+export function canRetryRun(run: Pick<RecommendationRun, "status" | "recommendation_count">): boolean {
+  if (RETRYABLE_STATUSES.has(run.status)) {
+    return true;
+  }
+  return run.status === "completed" && (run.recommendation_count ?? 0) === 0;
+}
+
+export function canCancelRun(status: string): boolean {
+  return isRunActive(status);
+}
+
+export function canDismissRun(status: string): boolean {
+  return !canCancelRun(status);
+}
 
 export function getRunOutcome(run: RecommendationRun): RunOutcome {
   const recommendationCount = run.recommendation_count ?? 0;

@@ -22,6 +22,7 @@ import { useRuns } from "@/features/runs/context/RunsContext";
 
 import { useRunDetail } from "@/features/runs/hooks/useRunDetail";
 
+import { RunManageActions } from "@/features/runs/components/RunManageActions";
 import { formatRunDateTime, formatRunTopics } from "@/features/runs/utils/runs";
 
 export function RunDetailPage() {
@@ -146,6 +147,13 @@ export function RunDetailPage() {
 
         <h1 className="run-detail__title">{formatRunTopics(run, t("common.noTopics"), 200)}</h1>
         </header>
+
+        <RunManageActions
+          token={accessToken}
+          run={run}
+          onRunUpdated={updateRun}
+          onRunsChanged={refreshRuns}
+        />
 
         {loadingIdeasOnly ? (
           <RunDetailSkeleton variant="ideas" />

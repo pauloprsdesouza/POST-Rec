@@ -29,13 +29,15 @@ export function RunsSearchBar({ value, loading = false, onChange, onClear }: Run
           spellCheck={false}
           onChange={(event) => onChange(event.target.value)}
         />
-        {value ? (
+        {loading ? (
+          <span className="runs-search__spinner" role="status" aria-label={t("runs.searching")} />
+        ) : null}
+        {value && !loading ? (
           <button type="button" className="runs-search__clear" onClick={onClear} aria-label={t("runs.searchClear")}>
             ×
           </button>
         ) : null}
       </div>
-      {loading ? <p className="runs-search__status">{t("runs.searching")}</p> : null}
     </div>
   );
 }

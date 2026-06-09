@@ -169,11 +169,15 @@ export interface Recommendation {
 }
 
 export interface SourceDocument {
+  id?: string;
   title?: string;
   year?: number;
   source?: string;
   url?: string;
   doi?: string;
+  venue?: string;
+  citation_count?: number;
+  qualis_estrato?: string;
 }
 
 export interface ValidationDashboard {

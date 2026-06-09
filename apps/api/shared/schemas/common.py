@@ -200,6 +200,7 @@ class SourceDocumentResponse(BaseModel):
     doi: str | None
     url: str | None
     citation_count: int
+    qualis_estrato: str | None = None
 
 
 class FeedbackCreate(BaseModel):
@@ -440,6 +441,19 @@ class RunSummaryResponse(BaseModel):
     feedback_complete: bool = False
     search_match_count: int | None = None
     search_snippet: str | None = None
+
+
+class RunCleanupRequest(BaseModel):
+    remove_learned_topics: list[str] = Field(default_factory=list)
+
+
+class RunCleanupPreviewResponse(BaseModel):
+    learned_topics: list[str] = Field(default_factory=list)
+
+
+class RunActionResponse(BaseModel):
+    status: str
+    message: str
 
 
 class ExperimentEnrollmentResponse(BaseModel):

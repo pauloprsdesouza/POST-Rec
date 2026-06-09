@@ -221,6 +221,7 @@ def run_summaries_payload(db: Session, user_id: uuid.UUID, limit: int) -> list[d
     runs = (
         db.query(RecommendationRun)
         .filter_by(user_id=user_id)
+        .filter(RecommendationRun.archived_at.is_(None))
         .order_by(RecommendationRun.created_at.desc())
         .limit(min(limit, 100))
         .all()

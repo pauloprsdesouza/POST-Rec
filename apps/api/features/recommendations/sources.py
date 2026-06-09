@@ -4,22 +4,25 @@ from apps.api.shared.models import RecommendationRunEvent, SourceDocument
 from apps.api.shared.schemas.common import SourceDocumentResponse
 
 
+def _serialize_source_document(doc: SourceDocument) -> dict:
+    qualis = _qualis_fields_from_metadata(doc.metadata_)
+    return SourceDocumentResponse(
+        id=doc.id,
+        source=doc.source,
+        title=doc.title,
+        abstract=doc.abstract,
+        authors=doc.authors,
+        year=doc.year,
+        venue=doc.venue,
+        doi=doc.doi,
+        url=doc.url,
+        citation_count=doc.citation_count or 0,
+        qualis_estrato=qualis.get("qualis_estrato"),
+    ).model_dump(mode="json")
+
+
 def serialize_source_documents(documents: list[SourceDocument]) -> list[dict]:
-    return [
-        SourceDocumentResponse(
-            id=d.id,
-            source=d.source,
-            title=d.title,
-            abstract=d.abstract,
-            authors=d.authors,
-            year=d.year,
-            venue=d.venue,
-            doi=d.doi,
-            url=d.url,
-            citation_count=d.citation_count or 0,
-        ).model_dump(mode="json")
-        for d in documents
-    ]
+    return [_serialize_source_document(d) for d in documents]
 
 
 def get_run_source_documents(db, run_id) -> list[SourceDocument]:

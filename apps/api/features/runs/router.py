@@ -15,6 +15,7 @@ from apps.api.features.runs.query import (
     run_events_payload,
     run_sources_payload,
 )
+from apps.api.features.runs.cleanup import learned_topics_for_run_cleanup
 from apps.api.features.runs.service import run_service
 from apps.api.features.runs.stream import stream_run_updates
 from apps.api.shared.database import get_db
@@ -36,6 +37,9 @@ from apps.api.shared.models import RecommendationRun, User
 from apps.api.shared.schemas.common import (
     RecommendationRunCreate,
     RecommendationRunResponse,
+    RunActionResponse,
+    RunCleanupPreviewResponse,
+    RunCleanupRequest,
     RunDetailResponse,
     RunEventResponse,
     SourceDocumentResponse,
@@ -159,8 +163,78 @@ def get_run_source_documents_endpoint(run_id: uuid.UUID, db: Session = Depends(g
     return [SourceDocumentResponse.model_validate(item) for item in data]
 
 
-@router.post("/recommendation-runs/{run_id}/cancel")
-def cancel_run(run_id: uuid.UUID, db: Session = Depends(get_db)):
+@router.post("/recommendation-runs/{run_id}/cancel", response_model=RunActionResponse)
+def cancel_run_endpoint(
+    run_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_required),
+):
     run = get_run_or_404(db, run_id)
+    ensure_run_access(run, current_user)
     run_service.cancel_run(db, run)
-    return {"status": "cancelled"}
+    return RunActionResponse(status="cancelled", message="Run cancelled.")
+
+
+@router.post("/recommendation-runs/{run_id}/retry", response_model=RunActionResponse)
+def retry_run_endpoint(
+    run_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_required),
+):
+    run = get_run_or_404(db, run_id)
+    ensure_run_access(run, current_user)
+    run_service.retry_run(db, run)
+    cache_service.invalidate_user_runs(str(current_user.id))
+    return RunActionResponse(status="queued", message="Run queued for retry.")
+
+
+@router.get(
+    "/recommendation-runs/{run_id}/cleanup-preview",
+    response_model=RunCleanupPreviewResponse,
+)
+def run_cleanup_preview(
+    run_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_required),
+):
+    run = get_run_or_404(db, run_id)
+    ensure_run_access(run, current_user)
+    topics = learned_topics_for_run_cleanup(db, current_user.id, run)
+    return RunCleanupPreviewResponse(learned_topics=topics)
+
+
+@router.post("/recommendation-runs/{run_id}/archive", response_model=RunActionResponse)
+def archive_run_endpoint(
+    run_id: uuid.UUID,
+    payload: RunCleanupRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_required),
+):
+    run = get_run_or_404(db, run_id)
+    ensure_run_access(run, current_user)
+    run_service.archive_run(
+        db,
+        run,
+        user_id=current_user.id,
+        remove_learned_topics=payload.remove_learned_topics,
+    )
+    cache_service.invalidate_user_runs(str(current_user.id))
+    return RunActionResponse(status="archived", message="Run archived.")
+
+
+@router.post("/recommendation-runs/{run_id}/remove", response_model=RunActionResponse)
+def remove_run_endpoint(
+    run_id: uuid.UUID,
+    payload: RunCleanupRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_required),
+):
+    run = get_run_or_404(db, run_id)
+    ensure_run_access(run, current_user)
+    run_service.remove_run(
+        db,
+        run,
+        user_id=current_user.id,
+        remove_learned_topics=payload.remove_learned_topics,
+    )
+    return RunActionResponse(status="removed", message="Run removed.")

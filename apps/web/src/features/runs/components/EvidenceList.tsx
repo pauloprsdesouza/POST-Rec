@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 
 import { EvidenceCard } from "./EvidenceCard";
+import { QualisEstratoBadge } from "@/shared/ui/QualisEstratoBadge";
 import { SourceBadge } from "@/shared/ui/SourceBadge";
 import type { EvidencePaper, SourceDocument } from "@/shared/types/api";
 
@@ -57,9 +58,14 @@ export function SourceCatalog({ sources }: SourceCatalogProps) {
     return acc;
   }, {});
 
+  const qualisCount = sources.filter((doc) => doc.qualis_estrato?.trim()).length;
+
   return (
     <div className="source-catalog">
-      <p className="source-catalog__meta">{t("evidence.papersUsed", { count: sources.length })}</p>
+      <p className="source-catalog__meta">
+        {t("evidence.papersUsed", { count: sources.length })}
+        {qualisCount > 0 ? ` · ${t("evidence.qualisCount", { count: qualisCount })}` : null}
+      </p>
       <div className="source-catalog__chips">
         {Object.entries(counts).map(([source, count]) => (
           <span key={source} className="source-catalog__chip">
@@ -69,15 +75,28 @@ export function SourceCatalog({ sources }: SourceCatalogProps) {
         ))}
       </div>
       <ul className="source-catalog__list">
-        {sources.map((doc, index) => (
-          <li key={`${doc.title}-${index}`} className="source-catalog__item">
-            <div className="source-catalog__item-head">
-              <SourceBadge source={doc.source} compact />
-              <strong className="source-catalog__item-title">{doc.title ?? t("common.untitled")}</strong>
-            </div>
-            {doc.year ? <span className="source-catalog__item-year">{doc.year}</span> : null}
-          </li>
-        ))}
+        {sources.map((doc, index) => {
+          const metaParts = [
+            doc.venue,
+            doc.year,
+            doc.citation_count != null ? t("common.citations", { count: doc.citation_count }) : null,
+          ].filter(Boolean);
+
+          return (
+            <li key={`${doc.id ?? doc.title}-${index}`} className="source-catalog__item">
+              <div className="source-catalog__item-head">
+                <div className="source-catalog__item-signals">
+                  <SourceBadge source={doc.source} compact />
+                  {doc.qualis_estrato?.trim() ? (
+                    <QualisEstratoBadge estrato={doc.qualis_estrato} />
+                  ) : null}
+                </div>
+                <strong className="source-catalog__item-title">{doc.title ?? t("common.untitled")}</strong>
+              </div>
+              {metaParts.length ? <p className="source-catalog__item-meta">{metaParts.join(" · ")}</p> : null}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
