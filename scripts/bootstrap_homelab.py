@@ -10,8 +10,8 @@ import amqp
 import redis
 from sqlalchemy import create_engine, text
 
-from apps.api.database import init_db
-from apps.api.settings import get_settings
+from apps.api.shared.database import init_db
+from apps.api.shared.settings import get_settings
 
 
 def main() -> int:

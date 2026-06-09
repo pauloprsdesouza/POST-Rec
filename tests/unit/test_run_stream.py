@@ -1,6 +1,6 @@
 """Tests for SSE formatting helpers."""
 
-from apps.api.services.run_stream import format_sse
+from apps.api.features.runs.stream import format_sse
 
 
 def test_format_sse():

@@ -2,13 +2,18 @@
 
 from unittest.mock import MagicMock, patch
 
-from apps.api.services.sota_pipeline_service import sota_pipeline_service
+from apps.api.features.recommendations.pipeline import sota_pipeline_service
 from packages.postrec_core.domain.run_mode import RunMode
 
 
-@patch("apps.api.services.sota_pipeline_service.gemini_service")
-@patch("apps.api.services.sota_pipeline_service.novelty_verification_service")
-def test_quick_mode_calls_enhanced_generation(mock_verify, mock_gemini):
+@patch("apps.api.features.recommendations.pipeline.gemini_service")
+@patch("apps.api.features.recommendations.pipeline.novelty_verification_service")
+@patch("apps.api.features.recommendations.pipeline.article_validation_service")
+def test_quick_mode_calls_enhanced_generation(mock_av, mock_verify, mock_gemini):
+    mock_av.validate_and_filter.side_effect = lambda db, run_id, papers, **kwargs: (
+        papers,
+        {"sufficient_evidence": True},
+    )
     mock_gemini.generate_recommendations.return_value = {
         "recommendations": [{"title": "Idea", "scores": {"novelty": 70}}]
     }

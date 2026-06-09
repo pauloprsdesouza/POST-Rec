@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
 
 from apps.api.main import app
-from apps.api.settings import get_settings
+from apps.api.shared.settings import get_settings
 
 
 def _postgres_available() -> bool:

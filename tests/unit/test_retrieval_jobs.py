@@ -1,13 +1,12 @@
 """Tests for consolidated fetch job planning."""
 
-from apps.api.services.retrieval_service import RetrievalService
+from apps.api.features.retrieval.service import RetrievalService
 
 
 def test_build_jobs_from_plan_reduces_fan_out(monkeypatch):
     service = RetrievalService()
 
     class _Settings:
-        retrieval_consolidated_plan_enabled = True
         dual_retrieval_enabled = True
         retrieval_learned_topic_cap = 2
         retrieval_crossref_max_queries = 2
@@ -33,12 +32,17 @@ def test_build_jobs_from_plan_reduces_fan_out(monkeypatch):
     assert sum(1 for job in jobs if job.source == "arxiv") <= 1
 
 
-def test_build_jobs_legacy_still_available(monkeypatch):
+def test_build_fetch_jobs_uses_consolidated_plan(monkeypatch):
     service = RetrievalService()
 
     class _Settings:
-        retrieval_consolidated_plan_enabled = False
         dual_retrieval_enabled = True
+        retrieval_learned_topic_cap = 2
+        retrieval_crossref_max_queries = 2
+        retrieval_openalex_per_page_max = 100
+        retrieval_crossref_rows_max = 80
+        retrieval_semantic_scholar_limit_max = 100
+        retrieval_arxiv_max_results = 40
         retrieval_source_priority = "openalex,crossref,semantic_scholar,arxiv"
 
     monkeypatch.setattr(service, "settings", _Settings())
@@ -48,6 +52,6 @@ def test_build_jobs_legacy_still_available(monkeypatch):
         100,
         research_area=None,
         learned_topics=None,
-        expanded_queries=["topic a", "topic b", "topic a state of the art"],
     )
-    assert len(jobs) > 10
+    assert len(jobs) > 0
+    assert len(jobs) < 25

@@ -2,7 +2,7 @@
 
 from unittest.mock import MagicMock
 
-from apps.api.services.cache_service import (
+from apps.api.shared.infra.cache import (
     CacheKeys,
     CacheService,
     CacheTTL,

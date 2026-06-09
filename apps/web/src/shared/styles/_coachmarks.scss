@@ -1,0 +1,285 @@
+.coach-mark {
+  inset: 0;
+  position: fixed;
+  z-index: 1080;
+}
+
+.coach-mark__backdrop {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  inset: 0;
+  padding: 0;
+  position: fixed;
+  z-index: 0;
+}
+
+.coach-mark__backdrop--full {
+  background: rgba(15, 23, 42, 0.64);
+}
+
+[data-theme="dark"] .coach-mark__backdrop--full {
+  background: rgba(2, 6, 23, 0.72);
+}
+
+.coach-mark__backdrop-svg {
+  display: block;
+  height: 100%;
+  pointer-events: none;
+  width: 100%;
+}
+
+.coach-mark__backdrop-fill {
+  fill: rgba(15, 23, 42, 0.64);
+}
+
+[data-theme="dark"] .coach-mark__backdrop-fill {
+  fill: rgba(2, 6, 23, 0.72);
+}
+
+.coach-mark__ring {
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--postrec-primary) 55%, transparent),
+    0 0 0 6px color-mix(in srgb, var(--postrec-primary) 16%, transparent);
+  pointer-events: none;
+  position: fixed;
+  transition:
+    top 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    left 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    border-radius 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+.coach-mark__ring--enter {
+  animation: coach-mark-ring-pulse 0.55s ease-out;
+}
+
+@keyframes coach-mark-ring-pulse {
+  0% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--postrec-primary) 55%, transparent),
+      0 0 0 6px color-mix(in srgb, var(--postrec-primary) 16%, transparent);
+  }
+
+  45% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--postrec-primary) 70%, transparent),
+      0 0 0 12px color-mix(in srgb, var(--postrec-primary) 24%, transparent);
+  }
+
+  100% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--postrec-primary) 55%, transparent),
+      0 0 0 6px color-mix(in srgb, var(--postrec-primary) 16%, transparent);
+  }
+}
+
+[data-theme="dark"] .coach-mark__ring {
+  border-color: rgba(148, 163, 184, 0.7);
+}
+
+.coach-mark__popover {
+  background: var(--postrec-surface);
+  border: 1px solid var(--postrec-border);
+  border-radius: var(--postrec-radius-lg);
+  box-shadow: var(--postrec-shadow-lg);
+  max-width: 19rem;
+  opacity: 0;
+  padding: var(--postrec-space-5);
+  position: fixed;
+  transform: translateY(6px);
+  transition:
+    top 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    left 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    bottom 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease,
+    transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  width: min(19rem, calc(100vw - 2rem));
+  z-index: 2;
+}
+
+.coach-mark__popover--ready {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.coach-mark__popover--enter {
+  animation: coach-mark-pop-enter 0.24s ease-out;
+}
+
+@keyframes coach-mark-pop-enter {
+  from {
+    opacity: 0.72;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.coach-mark__popover--docked {
+  border-radius: var(--postrec-radius-lg) var(--postrec-radius-lg) var(--postrec-radius) var(--postrec-radius);
+  max-width: none;
+  width: auto;
+}
+
+.coach-mark__arrow {
+  background: var(--postrec-surface);
+  border: 1px solid var(--postrec-border);
+  height: 0.8rem;
+  position: absolute;
+  width: 0.8rem;
+  z-index: -1;
+}
+
+.coach-mark__popover--bottom .coach-mark__arrow {
+  border-bottom: none;
+  border-right: none;
+  top: -0.42rem;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.coach-mark__popover--top .coach-mark__arrow {
+  border-left: none;
+  border-top: none;
+  bottom: -0.42rem;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.coach-mark__popover--right .coach-mark__arrow {
+  border-right: none;
+  border-top: none;
+  left: -0.42rem;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.coach-mark__popover--left .coach-mark__arrow {
+  border-bottom: none;
+  border-left: none;
+  right: -0.42rem;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.coach-mark__header {
+  align-items: center;
+  display: flex;
+  gap: var(--postrec-space-3);
+  justify-content: space-between;
+  margin-bottom: var(--postrec-space-3);
+}
+
+.coach-mark__dots {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  gap: 0.35rem;
+}
+
+.coach-mark__dot {
+  background: var(--postrec-border-subtle);
+  border-radius: var(--postrec-radius-pill);
+  display: inline-block;
+  height: 0.35rem;
+  transition:
+    width 0.2s ease,
+    background-color 0.2s ease;
+  width: 0.35rem;
+}
+
+.coach-mark__dot--active {
+  background: var(--postrec-primary);
+  width: 1.1rem;
+}
+
+.coach-mark__dot--done {
+  background: color-mix(in srgb, var(--postrec-primary) 45%, var(--postrec-border-subtle));
+}
+
+.coach-mark__progress {
+  color: var(--postrec-muted);
+  flex-shrink: 0;
+  font-size: var(--postrec-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  margin: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.coach-mark__content {
+  animation: coach-mark-content-in 0.22s ease-out;
+}
+
+@keyframes coach-mark-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.coach-mark__title {
+  font-size: var(--postrec-text-base);
+  font-weight: 700;
+  line-height: var(--postrec-leading-tight);
+  margin-bottom: var(--postrec-space-2);
+}
+
+.coach-mark__body {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-sm);
+  line-height: var(--postrec-leading);
+  margin-bottom: var(--postrec-space-4);
+}
+
+.coach-mark__actions {
+  align-items: center;
+  display: flex;
+  gap: var(--postrec-space-3);
+  justify-content: space-between;
+}
+
+.coach-mark__skip {
+  background: none;
+  border: none;
+  color: var(--postrec-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: var(--postrec-text-sm);
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.coach-mark__skip:hover {
+  color: var(--postrec-text);
+}
+
+.coach-mark__nav {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--postrec-space-2);
+  margin-left: auto;
+}
+
+[data-coach].coach-mark-target--active {
+  position: relative;
+  z-index: 1081;
+}
+
+@media (max-width: 380px) {
+  .coach-mark__progress {
+    display: none;
+  }
+}

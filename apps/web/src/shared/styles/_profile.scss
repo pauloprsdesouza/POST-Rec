@@ -1,0 +1,203 @@
+// Profile hub tabs, consent flow, setup banner.
+
+.profile-hub {
+  overflow: hidden;
+  padding: 0;
+}
+
+.profile-hub.panel {
+  background: var(--postrec-surface-muted);
+  border: none;
+}
+
+.profile-hub__tabs {
+  background: transparent;
+  border-bottom: 1px solid var(--postrec-border-subtle);
+  -webkit-overflow-scrolling: touch;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  padding: var(--postrec-space-2) var(--postrec-space-3) 0;
+  scrollbar-width: none;
+}
+
+.profile-hub__tabs::-webkit-scrollbar {
+  display: none;
+  height: 0;
+}
+
+.profile-hub__tabs .nav {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0;
+  margin-bottom: 0;
+  min-width: min-content;
+  width: max-content;
+}
+
+.profile-hub__tabs .nav-item {
+  flex-shrink: 0;
+  margin-bottom: 0;
+}
+
+.profile-hub__tabs .nav-link {
+  border: none;
+  border-radius: 0;
+  box-shadow: inset 0 -2px 0 transparent;
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-sm);
+  font-weight: 500;
+  line-height: 1.25;
+  margin-bottom: 0;
+  padding: 0.625rem 0.875rem;
+  white-space: nowrap;
+}
+
+.profile-hub__tabs .nav-link:hover {
+  color: var(--postrec-text-secondary);
+}
+
+.profile-hub__tabs .nav-link.active {
+  background: transparent;
+  box-shadow: inset 0 -2px 0 var(--postrec-primary);
+  color: var(--postrec-text);
+  font-weight: 600;
+}
+
+.profile-hub__body {
+  background: var(--postrec-surface);
+  padding: var(--postrec-space-6);
+}
+
+@media (min-width: 768px) {
+  .profile-hub__body {
+    padding: var(--postrec-space-8);
+  }
+}
+
+.profile-section + .profile-section {
+  margin-top: var(--postrec-space-6);
+}
+
+.learning-summary {
+  border-top: 1px solid var(--postrec-border-subtle);
+  color: var(--postrec-muted);
+  margin-top: var(--postrec-space-6);
+  padding-top: var(--postrec-space-5);
+}
+
+.learning-summary__title {
+  color: var(--postrec-text-secondary);
+  font-size: var(--postrec-text-sm);
+  font-weight: 600;
+  margin-bottom: var(--postrec-space-2);
+}
+
+// ── Consent ─────────────────────────────────────────────
+
+.consent-panel__intro {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-sm);
+  line-height: var(--postrec-leading);
+}
+
+.consent-panel__list {
+  color: var(--postrec-muted);
+  line-height: 1.65;
+  margin-bottom: 0;
+  padding-left: 1.125rem;
+}
+
+.consent-panel__meta p {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-xs);
+  margin-bottom: var(--postrec-space-2);
+}
+
+.consent-panel__meta p:last-child {
+  margin-bottom: 0;
+}
+
+.consent-panel__checks-title {
+  color: var(--postrec-text-secondary);
+  font-size: var(--postrec-text-sm);
+  font-weight: 600;
+  margin-bottom: var(--postrec-space-2);
+}
+
+.consent-panel__title {
+  font-size: var(--postrec-text-base);
+  font-weight: 600;
+  margin: 0;
+}
+
+.consent-panel__checks {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-sm);
+  padding-left: 1.125rem;
+}
+
+.consent-checks {
+  background: var(--postrec-surface-muted);
+  border: none;
+  border-radius: var(--postrec-radius);
+  padding: var(--postrec-space-4);
+}
+
+.consent-checks__item {
+  margin-bottom: var(--postrec-space-3);
+}
+
+.consent-checks__item:last-child {
+  margin-bottom: 0;
+}
+
+.consent-page__panel {
+  padding: var(--postrec-space-6);
+}
+
+@media (min-width: 768px) {
+  .consent-page__panel {
+    padding: var(--postrec-space-8);
+  }
+}
+
+.setup-banner {
+  border: none;
+  border-radius: var(--postrec-radius-sm);
+}
+
+.profile-form-intro {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-sm);
+  line-height: var(--postrec-leading);
+  margin-bottom: 0;
+}
+
+.profile-experience-heading {
+  color: var(--postrec-text-secondary);
+  font-size: var(--postrec-text-sm);
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.learning-summary p {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-sm);
+  margin-bottom: var(--postrec-space-2);
+}
+
+.learning-summary p:last-child {
+  margin-bottom: 0;
+}
+
+.learning-summary strong {
+  color: var(--postrec-text-secondary);
+  font-weight: 600;
+}
+
+.profile-setup__hint {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-sm);
+  margin-top: var(--postrec-space-3);
+}

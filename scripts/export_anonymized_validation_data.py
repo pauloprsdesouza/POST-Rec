@@ -7,13 +7,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from apps.api.database import SessionLocal
-from apps.api.models import RecommendationFeedback, SessionFinalSurvey, VolunteerSession
+from apps.api.shared.database import SessionLocal
+from apps.api.shared.models import RecommendationFeedback, RecommendationRun, SessionFinalSurvey, StudySession
 
 
 def export_anonymized(output_path: str = "validation_export.json") -> None:
     db = SessionLocal()
     try:
+        runs_by_id = {run.id: run for run in db.query(RecommendationRun).all()}
         data = {
             "sessions": [
                 {
@@ -21,7 +22,7 @@ def export_anonymized(output_path: str = "validation_export.json") -> None:
                     "status": s.status,
                     "started_at": s.started_at.isoformat() if s.started_at else None,
                 }
-                for s in db.query(VolunteerSession).all()
+                for s in db.query(StudySession).all()
             ],
             "feedbacks": [
                 {
@@ -34,6 +35,11 @@ def export_anonymized(output_path: str = "validation_export.json") -> None:
                     "would_use_in_real_paper": f.would_use_in_real_paper,
                     "decision": f.decision,
                     "expectation_alignment_score": float(f.expectation_alignment_score or 0),
+                    "experiment_id": runs_by_id[f.run_id].experiment_id if f.run_id in runs_by_id else None,
+                    "experiment_variant": runs_by_id[f.run_id].experiment_variant
+                    if f.run_id in runs_by_id
+                    else None,
+                    "assigned_mode": runs_by_id[f.run_id].assigned_mode if f.run_id in runs_by_id else None,
                 }
                 for f in db.query(RecommendationFeedback).all()
             ],

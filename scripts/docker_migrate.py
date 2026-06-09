@@ -13,8 +13,8 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import inspect, text
 
-from apps.api.database import engine
-from apps.api.models import Base
+from apps.api.shared.database import engine
+from apps.api.shared.models import Base
 
 
 def ensure_pgvector() -> None:

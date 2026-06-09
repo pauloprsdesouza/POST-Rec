@@ -40,3 +40,9 @@ class WouldUseInPaper(StrEnum):
     YES = "yes"
     MAYBE = "maybe"
     NO = "no"
+
+
+class CandidateStatus(StrEnum):
+    DRAFT = "draft"
+    PUBLISHED = "published"
+    NEEDS_REFINEMENT = "needs_refinement"

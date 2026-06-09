@@ -1,7 +1,7 @@
 """Embedding model resolution guards."""
 
-from apps.api.services.embedding_config import resolve_embedding_model, validate_embedding_configuration
-from apps.api.settings import DEFAULT_GEMINI_EMBEDDING_MODEL, Settings, get_settings
+from apps.api.shared.infra.embedding_config import resolve_embedding_model, validate_embedding_configuration
+from apps.api.shared.settings import DEFAULT_GEMINI_EMBEDDING_MODEL, Settings, get_settings
 
 
 def test_resolve_embedding_model_normalizes_legacy_name():

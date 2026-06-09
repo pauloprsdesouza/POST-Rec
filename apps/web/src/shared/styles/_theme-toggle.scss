@@ -1,0 +1,33 @@
+.theme-toggle {
+  align-items: center;
+  background: var(--postrec-surface-muted);
+  border: 1px solid var(--postrec-border);
+  border-radius: var(--postrec-radius-sm);
+  color: var(--postrec-muted);
+  cursor: pointer;
+  display: inline-flex;
+  height: 2rem;
+  justify-content: center;
+  padding: 0;
+  transition:
+    background var(--postrec-duration) var(--postrec-ease),
+    border-color var(--postrec-duration) var(--postrec-ease),
+    color var(--postrec-duration) var(--postrec-ease);
+  width: 2rem;
+}
+
+.theme-toggle:hover {
+  background: var(--postrec-surface-hover);
+  border-color: var(--postrec-primary-subtle);
+  color: var(--postrec-primary);
+}
+
+.theme-toggle__icon {
+  height: 1.125rem;
+  width: 1.125rem;
+}
+
+.theme-toggle--inline {
+  height: 2.25rem;
+  width: 2.25rem;
+}

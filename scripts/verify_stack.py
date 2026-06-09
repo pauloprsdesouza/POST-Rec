@@ -13,7 +13,7 @@ import amqp
 import redis
 from sqlalchemy import create_engine, text
 
-from apps.api.settings import get_settings
+from apps.api.shared.settings import get_settings
 
 
 def check_postgres(database_url: str) -> tuple[bool, str]:

@@ -1,0 +1,219 @@
+@use "./mixins" as *;
+
+// Refactoring UI — layout rhythm, grouping, hierarchy.
+
+.page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--postrec-space-10);
+}
+
+.page-stack--tight {
+  gap: var(--postrec-space-8);
+}
+
+.page-stack__block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--postrec-space-4);
+}
+
+.page-shell--list {
+  max-width: var(--postrec-page-list);
+}
+
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--postrec-space-6);
+}
+
+.panel {
+  background: var(--postrec-surface-muted);
+  border-radius: var(--postrec-radius-lg);
+  padding: var(--postrec-space-5);
+}
+
+@media (min-width: 768px) {
+  .panel {
+    padding: var(--postrec-space-6);
+  }
+}
+
+.panel--emphasis {
+  background: var(--postrec-primary-light);
+}
+
+.panel--success {
+  background: var(--postrec-success-bg);
+}
+
+.panel__header {
+  margin-bottom: var(--postrec-space-4);
+}
+
+.panel__title {
+  @include card-title-clamp(2);
+  color: var(--postrec-text);
+  font-size: var(--postrec-text-base);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: var(--postrec-leading-tight);
+  margin-bottom: 0.25rem;
+}
+
+.panel__desc {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-sm);
+  font-weight: 400;
+  line-height: var(--postrec-leading);
+  margin-bottom: 0;
+  max-width: 50rem;
+}
+
+.inline-meta {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-sm);
+  font-weight: 400;
+  line-height: var(--postrec-leading);
+}
+
+.segmented-control {
+  background: var(--postrec-surface-muted);
+  border-radius: var(--postrec-radius-pill);
+  display: inline-flex;
+  gap: 0.125rem;
+  max-width: 100%;
+  padding: 0.25rem;
+  width: 100%;
+}
+
+@media (min-width: 480px) {
+  .segmented-control {
+    width: auto;
+  }
+}
+
+.segmented-control__item {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--postrec-radius-pill);
+  color: var(--postrec-muted);
+  cursor: pointer;
+  display: inline-flex;
+  flex: 1;
+  font-family: var(--postrec-font);
+  font-size: var(--postrec-text-sm);
+  font-weight: 500;
+  gap: 0.375rem;
+  justify-content: center;
+  line-height: 1.25;
+  min-width: 0;
+  padding: 0.5rem 0.875rem;
+  transition:
+    background-color var(--postrec-duration) var(--postrec-ease),
+    color var(--postrec-duration) var(--postrec-ease);
+}
+
+@media (min-width: 480px) {
+  .segmented-control__item {
+    flex: 0 0 auto;
+    padding: 0.5rem 1rem;
+  }
+}
+
+.segmented-control__item:hover {
+  color: var(--postrec-text-secondary);
+}
+
+.segmented-control__item--selected {
+  background: var(--postrec-surface);
+  border: 1px solid var(--postrec-border-subtle);
+  box-shadow: none;
+  color: var(--postrec-text);
+  font-weight: 600;
+}
+
+[data-theme="dark"] .segmented-control__item--selected {
+  border-color: var(--postrec-border);
+  box-shadow: none;
+}
+
+.segmented-control__count {
+  color: inherit;
+  font-size: var(--postrec-text-xs);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.callout {
+  background: var(--postrec-surface-muted);
+  border-left: 3px solid var(--postrec-border-strong);
+  border-radius: 0 var(--postrec-radius) var(--postrec-radius) 0;
+  padding: var(--postrec-space-4) var(--postrec-space-5);
+}
+
+.callout--success {
+  background: var(--postrec-success-bg);
+  border-left-color: var(--postrec-success);
+}
+
+.callout__title {
+  font-size: var(--postrec-text-sm);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.callout__text {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-sm);
+  font-weight: 400;
+  line-height: var(--postrec-leading);
+  margin-bottom: 0;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--postrec-space-2);
+}
+
+.field-group > .form-label {
+  font-size: var(--postrec-text-sm);
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.field-group > .form-text {
+  margin-top: 0;
+}
+
+.form-stack .field-group,
+.form-stack > .mb-3,
+.form-stack > .mb-4 {
+  margin-bottom: 0 !important;
+}
+
+.form-stack > .row,
+.form-stack .row.g-3 {
+  --bs-gutter-y: 0;
+  margin-bottom: 0 !important;
+}
+
+.surface-inset,
+.page-card.surface-inset {
+  background: var(--postrec-surface);
+  border: 1px solid var(--postrec-border-subtle);
+  border-radius: var(--postrec-radius-lg);
+  box-shadow: none;
+  padding: var(--postrec-space-6);
+}
+
+@media (min-width: 768px) {
+  .surface-inset,
+  .page-card.surface-inset {
+    padding: var(--postrec-space-8);
+  }
+}

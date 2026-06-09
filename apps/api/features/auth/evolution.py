@@ -1,0 +1,67 @@
+"""WhatsApp messaging via Evolution API."""
+
+import httpx
+
+from apps.api.shared.observability.logging import get_logger
+from apps.api.shared.settings import get_settings
+
+logger = get_logger("postrec-evolution")
+
+
+class EvolutionError(Exception):
+    pass
+
+
+class EvolutionService:
+    def is_configured(self) -> bool:
+        settings = get_settings()
+        return bool(settings.evolution_api_url and settings.evolution_api_key and settings.evolution_instance_name)
+
+    def send_text(self, phone_number: str, text: str) -> None:
+        settings = get_settings()
+        if not self.is_configured():
+            if settings.app_env == "development":
+                logger.warning(
+                    "evolution_not_configured_mock_send",
+                    phone_number=phone_number,
+                    text=text,
+                )
+                return
+            raise EvolutionError("WhatsApp messaging is not configured")
+
+        url = f"{settings.evolution_api_url.rstrip('/')}/message/sendText/{settings.evolution_instance_name}"
+        headers = {
+            "apikey": settings.evolution_api_key,
+            "Content-Type": "application/json",
+        }
+        payload = {"number": phone_number, "text": text}
+
+        try:
+            with httpx.Client(timeout=30.0) as client:
+                response = client.post(url, json=payload, headers=headers)
+                response.raise_for_status()
+                body = response.json() if response.content else {}
+                if isinstance(body, dict) and body.get("status") is False:
+                    message = body.get("message") or body.get("error") or "send rejected"
+                    raise EvolutionError(str(message))
+        except httpx.HTTPStatusError as exc:
+            detail = exc.response.text[:300]
+            logger.error(
+                "evolution_send_failed",
+                phone_number=phone_number,
+                status_code=exc.response.status_code,
+                detail=detail,
+            )
+            if exc.response.status_code == 400 and "exists" in detail.lower():
+                raise EvolutionError(
+                    "WhatsApp number not found. Include country code (e.g. +55 79 99973-3237)."
+                ) from exc
+            raise EvolutionError(f"Evolution API error: {exc.response.status_code}") from exc
+        except httpx.RequestError as exc:
+            logger.error("evolution_send_unreachable", phone_number=phone_number, error=str(exc))
+            raise EvolutionError("Could not reach Evolution API") from exc
+
+        logger.info("evolution_message_sent", phone_number=phone_number)
+
+
+evolution_service = EvolutionService()
