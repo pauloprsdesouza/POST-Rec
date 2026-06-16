@@ -99,7 +99,7 @@ function HypothesisTestBlock({
   );
 }
 
-export function ResearchReportPage() {
+export function ResearchReportPage({ adminMode = false }: { adminMode?: boolean }) {
   const { t, i18n } = useTranslation();
   const { accessToken } = useAuth();
   const locale = i18n.language;
@@ -223,7 +223,7 @@ export function ResearchReportPage() {
           <PageHeader title={t("researchReport.title")} subtitle={t("researchReport.subtitle")} />
           <div className="research-report__meta">
             <span>{t("researchReport.generatedAt", { date: generatedLabel })}</span>
-            <Link to="/insights" className="research-report__back-link">
+            <Link to={adminMode ? "/admin/evaluation" : "/insights"} className="research-report__back-link">
               {t("researchReport.backToInsights")}
             </Link>
           </div>

@@ -19,6 +19,7 @@ export interface IHttpClient {
   get<T>(path: string, options?: RequestOptions): Promise<T>;
   post<T>(path: string, body: unknown, options?: RequestOptions): Promise<T>;
   put<T>(path: string, body: unknown, options?: RequestOptions): Promise<T>;
+  patch<T>(path: string, body: unknown, options?: RequestOptions): Promise<T>;
 }
 
 export class HttpClient implements IHttpClient {
@@ -74,6 +75,15 @@ export class HttpClient implements IHttpClient {
   async put<T>(path: string, body: unknown, options: RequestOptions = {}): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
       method: "PUT",
+      headers: this.headers(options.token),
+      body: JSON.stringify(body),
+    });
+    return this.parse<T>(response);
+  }
+
+  async patch<T>(path: string, body: unknown, options: RequestOptions = {}): Promise<T> {
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      method: "PATCH",
       headers: this.headers(options.token),
       body: JSON.stringify(body),
     });

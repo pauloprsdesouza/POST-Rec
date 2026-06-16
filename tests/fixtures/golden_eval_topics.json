@@ -65,7 +65,7 @@
         ]
       },
       "papers": [
-        {"title": "Clinical BERT 2019", "year": 2019, "tier": "seminal", "abstract": "Transformer for clinical text classification."},
+        {"title": "Seminal baseline 2019", "year": 2019, "tier": "seminal", "abstract": "Transformer for clinical text classification."},
         {"title": "LLM EHR 2025", "year": 2025, "tier": "sota_recent", "abstract": "However interpretability remains unclear. Future work on longitudinal benchmarks."}
       ],
       "good_proposal": {

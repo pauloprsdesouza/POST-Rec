@@ -1,45 +1,62 @@
+import { useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { NavIcon } from "@/shared/ui/NavIcons";
 
-const MAIN_ITEMS = [
-  {
-    to: "/runs",
-    labelKey: "nav.runs" as const,
-    icon: "runs" as const,
-    match: (path: string) => path === "/runs" || /^\/runs\/[^/]+/.test(path),
-    primary: false,
-  },
-  {
-    to: "/runs/new",
-    labelKey: "nav.new" as const,
-    icon: "new" as const,
-    match: (path: string) => path === "/runs/new",
-    primary: true,
-  },
-  {
-    to: "/insights",
-    labelKey: "nav.insights" as const,
-    icon: "insights" as const,
-    match: (path: string) => path.startsWith("/insights"),
-    primary: false,
-  },
-  {
-    to: "/profile",
-    labelKey: "nav.profile" as const,
-    icon: "profile" as const,
-    match: (path: string) => path.startsWith("/profile"),
-    primary: false,
-  },
-] as const;
+type BottomNavItem = {
+  to: string;
+  labelKey: "nav.runs" | "nav.new" | "nav.admin" | "nav.profile";
+  icon: "runs" | "new" | "insights" | "profile";
+  match: (path: string) => boolean;
+  primary: boolean;
+};
 
 export function MobileBottomNav() {
   const { t } = useTranslation();
-  const { consentDone, profileDone } = useAuth();
+  const { consentDone, profileDone, isAdmin } = useAuth();
   const { pathname } = useLocation();
   const setupComplete = consentDone && profileDone;
+
+  const mainItems = useMemo((): BottomNavItem[] => {
+    const items: BottomNavItem[] = [
+      {
+        to: "/runs",
+        labelKey: "nav.runs",
+        icon: "runs",
+        match: (path: string) => path === "/runs" || /^\/runs\/[^/]+/.test(path),
+        primary: false,
+      },
+      {
+        to: "/runs/new",
+        labelKey: "nav.new",
+        icon: "new",
+        match: (path: string) => path === "/runs/new",
+        primary: true,
+      },
+    ];
+
+    if (isAdmin) {
+      items.push({
+        to: "/admin",
+        labelKey: "nav.admin",
+        icon: "insights",
+        match: (path: string) => path.startsWith("/admin"),
+        primary: false,
+      });
+    }
+
+    items.push({
+      to: "/profile",
+      labelKey: "nav.profile",
+      icon: "profile",
+      match: (path: string) => path.startsWith("/profile"),
+      primary: false,
+    });
+
+    return items;
+  }, [isAdmin]);
 
   if (!setupComplete) {
     const setupTo = !consentDone ? "/consent" : "/profile?tab=research";
@@ -69,7 +86,7 @@ export function MobileBottomNav() {
 
   return (
     <nav className="bottom-nav d-lg-none" aria-label={t("nav.mainNavigation")} data-coach="coach-bottom-nav">
-      {MAIN_ITEMS.map((item) => {
+      {mainItems.map((item) => {
         const active = item.match(pathname);
         const classNames = [
           "bottom-nav__item",

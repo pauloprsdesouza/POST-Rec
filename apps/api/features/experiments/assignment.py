@@ -1,4 +1,4 @@
-"""Blind A/B experiment assignment for recommendation runs."""
+"""Blind A/B experiment assignment and run-mode resolution for recommendation runs."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ EXPERIMENT_VARIANT_TREATMENT = "treatment"
 PRESENTATION_STANDARD = "standard"
 PRESENTATION_BLIND = "blind"
 
+AUTO_MODE = "auto"
 CONTROL_MODE = RunMode.SOTA.value
 TREATMENT_MODE = RunMode.FGGV.value
 
@@ -34,33 +35,33 @@ def _stable_bucket(user_id: str, experiment_id: str) -> int:
     return int(digest[:8], 16) % 100
 
 
-def is_user_enrolled(*, avoid_real_user_experiments: bool) -> bool:
-    return not avoid_real_user_experiments
+def is_auto_mode(mode: str | None) -> bool:
+    return (mode or "").strip().lower() == AUTO_MODE
 
 
 def resolve_experiment_assignment(
     *,
     user_id: str | None,
     requested_mode: str,
-    avoid_real_user_experiments: bool,
-    experiment_enabled: bool,
     experiment_id: str,
     treatment_fraction: float,
 ) -> ExperimentAssignment:
-    """Assign control (sota) vs treatment (fggv) for blind study participants."""
-    if not experiment_enabled or not user_id or avoid_real_user_experiments:
-        mode = RunMode.parse(requested_mode).value
-        return ExperimentAssignment(mode=mode, presentation_profile=PRESENTATION_STANDARD)
+    """Resolve run mode from explicit selection or always-on SOTA-vs-FGGV assignment."""
+    if is_auto_mode(requested_mode):
+        if user_id:
+            bucket = _stable_bucket(user_id, experiment_id)
+            threshold = max(0, min(100, int(round(treatment_fraction * 100))))
+            variant = EXPERIMENT_VARIANT_TREATMENT if bucket < threshold else EXPERIMENT_VARIANT_CONTROL
+            assigned_mode = TREATMENT_MODE if variant == EXPERIMENT_VARIANT_TREATMENT else CONTROL_MODE
+            return ExperimentAssignment(
+                mode=assigned_mode,
+                experiment_id=experiment_id,
+                experiment_variant=variant,
+                assigned_mode=assigned_mode,
+                presentation_profile=PRESENTATION_BLIND,
+            )
+        # Fallback for non-authenticated execution paths.
+        return ExperimentAssignment(mode=CONTROL_MODE, presentation_profile=PRESENTATION_STANDARD)
 
-    bucket = _stable_bucket(user_id, experiment_id)
-    threshold = max(0, min(100, int(round(treatment_fraction * 100))))
-    variant = EXPERIMENT_VARIANT_TREATMENT if bucket < threshold else EXPERIMENT_VARIANT_CONTROL
-    assigned_mode = TREATMENT_MODE if variant == EXPERIMENT_VARIANT_TREATMENT else CONTROL_MODE
-
-    return ExperimentAssignment(
-        mode=assigned_mode,
-        experiment_id=experiment_id,
-        experiment_variant=variant,
-        assigned_mode=assigned_mode,
-        presentation_profile=PRESENTATION_BLIND,
-    )
+    mode = RunMode.parse(requested_mode).value
+    return ExperimentAssignment(mode=mode, presentation_profile=PRESENTATION_STANDARD)

@@ -10,6 +10,7 @@ from apps.api.features.auth.service import AuthError, auth_service
 from apps.api.shared.database import get_db
 from apps.api.shared.models import RecommendationRun, User
 from apps.api.shared.settings import get_settings
+from packages.postrec_core.domain.enums import UserRole
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -52,6 +53,25 @@ def get_current_user_required(
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     return user
+
+
+def require_roles(*roles: UserRole):
+    """Dependency factory: authenticated user must hold one of the given roles."""
+
+    allowed = {role.value if isinstance(role, UserRole) else str(role) for role in roles}
+
+    def _dependency(current_user: User = Depends(get_current_user_required)) -> User:
+        if current_user.role not in allowed:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions",
+            )
+        return current_user
+
+    return _dependency
+
+
+get_current_admin = require_roles(UserRole.ADMIN)
 
 
 def get_run_stream_access(

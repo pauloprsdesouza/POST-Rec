@@ -4,7 +4,7 @@
 
 ## Features
 
-- **Hybrid retrieval** — OpenAlex, Crossref, Semantic Scholar; BM25 + dense + pgvector ranking
+- **Hybrid retrieval** — OpenAlex literature search; BM25 + dense + pgvector ranking
 - **Run modes** — `quick`, `sota`, `exploratory`, and **FGGV** (Facet-Grounded Gap Verification)
 - **SOTA pipeline** — landscape → gap matrix → proposals → critic → verified ranking
 - **FGGV** — per-facet novelty, gap alignment, saturation-aware scoring, diversity selection ([docs](docs/fggv-evaluation.md))

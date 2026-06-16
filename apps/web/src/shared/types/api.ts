@@ -6,6 +6,21 @@ export interface AuthResponse {
   email?: string | null;
   full_name?: string | null;
   whatsapp_opt_in?: boolean;
+  role?: UserRole;
+}
+
+export type UserRole = "researcher" | "admin";
+
+export interface UserMe {
+  id: string;
+  phone_number: string;
+  email?: string | null;
+  full_name?: string | null;
+  whatsapp_opt_in?: boolean;
+  role: UserRole;
+  is_admin?: boolean;
+  can_access_admin?: boolean;
+  can_use_research_features?: boolean;
 }
 
 export interface OtpRequestResponse {
@@ -390,4 +405,73 @@ export interface ExperimentDashboard {
 
 export interface FeedbackResult {
   expectation_alignment_score: number;
+}
+
+export interface AdminOverview {
+  generated_at: string;
+  users: {
+    total: number;
+    active: number;
+    admins: number;
+    researchers: number;
+  };
+  runs: {
+    total: number;
+    completed: number;
+    failed: number;
+    completion_rate: number;
+    failure_rate: number;
+  };
+  feedback_total: number;
+  llm_cost_usd_total: number;
+  system_status: string;
+  health_checks: Record<string, string>;
+  app_env: string;
+}
+
+export interface AdminSystemConfig {
+  generated_at: string;
+  environment: Record<string, string | number | boolean>;
+}
+
+export interface AdminModelSummary {
+  provider: string;
+  model: string;
+  call_count: number;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  estimated_cost_usd: number;
+}
+
+export interface AdminModelEvaluation {
+  generated_at: string;
+  configured_models: {
+    generation: string;
+    embedding: string;
+    embedding_dimensions: number;
+  };
+  aggregate: {
+    call_count: number;
+    total_tokens: number;
+    estimated_cost_usd: number;
+  };
+  models: AdminModelSummary[];
+  operations: Array<AdminModelSummary & { operation: string }>;
+}
+
+export interface AdminUserRecord {
+  id: string;
+  email?: string | null;
+  full_name?: string | null;
+  phone_number?: string | null;
+  role: UserRole;
+  is_active: boolean;
+  is_admin: boolean;
+  created_at?: string | null;
+}
+
+export interface AdminUserList {
+  total: number;
+  items: AdminUserRecord[];
 }

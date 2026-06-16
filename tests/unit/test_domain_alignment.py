@@ -8,7 +8,6 @@ from packages.postrec_core.retrieval.context_alignment import (
     compute_context_alignment,
     infer_expected_fields,
 )
-from packages.postrec_core.retrieval.domain_alignment import compute_domain_alignment
 
 
 def test_infer_expected_fields_from_research_area():
@@ -49,7 +48,9 @@ def test_sociology_social_capital_paper_rejected_for_recsys():
     assert alignment.passes is False
     assert alignment.keyword_trap is True
 
-    with patch("apps.api.features.retrieval.relevance.qualis_service.apply_relevance_boost", side_effect=lambda s, p: (s, {})):
+    with patch(
+        "apps.api.features.retrieval.relevance.qualis_service.apply_relevance_boost", side_effect=lambda s, p: (s, {})
+    ):
         score = compute_relevance_score(
             paper,
             topics=topics,
@@ -142,7 +143,9 @@ def test_filter_and_rank_drops_off_domain_sociology_paper():
             "citation_count": 120,
         },
     ]
-    with patch("apps.api.features.retrieval.relevance.qualis_service.apply_relevance_boost", side_effect=lambda s, p: (s, {})):
+    with patch(
+        "apps.api.features.retrieval.relevance.qualis_service.apply_relevance_boost", side_effect=lambda s, p: (s, {})
+    ):
         ranked, stats = filter_and_rank_papers(
             papers,
             topics=["social capital", "social networks", "profile modeling"],
@@ -166,15 +169,15 @@ def test_build_research_context_merges_topics_and_area():
     assert "computer_science" in context.expected_fields
 
 
-def test_compute_domain_alignment_wrapper_accepts_topics():
+def test_compute_context_alignment_wrapper_accepts_topics():
     paper = {
         "title": "Social capital in rural communities",
         "abstract": "A qualitative sociological study.",
         "venue": "American Journal of Sociology",
     }
-    alignment = compute_domain_alignment(
+    alignment = compute_context_alignment(
         paper,
-        "Recommender Systems",
+        research_area="Recommender Systems",
         topics=["social capital"],
     )
     assert alignment.passes is False

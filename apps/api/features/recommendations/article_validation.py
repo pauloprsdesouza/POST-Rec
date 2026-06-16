@@ -11,7 +11,7 @@ from apps.api.features.retrieval.persistence import persist_article_validation_s
 from apps.api.features.retrieval.relevance import compute_relevance_score
 from apps.api.shared.observability.logging import get_logger
 from apps.api.shared.settings import get_settings
-from packages.postrec_core.retrieval.domain_alignment import compute_domain_alignment
+from packages.postrec_core.retrieval.context_alignment import compute_context_alignment
 
 logger = get_logger("postrec-article-validation")
 
@@ -197,11 +197,12 @@ class ArticleValidationService:
                 avoided_topics=avoided_topics,
             )
             passes = score >= min_score
-            alignment = compute_domain_alignment(
+            alignment = compute_context_alignment(
                 paper,
-                research_area,
+                research_area=research_area,
                 topics=seed_topics,
                 avoided_topics=avoided_topics,
+                pass_threshold=float(getattr(settings, "retrieval_min_domain_alignment", 0.40) or 0.40),
             )
             if settings.retrieval_domain_filter_enabled and research_area and not alignment.passes:
                 passes = False

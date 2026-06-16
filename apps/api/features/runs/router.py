@@ -9,13 +9,13 @@ from sqlalchemy.orm import Session
 from apps.api.features.experiments.service import experiment_service
 from apps.api.features.recommendations.sources import get_run_source_documents, serialize_source_documents
 from apps.api.features.runs.access import ensure_run_access, get_run_or_404, user_id_optional
+from apps.api.features.runs.cleanup import learned_topics_for_run_cleanup
 from apps.api.features.runs.query import (
     feedback_counts_by_run,
     run_detail_payload,
     run_events_payload,
     run_sources_payload,
 )
-from apps.api.features.runs.cleanup import learned_topics_for_run_cleanup
 from apps.api.features.runs.service import run_service
 from apps.api.features.runs.stream import stream_run_updates
 from apps.api.shared.database import get_db
@@ -58,7 +58,6 @@ def create_recommendation_run(
     assignment = experiment_service.resolve_run_assignment(
         user_id=current_user.id,
         requested_mode=payload.mode,
-        avoid_real_user_experiments=bool(constraints.get("avoid_real_user_experiments", True)),
     )
     run = run_service.create_run(
         db=db,

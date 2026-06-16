@@ -50,6 +50,8 @@
     "preferences": "Preferences",
     "consent": "Consent",
     "signOut": "Sign out",
+    "admin": "Admin",
+    "adminAndResearcher": "Administrator · full researcher access",
     "language": "Language",
     "themeDark": "Switch to dark mode",
     "themeLight": "Switch to light mode"
@@ -1097,6 +1099,76 @@
       "semantic_scholar": "Semantic Scholar",
       "crossref": "Crossref",
       "unknown": "Unknown"
+    }
+  },
+  "admin": {
+    "title": "Administration",
+    "subtitle": "Platform operations, evaluation, and access control",
+    "badge": "Operator",
+    "sidebarLabel": "Admin navigation",
+    "loading": "Loading admin data…",
+    "loadError": "Could not load admin data.",
+    "backToResearch": "← Research workspace",
+    "nav": {
+      "overview": "Overview",
+      "evaluation": "Evaluation",
+      "models": "Models",
+      "system": "System",
+      "users": "Users"
+    },
+    "overview": {
+      "title": "Operations overview",
+      "subtitle": "High-level health and usage across POST-Rec",
+      "platform": "Platform metrics",
+      "users": "Total users",
+      "activeUsers": "Active users",
+      "admins": "Administrators",
+      "totalRuns": "Total runs",
+      "completionHint": "{{rate}} completion rate",
+      "feedback": "Feedback ratings",
+      "llmCost": "Estimated LLM cost",
+      "systemHealth": "System health",
+      "environment": "Environment",
+      "openEvaluation": "Open evaluation dashboard",
+      "openReport": "Full research report"
+    },
+    "evaluation": {
+      "title": "System evaluation",
+      "subtitle": "Volunteer validation metrics, experiments, and ranking quality"
+    },
+    "models": {
+      "title": "Model evaluation",
+      "subtitle": "Configured models and observed token usage across runs",
+      "configured": "Configured models",
+      "generation": "Generation model",
+      "embedding": "Embedding model",
+      "usage": "Aggregate usage",
+      "calls": "API calls",
+      "tokens": "Total tokens",
+      "cost": "Estimated cost (USD)",
+      "byModel": "Usage by model",
+      "tableModel": "Model",
+      "empty": "No LLM usage recorded yet."
+    },
+    "system": {
+      "title": "System configuration",
+      "subtitle": "Read-only snapshot of operational settings (secrets excluded)",
+      "readOnlyNote": "Changes require environment updates and a service restart. This view never exposes API keys or passwords."
+    },
+    "users": {
+      "title": "User access",
+      "subtitle": "{{count}} accounts registered",
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "you": "You",
+      "researcher": "Researcher",
+      "admin": "Administrator",
+      "active": "Active",
+      "inactive": "Inactive",
+      "roleFor": "Role for {{name}}",
+      "updateError": "Could not update user role."
     }
   }
 }

@@ -1,7 +1,6 @@
 """Tests for run retry, archive, and learned-topic cleanup."""
 
 import uuid
-from datetime import UTC, datetime
 
 from apps.api.features.profile.service import ProfileService
 from apps.api.features.runs.cleanup import (

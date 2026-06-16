@@ -7,9 +7,9 @@ from typing import Any
 
 from apps.api.features.qualis.service import qualis_service
 from apps.api.shared.settings import get_settings
-from packages.postrec_core.retrieval.domain_alignment import (
-    apply_domain_alignment_to_score,
-    compute_domain_alignment,
+from packages.postrec_core.retrieval.context_alignment import (
+    apply_context_alignment_to_score,
+    compute_context_alignment,
 )
 
 STOPWORDS = frozenset(
@@ -174,14 +174,15 @@ def compute_relevance_score(
             score += min(0.06, (float(fwci) - 1.0) * 0.03)
 
     if settings.retrieval_domain_filter_enabled and (research_area or topics):
-        alignment = compute_domain_alignment(
+        alignment = compute_context_alignment(
             paper,
-            research_area,
+            research_area=research_area,
             topics=topics,
             learned_topics=learned_topics,
             avoided_topics=avoided_topics,
+            pass_threshold=settings.retrieval_min_domain_alignment,
         )
-        score = apply_domain_alignment_to_score(score, alignment)
+        score = apply_context_alignment_to_score(score, alignment)
         if not alignment.passes:
             score = min(score, max(0.12, settings.retrieval_min_relevance_score - 0.08))
 
@@ -246,12 +247,13 @@ def filter_and_rank_papers(
             learned_topics=learned_topics,
             avoided_topics=avoided_topics,
         )
-        alignment = compute_domain_alignment(
+        alignment = compute_context_alignment(
             paper,
-            research_area,
+            research_area=research_area,
             topics=topics,
             learned_topics=learned_topics,
             avoided_topics=avoided_topics,
+            pass_threshold=get_settings().retrieval_min_domain_alignment,
         )
         if alignment.keyword_trap:
             stats["keyword_traps_seen"] += 1
@@ -264,11 +266,7 @@ def filter_and_rank_papers(
             "context_keyword_trap": alignment.keyword_trap,
         }
         settings = get_settings()
-        if (
-            settings.retrieval_domain_filter_enabled
-            and (research_area or topics)
-            and not alignment.passes
-        ):
+        if settings.retrieval_domain_filter_enabled and (research_area or topics) and not alignment.passes:
             stats["alignment_rejected"] += 1
             stats["filtered_out"] += 1
             continue

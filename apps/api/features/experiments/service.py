@@ -4,11 +4,7 @@ from __future__ import annotations
 
 from sqlalchemy.orm import Session
 
-from apps.api.features.experiments.assignment import (
-    PRESENTATION_BLIND,
-    is_user_enrolled,
-    resolve_experiment_assignment,
-)
+from apps.api.features.experiments.assignment import PRESENTATION_BLIND, resolve_experiment_assignment
 from apps.api.shared.models import RecommendationFeedback, RecommendationRun
 from apps.api.shared.settings import get_settings
 from packages.postrec_core.domain.enums import RunStatus
@@ -19,27 +15,22 @@ class ExperimentService:
         self,
         *,
         user_id: str | None,
-        avoid_real_user_experiments: bool = True,
     ) -> dict:
         settings = get_settings()
-        active = settings.experiment_fggv_vs_sota_enabled
-        enrolled = active and is_user_enrolled(avoid_real_user_experiments=avoid_real_user_experiments)
 
         assignment_preview = None
-        if enrolled and user_id:
+        if user_id:
             assignment_preview = resolve_experiment_assignment(
                 user_id=user_id,
-                requested_mode="sota",
-                avoid_real_user_experiments=avoid_real_user_experiments,
-                experiment_enabled=active,
+                requested_mode="auto",
                 experiment_id=settings.experiment_fggv_vs_sota_id,
                 treatment_fraction=settings.experiment_treatment_fraction,
             )
 
         return {
-            "experiment_active": active,
-            "experiment_id": settings.experiment_fggv_vs_sota_id if active else None,
-            "enrolled": enrolled,
+            "experiment_active": True,
+            "experiment_id": settings.experiment_fggv_vs_sota_id,
+            "enrolled": True,
             "presentation_profile": assignment_preview.presentation_profile if assignment_preview else "standard",
             "control_mode": "sota",
             "treatment_mode": "fggv",
@@ -50,14 +41,11 @@ class ExperimentService:
         *,
         user_id: str | None,
         requested_mode: str,
-        avoid_real_user_experiments: bool,
     ):
         settings = get_settings()
         return resolve_experiment_assignment(
             user_id=user_id,
             requested_mode=requested_mode,
-            avoid_real_user_experiments=avoid_real_user_experiments,
-            experiment_enabled=settings.experiment_fggv_vs_sota_enabled,
             experiment_id=settings.experiment_fggv_vs_sota_id,
             treatment_fraction=settings.experiment_treatment_fraction,
         )
@@ -108,7 +96,7 @@ class ExperimentService:
 
         return {
             "experiment_id": experiment_id,
-            "active": settings.experiment_fggv_vs_sota_enabled,
+            "active": True,
             "presentation_profile": PRESENTATION_BLIND,
             "variants": variants,
         }

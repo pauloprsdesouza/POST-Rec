@@ -50,6 +50,8 @@
     "preferences": "Preferencias",
     "consent": "Consentimiento",
     "signOut": "Cerrar sesión",
+    "admin": "Administración",
+    "adminAndResearcher": "Administrador · acceso completo de investigador",
     "language": "Idioma",
     "themeDark": "Activar modo oscuro",
     "themeLight": "Activar modo claro"
@@ -1083,6 +1085,76 @@
       "l3": "La recuperación es léxica — artículos semánticamente relevantes pueden perderse.",
       "l4": "El conteo de citas sesga ligeramente hacia trabajo muy citado.",
       "l5": "Los costes API son aproximados; ve el panel de uso en ejecuciones completadas."
+    }
+  },
+  "admin": {
+    "title": "Administración",
+    "subtitle": "Operaciones de la plataforma, evaluación y control de acceso",
+    "badge": "Operador",
+    "sidebarLabel": "Navegación de administración",
+    "loading": "Cargando datos de administración…",
+    "loadError": "No se pudieron cargar los datos de administración.",
+    "backToResearch": "← Espacio de investigación",
+    "nav": {
+      "overview": "Resumen",
+      "evaluation": "Evaluación",
+      "models": "Modelos",
+      "system": "Sistema",
+      "users": "Usuarios"
+    },
+    "overview": {
+      "title": "Resumen operativo",
+      "subtitle": "Salud y uso general de POST-Rec",
+      "platform": "Métricas de la plataforma",
+      "users": "Usuarios totales",
+      "activeUsers": "Usuarios activos",
+      "admins": "Administradores",
+      "totalRuns": "Ejecuciones totales",
+      "completionHint": "{{rate}} de finalización",
+      "feedback": "Valoraciones",
+      "llmCost": "Coste LLM estimado",
+      "systemHealth": "Salud del sistema",
+      "environment": "Entorno",
+      "openEvaluation": "Abrir panel de evaluación",
+      "openReport": "Informe de investigación completo"
+    },
+    "evaluation": {
+      "title": "Evaluación del sistema",
+      "subtitle": "Métricas de validación, experimentos y calidad de ranking"
+    },
+    "models": {
+      "title": "Evaluación de modelos",
+      "subtitle": "Modelos configurados y uso de tokens observado",
+      "configured": "Modelos configurados",
+      "generation": "Modelo de generación",
+      "embedding": "Modelo de embeddings",
+      "usage": "Uso agregado",
+      "calls": "Llamadas API",
+      "tokens": "Tokens totales",
+      "cost": "Coste estimado (USD)",
+      "byModel": "Uso por modelo",
+      "tableModel": "Modelo",
+      "empty": "Aún no hay uso de LLM registrado."
+    },
+    "system": {
+      "title": "Configuración del sistema",
+      "subtitle": "Instantánea de solo lectura de ajustes operativos (sin secretos)",
+      "readOnlyNote": "Los cambios requieren actualizar el entorno y reiniciar los servicios. Esta vista nunca expone claves API ni contraseñas."
+    },
+    "users": {
+      "title": "Acceso de usuarios",
+      "subtitle": "{{count}} cuentas registradas",
+      "name": "Nombre",
+      "email": "Correo",
+      "role": "Rol",
+      "status": "Estado",
+      "you": "Tú",
+      "researcher": "Investigador",
+      "admin": "Administrador",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "roleFor": "Rol de {{name}}",
+      "updateError": "No se pudo actualizar el rol del usuario."
     }
   }
 }

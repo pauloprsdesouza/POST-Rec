@@ -307,11 +307,11 @@ def test_compute_relevance_score_applies_qualis_boost(monkeypatch: pytest.Monkey
     monkeypatch.setattr("apps.api.features.qualis.service.get_settings", lambda: _Settings())
 
     paper = {
-        "title": "Graph neural networks for recommender systems",
-        "abstract": "We study GNN-based collaborative filtering for recommendation.",
+        "title": "Methods for recommendation systems",
+        "abstract": "We discuss various filtering approaches in this domain.",
         "issn": "0001-4273",
         "venue": "Some Other Label",
-        "citation_count": 10,
+        "citation_count": 2,
     }
 
     score_without = compute_relevance_score(

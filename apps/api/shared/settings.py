@@ -61,10 +61,6 @@ class Settings(BaseSettings):
 
     openalex_email: str = ""
     openalex_api_key: str = ""
-    crossref_email: str = ""
-    semantic_scholar_api_key: str = ""
-    core_api_key: str = ""
-    core_api_base_url: str = "https://api.core.ac.uk/v3"
 
     retrieval_fetch_max_attempts: int = 5
     retrieval_http_retries: int = 4
@@ -85,16 +81,6 @@ class Settings(BaseSettings):
     retrieval_circuit_cooldown_seconds: float = 120.0
     retrieval_min_papers_before_skip: int = 12
     retrieval_openalex_min_interval: float = 0.35
-    retrieval_crossref_min_interval: float = 0.35
-    retrieval_semantic_scholar_min_interval: float = 5.0
-    retrieval_arxiv_min_interval: float = 4.0
-    retrieval_core_min_interval: float = 10.0
-    retrieval_source_priority: str = "openalex"
-    retrieval_openalex_enabled: bool = True
-    retrieval_crossref_enabled: bool = False
-    retrieval_arxiv_enabled: bool = False
-    retrieval_core_enabled: bool = False
-    retrieval_semantic_scholar_enabled: bool = False
     retrieval_openalex_field_filter_enabled: bool = True
     retrieval_openalex_subfield_filter_enabled: bool = True
     retrieval_openalex_topic_filter_enabled: bool = True
@@ -116,17 +102,9 @@ class Settings(BaseSettings):
     retrieval_openalex_doi_batch_size: int = 25
     retrieval_openalex_fwci_boost_enabled: bool = True
     retrieval_corpus_prefetch_enabled: bool = True
-    retrieval_s2_recommendations_enabled: bool = False
-    retrieval_s2_recommendation_seeds: int = 5
-    retrieval_s2_recommendation_limit: int = 50
+    retrieval_corpus_prefetch_min_score: float = 0.28
     retrieval_learned_topic_cap: int = 2
-    retrieval_crossref_max_queries: int = 2
-    retrieval_core_max_queries: int = 2
     retrieval_openalex_per_page_max: int = 100
-    retrieval_crossref_rows_max: int = 80
-    retrieval_semantic_scholar_limit_max: int = 100
-    retrieval_core_limit_max: int = 100
-    retrieval_arxiv_max_results: int = 40
     hybrid_retrieval_enabled: bool = True
     hybrid_sparse_weight: float = 0.4
     retrieval_max_article_age_years: int = 5
@@ -160,7 +138,7 @@ class Settings(BaseSettings):
     run_timeout_seconds: int = 900
     max_cost_per_run_usd: float = 2.00
 
-    experiment_fggv_vs_sota_enabled: bool = False
+    # Always-on blind A/B: SOTA (control) vs FGGV (treatment) when run mode is auto.
     experiment_fggv_vs_sota_id: str = "fggv_vs_sota_v1"
     experiment_treatment_fraction: float = 0.5
 
@@ -177,6 +155,8 @@ class Settings(BaseSettings):
     auth_enabled: bool = True
     api_internal_key: str = "dev-internal-key"
     jwt_secret: str = "dev-jwt-secret"
+    # Comma-separated emails promoted to admin on register or next login (bootstrap operators).
+    admin_bootstrap_emails: str = "paulo.prsdesouza@gmail.com"
 
     api_base_url: str = "http://localhost:8000"
     frontend_app_url: str = "http://localhost:5173"

@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 from packages.postrec_core.retrieval.context_alignment import infer_expected_fields
 from packages.postrec_core.retrieval.openalex_taxonomy_cache import cached_taxonomy_lookup
@@ -320,9 +320,7 @@ def build_openalex_work_filters(
             use_field_filter=use_field_filter,
             use_subfield_filter=cfg.use_subfield_filter,
             use_topic_filter=cfg.use_topic_filter if use_topic_filter is None else use_topic_filter,
-            require_core_source=cfg.require_core_source
-            if require_core_source is None
-            else require_core_source,
+            require_core_source=cfg.require_core_source if require_core_source is None else require_core_source,
             topic_min_relevance=cfg.topic_min_relevance,
             foundation_min_citations=cfg.foundation_min_citations,
             sota_min_citations=cfg.sota_min_citations,
@@ -333,9 +331,7 @@ def build_openalex_work_filters(
             use_field_filter=cfg.use_field_filter,
             use_subfield_filter=cfg.use_subfield_filter,
             use_topic_filter=cfg.use_topic_filter if use_topic_filter is None else use_topic_filter,
-            require_core_source=cfg.require_core_source
-            if require_core_source is None
-            else require_core_source,
+            require_core_source=cfg.require_core_source if require_core_source is None else require_core_source,
             topic_min_relevance=cfg.topic_min_relevance,
             foundation_min_citations=cfg.foundation_min_citations,
             sota_min_citations=cfg.sota_min_citations,
@@ -350,9 +346,7 @@ def build_openalex_work_filters(
         f"type:{OPENALEX_WORK_TYPES}",
     ]
 
-    min_citations = (
-        cfg.foundation_min_citations if pass_kind == "foundation" else cfg.sota_min_citations
-    )
+    min_citations = cfg.foundation_min_citations if pass_kind == "foundation" else cfg.sota_min_citations
     if min_citations > 0:
         parts.append(f"cited_by_count:>{min_citations}")
 

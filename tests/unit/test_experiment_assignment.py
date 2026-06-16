@@ -5,6 +5,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from apps.api.features.experiments.assignment import (
+    AUTO_MODE,
     EXPERIMENT_VARIANT_CONTROL,
     EXPERIMENT_VARIANT_TREATMENT,
     PRESENTATION_BLIND,
@@ -19,12 +20,10 @@ from apps.api.features.experiments.presentation import (
 )
 
 
-def test_assignment_respects_opt_out():
+def test_explicit_mode_respected_when_experiment_enabled():
     result = resolve_experiment_assignment(
         user_id="user-1",
         requested_mode="fggv",
-        avoid_real_user_experiments=True,
-        experiment_enabled=True,
         experiment_id="fggv_vs_sota_v1",
         treatment_fraction=0.5,
     )
@@ -33,20 +32,16 @@ def test_assignment_respects_opt_out():
     assert result.mode == "fggv"
 
 
-def test_assignment_is_sticky_per_user():
+def test_auto_mode_uses_blind_assignment_when_experiment_enabled():
     first = resolve_experiment_assignment(
         user_id="sticky-user",
-        requested_mode="quick",
-        avoid_real_user_experiments=False,
-        experiment_enabled=True,
+        requested_mode=AUTO_MODE,
         experiment_id="fggv_vs_sota_v1",
         treatment_fraction=0.5,
     )
     second = resolve_experiment_assignment(
         user_id="sticky-user",
-        requested_mode="quick",
-        avoid_real_user_experiments=False,
-        experiment_enabled=True,
+        requested_mode=AUTO_MODE,
         experiment_id="fggv_vs_sota_v1",
         treatment_fraction=0.5,
     )
@@ -55,12 +50,22 @@ def test_assignment_is_sticky_per_user():
     assert first.mode in {"sota", "fggv"}
 
 
+def test_auto_mode_falls_back_to_control_without_user_id():
+    result = resolve_experiment_assignment(
+        user_id=None,
+        requested_mode=AUTO_MODE,
+        experiment_id="fggv_vs_sota_v1",
+        treatment_fraction=0.5,
+    )
+    assert result.presentation_profile == PRESENTATION_STANDARD
+    assert result.experiment_id is None
+    assert result.mode == "sota"
+
+
 def test_assignment_all_control_when_treatment_fraction_zero():
     result = resolve_experiment_assignment(
         user_id="any-user",
-        requested_mode="quick",
-        avoid_real_user_experiments=False,
-        experiment_enabled=True,
+        requested_mode=AUTO_MODE,
         experiment_id="fggv_vs_sota_v1",
         treatment_fraction=0.0,
     )
@@ -71,9 +76,7 @@ def test_assignment_all_control_when_treatment_fraction_zero():
 def test_assignment_all_treatment_when_treatment_fraction_one():
     result = resolve_experiment_assignment(
         user_id="any-user",
-        requested_mode="quick",
-        avoid_real_user_experiments=False,
-        experiment_enabled=True,
+        requested_mode=AUTO_MODE,
         experiment_id="fggv_vs_sota_v1",
         treatment_fraction=1.0,
     )

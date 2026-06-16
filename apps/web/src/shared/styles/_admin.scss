@@ -1,0 +1,213 @@
+@use "./mixins" as *;
+
+.admin-shell {
+  display: grid;
+  gap: var(--postrec-space-6);
+  margin-top: var(--postrec-space-4);
+
+  @media (min-width: 992px) {
+    grid-template-columns: 15rem minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.admin-shell__sidebar {
+  padding: var(--postrec-space-5);
+  position: sticky;
+  top: calc(var(--postrec-navbar-height, 4rem) + var(--postrec-space-4));
+}
+
+.admin-shell__badge {
+  background: color-mix(in srgb, var(--postrec-primary) 12%, transparent);
+  border-radius: 999px;
+  color: var(--postrec-primary);
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--postrec-space-2);
+  padding: 0.2rem 0.55rem;
+  text-transform: uppercase;
+}
+
+.admin-shell__title {
+  font-size: 1.125rem;
+  margin-bottom: 0.25rem;
+}
+
+.admin-shell__subtitle {
+  font-size: 0.875rem;
+  margin-bottom: var(--postrec-space-4);
+}
+
+.admin-shell__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-shell__link {
+  border-radius: var(--postrec-radius);
+  color: var(--postrec-text-muted);
+  font-size: 0.9375rem;
+  padding: 0.55rem 0.75rem;
+  text-decoration: none;
+
+  &:hover {
+    background: var(--postrec-surface-muted);
+    color: var(--postrec-text);
+  }
+}
+
+.admin-shell__link--active {
+  background: color-mix(in srgb, var(--postrec-primary) 10%, var(--postrec-surface));
+  color: var(--postrec-primary);
+  font-weight: 600;
+}
+
+.admin-shell__link--workspace {
+  border-top: 1px solid var(--postrec-border-subtle);
+  margin-top: var(--postrec-space-2);
+  padding-top: var(--postrec-space-3);
+}
+
+.admin-page .page-stack,
+.admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--postrec-space-6);
+}
+
+.admin-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--postrec-space-2);
+}
+
+.admin-section__title {
+  font-size: 1rem;
+  margin-bottom: var(--postrec-space-3);
+}
+
+.admin-metric-grid {
+  display: grid;
+  gap: var(--postrec-space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.admin-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-height: 5rem;
+  padding: var(--postrec-space-4);
+}
+
+.admin-metric__label {
+  color: var(--postrec-text-muted);
+  font-size: 0.8125rem;
+}
+
+.admin-metric__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.admin-metric__hint {
+  font-size: 0.75rem;
+}
+
+.admin-status-pill {
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  text-transform: uppercase;
+}
+
+.admin-status-pill--ok {
+  background: color-mix(in srgb, var(--bs-success) 15%, transparent);
+  color: var(--bs-success);
+}
+
+.admin-status-pill--warn {
+  background: color-mix(in srgb, var(--bs-warning) 18%, transparent);
+  color: var(--bs-warning);
+}
+
+.admin-health-list {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-health-list__item {
+  align-items: center;
+  border: 1px solid var(--postrec-border-subtle);
+  border-radius: var(--postrec-radius);
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+}
+
+.admin-health-list__item--fail {
+  border-color: color-mix(in srgb, var(--bs-danger) 35%, var(--postrec-border-subtle));
+}
+
+.admin-health-list__name {
+  font-family: var(--bs-font-monospace);
+  font-size: 0.8125rem;
+}
+
+.admin-health-list__status {
+  color: var(--postrec-text-muted);
+  font-size: 0.8125rem;
+}
+
+.admin-config-list {
+  display: grid;
+  gap: var(--postrec-space-3);
+  margin: 0;
+
+  dt {
+    color: var(--postrec-text-muted);
+    font-size: 0.75rem;
+    margin-bottom: 0.15rem;
+    text-transform: uppercase;
+  }
+
+  dd {
+    font-family: var(--bs-font-monospace);
+    font-size: 0.875rem;
+    margin: 0;
+    word-break: break-word;
+  }
+}
+
+.admin-config-list--grid {
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.admin-table__primary {
+  display: block;
+  font-weight: 600;
+}
+
+.admin-table__secondary {
+  display: block;
+  font-size: 0.8125rem;
+}
+
+.admin-role-select {
+  max-width: 11rem;
+}

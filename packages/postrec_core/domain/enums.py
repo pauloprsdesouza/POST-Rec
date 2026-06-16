@@ -46,3 +46,10 @@ class CandidateStatus(StrEnum):
     DRAFT = "draft"
     PUBLISHED = "published"
     NEEDS_REFINEMENT = "needs_refinement"
+
+
+class UserRole(StrEnum):
+    """Application access role (distinct from research profile professional_role)."""
+
+    RESEARCHER = "researcher"
+    ADMIN = "admin"

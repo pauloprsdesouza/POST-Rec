@@ -40,7 +40,7 @@ function InsightSection({ title, children }: { title: string; children: ReactNod
   );
 }
 
-export function InsightsPage() {
+export function InsightsPage({ adminMode = false }: { adminMode?: boolean }) {
   const { t, i18n } = useTranslation();
   const { accessToken } = useAuth();
   const [dashboard, setDashboard] = useState<ValidationDashboard | null>(null);
@@ -94,9 +94,15 @@ export function InsightsPage() {
     <div className="page-shell insights-page">
       <div className="page-stack">
         <div data-coach="coach-insights-overview" className="insights-coach-target">
-          <PageHeader title={t("insights.title")} subtitle={t("insights.subtitle")} />
+          <PageHeader
+            title={adminMode ? t("admin.evaluation.title") : t("insights.title")}
+            subtitle={adminMode ? t("admin.evaluation.subtitle") : t("insights.subtitle")}
+          />
           <div className="insights-page__actions">
-            <Link to="/insights/research-report" className="btn btn-primary">
+            <Link
+              to={adminMode ? "/admin/research-report" : "/insights/research-report"}
+              className="btn btn-primary"
+            >
               {t("insights.viewFullReport")}
             </Link>
           </div>

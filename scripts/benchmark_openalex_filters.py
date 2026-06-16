@@ -15,27 +15,7 @@ from packages.postrec_core.retrieval.openalex_query import (
     OpenAlexFilterConfig,
     build_openalex_work_filters,
 )
-
-SCENARIOS = [
-    {
-        "name": "recsys_social_capital",
-        "research_area": "Recommender Systems",
-        "topics": ["social capital", "social networks", "profile modeling"],
-        "query": "social capital Recommender Systems social networks",
-    },
-    {
-        "name": "clinical_psychology",
-        "research_area": "Clinical Psychology",
-        "topics": ["adolescent depression", "social networks"],
-        "query": "adolescent depression social networks",
-    },
-    {
-        "name": "clinical_medicine_ml",
-        "research_area": "Clinical Medicine",
-        "topics": ["diabetes", "machine learning"],
-        "query": "diabetes machine learning clinical",
-    },
-]
+from scripts.openalex_scenarios import OPENALEX_VALIDATION_SCENARIOS
 
 
 async def run_variant(
@@ -112,7 +92,7 @@ async def run_variant(
 async def main_async(api_key: str | None) -> list[dict]:
     rows: list[dict] = []
     async with httpx.AsyncClient() as client:
-        for scenario in SCENARIOS:
+        for scenario in OPENALEX_VALIDATION_SCENARIOS:
             scenario_rows: dict = {"scenario": scenario["name"], "variants": []}
             for tier in ("strict", "balanced", "recall"):
                 for use_search in (True, False):

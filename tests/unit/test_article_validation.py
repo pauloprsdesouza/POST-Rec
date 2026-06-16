@@ -82,6 +82,9 @@ def test_llm_validation_merges_scores(mock_gemini, mock_settings, mock_persist):
         article_sparse_corpus_threshold=12,
         article_grounding_best_effort_enabled=False,
         retrieval_min_relevance_score=0.22,
+        retrieval_min_domain_alignment=0.40,
+        retrieval_domain_filter_enabled=True,
+        retrieval_openalex_fwci_boost_enabled=False,
     )
     papers = [
         {"paper_id": "P1", "title": "Recommender GNN", "abstract": "graphs for recsys"},
@@ -121,6 +124,9 @@ def test_llm_validation_uses_paper_count_not_llm_flag(mock_gemini, mock_settings
         article_sparse_corpus_threshold=12,
         article_grounding_best_effort_enabled=False,
         retrieval_min_relevance_score=0.22,
+        retrieval_min_domain_alignment=0.40,
+        retrieval_domain_filter_enabled=True,
+        retrieval_openalex_fwci_boost_enabled=False,
     )
     papers = [
         {"paper_id": "P1", "title": "Recsys GNN", "abstract": "graphs"},
@@ -135,7 +141,9 @@ def test_llm_validation_uses_paper_count_not_llm_flag(mock_gemini, mock_settings
         ],
         "validations": [],
         "sufficient_evidence": False,
-        "insufficient_evidence_reason": "Only 3 papers passed validation, which is less than the required minimum of 3.",
+        "insufficient_evidence_reason": (
+            "Only 3 papers passed validation, which is less than the required minimum of 3."
+        ),
     }
 
     filtered, stats = article_validation_service.validate_and_filter(
@@ -163,6 +171,9 @@ def test_best_effort_proceeds_when_strict_validation_fails(mock_gemini, mock_set
         article_sparse_corpus_threshold=12,
         article_grounding_best_effort_enabled=True,
         retrieval_min_relevance_score=0.22,
+        retrieval_min_domain_alignment=0.40,
+        retrieval_domain_filter_enabled=True,
+        retrieval_openalex_fwci_boost_enabled=False,
     )
     papers = [
         {"paper_id": "P1", "title": "Quantum chromodynamics in colliders", "abstract": "particle physics"},

@@ -17,30 +17,7 @@ from packages.postrec_core.retrieval.openalex_query import (
     build_openalex_work_filters,
     openalex_auth_params,
 )
-
-SCENARIOS = [
-    {
-        "name": "recsys_social_capital",
-        "research_area": "Recommender Systems",
-        "topics": ["social capital", "social networks", "profile modeling"],
-        "query": "social capital Recommender Systems social networks",
-        "expected_fields": ("Computer Science",),
-    },
-    {
-        "name": "clinical_psychology",
-        "research_area": "Clinical Psychology",
-        "topics": ["adolescent depression", "social networks"],
-        "query": "adolescent depression social networks",
-        "expected_fields": ("Psychology",),
-    },
-    {
-        "name": "clinical_medicine_ml",
-        "research_area": "Clinical Medicine",
-        "topics": ["diabetes", "machine learning"],
-        "query": "diabetes machine learning clinical",
-        "expected_fields": ("Medicine", "Health Professions"),
-    },
-]
+from scripts.openalex_scenarios import OPENALEX_VALIDATION_SCENARIOS, reconstruct_openalex_abstract
 
 TIERS = ("strict", "balanced", "recall")
 SEARCH_MODES = (True, False)
@@ -92,19 +69,6 @@ def _paper_alignment_metrics(
     }
 
 
-def _reconstruct_abstract(inverted_index: dict[str, list[int]] | None) -> str | None:
-    if not inverted_index:
-        return None
-    positions: list[tuple[int, str]] = []
-    for token, indexes in inverted_index.items():
-        for index in indexes:
-            positions.append((index, token))
-    if not positions:
-        return None
-    positions.sort(key=lambda item: item[0])
-    return " ".join(token for _, token in positions)
-
-
 async def fetch_variant(
     client: httpx.AsyncClient,
     *,
@@ -140,7 +104,7 @@ async def fetch_variant(
     for work in payload.get("results") or []:
         if not isinstance(work, dict):
             continue
-        abstract = _reconstruct_abstract(work.get("abstract_inverted_index"))
+        abstract = reconstruct_openalex_abstract(work.get("abstract_inverted_index"))
         works.append({**work, "abstract": abstract})
 
     alignment = _paper_alignment_metrics(
@@ -192,7 +156,7 @@ async def main_async(
 ) -> dict[str, Any]:
     report: dict[str, Any] = {"scenarios": [], "decisions": []}
     async with httpx.AsyncClient() as client:
-        for scenario in SCENARIOS:
+        for scenario in OPENALEX_VALIDATION_SCENARIOS:
             scenario_rows: dict[str, Any] = {"scenario": scenario["name"], "variants": []}
             for tier in TIERS:
                 for use_search in SEARCH_MODES:

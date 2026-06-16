@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from packages.postrec_core.retrieval.text_utils import expand_tokens, overlap_score, phrase_tokens, tokenize
 
-CONTEXT_PASS_THRESHOLD = 0.40
+DEFAULT_CONTEXT_PASS_THRESHOLD = 0.40
 
 NEGATED_SCOPE_PATTERN = re.compile(
     r"\b(without|no|not|lack(?:ing)?|absence of|exclude(?:d|s|ing)?|unrelated to)\b"
@@ -454,12 +454,7 @@ def _is_keyword_trap(
 ) -> bool:
     if not expected_fields:
         return False
-    return (
-        topic_overlap >= 0.38
-        and area_overlap < 0.14
-        and field_alignment < 0.24
-        and foreign_pressure >= 0.22
-    )
+    return topic_overlap >= 0.38 and area_overlap < 0.14 and field_alignment < 0.24 and foreign_pressure >= 0.22
 
 
 def compute_context_alignment(
@@ -469,6 +464,7 @@ def compute_context_alignment(
     topics: list[str] | None = None,
     learned_topics: list[str] | None = None,
     avoided_topics: list[str] | None = None,
+    pass_threshold: float = DEFAULT_CONTEXT_PASS_THRESHOLD,
 ) -> ContextAlignment:
     context = build_research_context(
         research_area=research_area,
@@ -547,7 +543,7 @@ def compute_context_alignment(
         or (topic_overlap >= 0.40 and field_alignment >= 0.12)
     )
     passes = (
-        score >= CONTEXT_PASS_THRESHOLD
+        score >= pass_threshold
         and has_scope
         and has_field_support
         and not keyword_trap
