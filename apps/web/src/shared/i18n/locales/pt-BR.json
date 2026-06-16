@@ -280,7 +280,6 @@
     "expectedOutput": "Resultado esperado",
     "defaultExpectedOutput": "Ideias que possam virar um artigo real usando conjuntos de dados públicos.",
     "defaultDepth": "Profundidade padrão",
-    "avoidRealUserExperiments": "Evitar experimentos com usuários reais",
     "depthShallow": "Rasa — visão geral rápida",
     "depthMedium": "Média — equilibrada",
     "depthDeep": "Profunda — planos detalhados",
@@ -314,10 +313,12 @@
     },
     "runMode": {
       "label": "Modo de geração",
-      "intro": "Escolha o quão profundo o POST-Rec analisa a literatura. Em dúvida? Comece com a opção recomendada.",
-      "recommended": "Recomendado",
-      "showAdvanced": "Mostrar modos avançados",
-      "hideAdvanced": "Ocultar modos avançados",
+      "recommended": "Padrão",
+      "auto": {
+        "label": "Auto",
+        "shortHint": "Deixe o POST-Rec escolher o método de geração para esta execução.",
+        "hint": "Recomendado para a maioria — o POST-Rec escolhe o melhor pipeline automaticamente."
+      },
       "quick": {
         "label": "Rápido",
         "shortHint": "Prévia rápida — bom para uma primeira exploração.",
@@ -500,30 +501,22 @@
       "novelty": "Novidade",
       "impact": "Impacto"
     },
-    "sotaVerification": {
-      "title": "Verificação SOTA",
-      "sotaSummary": "SOTA atual",
-      "noveltyDelta": "Delta de novidade",
-      "closestPriorWork": "Trabalho anterior mais próximo",
-      "sotaAnchors": "Âncoras SOTA",
-      "sotaFit": "Ajuste SOTA",
-      "noveltyVerified": "Novidade verificada",
-      "criticPassed": "Crítico aprovado",
-      "criticReview": "Revisão do crítico",
-      "differentiationRationale": "Justificativa de diferenciação",
-      "embeddingDistance": "Similaridade máxima com fontes (menor é melhor)",
-      "recencyGap": "Lacuna de recência",
-      "validationIssues": "Problemas de validação",
-      "fggvScore": "Pontuação FGGV",
-      "facetNoveltyIndex": "Índice de novidade por faceta",
-      "gapAlignmentScore": "Alinhamento com lacunas",
-      "facetDeltas": "Deltas por faceta",
-      "alignedGaps": "Lacunas alinhadas"
+    "ideaVerification": {
+      "title": "Literatura e novidade",
+      "intro": "Como esta ideia se relaciona com a pesquisa existente e o que a torna distinta.",
+      "verifiedBadge": "Literatura verificada",
+      "literatureContext": "O que a literatura mostra",
+      "whatsNew": "O que há de novo",
+      "closestWork": "Trabalho relacionado mais próximo",
+      "howItDiffers": "Como esta ideia difere",
+      "noveltyConfidence": "Confiança na novidade",
+      "literatureAlignment": "Alinhamento com a literatura",
+      "keyPapers": "Artigos de referência"
     },
     "refinement": {
-      "title": "Precisa de refinamento",
-      "subtitle": "{{count}} ideia(s) foram salvas, mas não passaram na validação SOTA/novidade.",
-      "badge": "Precisa de refinamento"
+      "title": "Ideias que precisam de mais trabalho",
+      "subtitle": "{{count}} rascunho(s) foram salvos, mas precisam de evidências mais fortes antes de recomendarmos.",
+      "badge": "Rascunho"
     }
   },
   "evidence": {
@@ -1006,7 +999,7 @@
       "researchArea": "Área de pesquisa — contexto do campo",
       "expectedOutput": "Saída esperada — ex.: ideias para conferência",
       "depth": "Profundidade desejada — exploração rápida ou exaustiva",
-      "constraints": "Restrições — ex.: evitar experimentos com usuários reais",
+      "constraints": "Restrições — ex.: idade máxima dos artigos",
       "profile": "Com perfil de pesquisa, tópicos aprendidos e técnicas preferidas expandem o conjunto de tokens Q:",
       "expansionCaption": "Conjunto de tópicos expandido para recuperação"
     },

@@ -16,10 +16,9 @@ import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useRuns } from "@/features/runs/context/RunsContext";
 import i18n from "@/shared/i18n";
-import { experimentService, profileService, runService, sessionService } from "@/shared/api";
+import { profileService, runService, sessionService } from "@/shared/api";
 import { getErrorMessage } from "@/shared/api/errors";
-import type { ExperimentEnrollment } from "@/features/experiments/api/experimentService";
-import type { RecommendationDefaults, RunMode, UserProfile } from "@/shared/types/api";
+import type { RecommendationDefaults, RunModeSelection, UserProfile } from "@/shared/types/api";
 
 export function NewRunPage() {
   const { t } = useTranslation();
@@ -35,27 +34,26 @@ export function NewRunPage() {
   const [preferences, setPreferences] = useState<RecommendationDefaults>(
     mergeRecommendationDefaults(null, null, ""),
   );
-  const [runMode, setRunMode] = useState<RunMode>("quick");
-  const [experimentEnrollment, setExperimentEnrollment] = useState<ExperimentEnrollment | null>(null);
+  const [runMode, setRunMode] = useState<RunModeSelection>("auto");
 
   useEffect(() => {
     if (!accessToken) {
       return;
     }
-    Promise.all([
-      profileService.getProfile(accessToken),
-      experimentService.getEnrollment(accessToken).catch(() => null),
-    ])
-      .then(([data, enrollment]) => {
+    profileService
+      .getProfile(accessToken)
+      .then((data) => {
         setProfile(data);
-        setExperimentEnrollment(enrollment);
         setResearchArea(data.research_area ?? "");
         const preferredMode = data.recommendation_defaults?.preferred_run_mode;
-        const academic = (data.academic_level ?? "").toLowerCase();
-        if (preferredMode === "quick" || preferredMode === "sota" || preferredMode === "exploratory") {
+        if (
+          preferredMode === "auto" ||
+          preferredMode === "quick" ||
+          preferredMode === "sota" ||
+          preferredMode === "exploratory" ||
+          preferredMode === "fggv"
+        ) {
           setRunMode(preferredMode);
-        } else if (academic === "phd" || academic === "professor") {
-          setRunMode("sota");
         }
         setPreferences(
           mergeRecommendationDefaults(
@@ -67,9 +65,6 @@ export function NewRunPage() {
       })
       .finally(() => setLoading(false));
   }, [accessToken]);
-
-  const blindExperimentEnrolled =
-    experimentEnrollment?.enrolled === true && experimentEnrollment.presentation_profile === "blind";
 
   const handleSubmit = async (event: FormEvent, formDefaults: RecommendationDefaults) => {
     event.preventDefault();
@@ -101,7 +96,6 @@ export function NewRunPage() {
         seed_topics: topicList,
         expected_output: formDefaults.expected_output ?? undefined,
         desired_depth: formDefaults.desired_depth ?? "medium",
-        avoid_real_user_experiments: formDefaults.avoid_real_user_experiments ?? true,
         publication_goal: "conference_or_journal",
       });
 
@@ -113,7 +107,6 @@ export function NewRunPage() {
         max_papers: 50,
         max_recommendations: 5,
         constraints: {
-          avoid_real_user_experiments: formDefaults.avoid_real_user_experiments ?? true,
           max_article_age_years: formDefaults.max_article_age_years ?? 5,
         },
       });
@@ -146,28 +139,23 @@ export function NewRunPage() {
 
         <div className="surface-inset">
           <div className="form-stack">
-          {blindExperimentEnrolled ? (
-            <InlineAlert variant="info">{t("newRun.experimentBlindNotice")}</InlineAlert>
-          ) : (
-            <div data-coach="coach-newrun-mode">
-              <RunModeSelector value={runMode} onChange={setRunMode} disabled={submitting} />
+            <div data-coach="coach-newrun-topics">
+              <RecommendationPreferencesForm
+                formId="new-run-form"
+                defaults={preferences}
+                onChange={setPreferences}
+                onSubmit={handleSubmit}
+                submitLabel={submitting ? t("newRun.starting") : t("newRun.generate")}
+                submitHint={t("newRun.generateHint")}
+                submitting={submitting}
+                showResearchArea
+                researchArea={researchArea}
+                onResearchAreaChange={setResearchArea}
+                submitDataCoach="coach-newrun-submit"
+                runMode={runMode}
+                onRunModeChange={setRunMode}
+              />
             </div>
-          )}
-          <div data-coach="coach-newrun-topics">
-          <RecommendationPreferencesForm
-            formId="new-run-form"
-            defaults={preferences}
-            onChange={setPreferences}
-            onSubmit={handleSubmit}
-            submitLabel={submitting ? t("newRun.starting") : t("newRun.generate")}
-            submitHint={t("newRun.generateHint")}
-            submitting={submitting}
-            showResearchArea
-            researchArea={researchArea}
-            onResearchAreaChange={setResearchArea}
-            submitDataCoach="coach-newrun-submit"
-          />
-          </div>
           </div>
         </div>
 
@@ -179,17 +167,29 @@ export function NewRunPage() {
       </div>
 
       <div className="sticky-form-cta d-lg-none" data-coach="coach-newrun-submit">
+        <div className="sticky-form-cta__row">
+          <div className="sticky-form-cta__mode" data-coach="coach-newrun-mode">
+            <RunModeSelector
+              value={runMode}
+              onChange={setRunMode}
+              disabled={submitting}
+              layout="compact"
+              menuPlacement="top"
+              showLabel={false}
+            />
+          </div>
+          <Button
+            type="submit"
+            form="new-run-form"
+            variant="primary"
+            size="lg"
+            className="sticky-form-cta__submit"
+            disabled={submitting}
+          >
+            {submitting ? t("newRun.starting") : t("newRun.generate")}
+          </Button>
+        </div>
         <p className="sticky-form-cta__hint">{t("newRun.stickyHint")}</p>
-        <Button
-          type="submit"
-          form="new-run-form"
-          variant="primary"
-          size="lg"
-          className="w-100"
-          disabled={submitting}
-        >
-          {submitting ? t("newRun.starting") : t("newRun.generate")}
-        </Button>
       </div>
     </div>
   );

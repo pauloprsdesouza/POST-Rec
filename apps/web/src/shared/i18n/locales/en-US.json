@@ -280,7 +280,6 @@
     "expectedOutput": "Expected output",
     "defaultExpectedOutput": "Ideas that can become a real paper using public datasets.",
     "defaultDepth": "Default depth",
-    "avoidRealUserExperiments": "Avoid real-user experiments",
     "depthShallow": "Shallow — quick overview",
     "depthMedium": "Medium — balanced",
     "depthDeep": "Deep — detailed plans",
@@ -314,10 +313,12 @@
     },
     "runMode": {
       "label": "Generation mode",
-      "intro": "Choose how deeply POST-Rec analyzes the literature. Not sure? Start with the recommended option.",
-      "recommended": "Recommended",
-      "showAdvanced": "Show advanced modes",
-      "hideAdvanced": "Hide advanced modes",
+      "recommended": "Default",
+      "auto": {
+        "label": "Auto",
+        "shortHint": "Let POST-Rec choose the generation method for this run.",
+        "hint": "Recommended for most users — POST-Rec picks the best pipeline automatically."
+      },
       "quick": {
         "label": "Quick",
         "shortHint": "Fast preview — good for a first look at possible directions.",
@@ -500,31 +501,22 @@
       "novelty": "Novelty",
       "impact": "Impact"
     },
-    "sotaVerification": {
-      "title": "SOTA verification",
-      "sotaSummary": "Current SOTA",
-      "noveltyDelta": "Novelty delta",
-      "closestPriorWork": "Closest prior work",
-      "sotaAnchors": "SOTA anchors",
-      "sotaFit": "SOTA fit",
-      "noveltyVerified": "Verified novelty",
-      "criticPassed": "Critic passed",
-      "criticReview": "Critic review",
-      "differentiationRationale": "Differentiation rationale",
-      "embeddingDistance": "Max similarity to sources (lower is better)",
-      "recencyGap": "Recency gap",
-      "validationIssues": "Validation issues",
-      "fggvScore": "FGGV score",
-      "facetNoveltyIndex": "Facet novelty index",
-      "gapAlignmentScore": "Gap alignment",
-      "facetDeltas": "Facet deltas",
-      "alignedGaps": "Aligned gaps",
-      "falseNovelFacets": "{{count}} facet(s) overlap heavily with literature"
+    "ideaVerification": {
+      "title": "Literature & novelty",
+      "intro": "How this idea relates to existing research and what makes it distinct.",
+      "verifiedBadge": "Literature checked",
+      "literatureContext": "What the literature shows",
+      "whatsNew": "What's new here",
+      "closestWork": "Closest related work",
+      "howItDiffers": "How this idea differs",
+      "noveltyConfidence": "Novelty confidence",
+      "literatureAlignment": "Literature alignment",
+      "keyPapers": "Key reference papers"
     },
     "refinement": {
-      "title": "Needs refinement",
-      "subtitle": "{{count}} idea(s) were saved but did not pass SOTA/novelty validation.",
-      "badge": "Needs refinement"
+      "title": "Ideas needing more work",
+      "subtitle": "{{count}} draft idea(s) were saved but need stronger evidence before we can recommend them.",
+      "badge": "Draft"
     }
   },
   "evidence": {
@@ -988,7 +980,7 @@
       "researchArea": "Research area — broad field context",
       "expectedOutput": "Expected output — e.g. conference-ready ideas, survey angles",
       "depth": "Desired depth — quick vs. exhaustive exploration",
-      "constraints": "Constraints — e.g. avoid real-user experiments, paper limits",
+      "constraints": "Constraints — e.g. paper age limits",
       "profile": "If you have a research profile, learned topics and preferred techniques expand the query token set:",
       "expansionCaption": "Expanded topic set used for retrieval"
     },

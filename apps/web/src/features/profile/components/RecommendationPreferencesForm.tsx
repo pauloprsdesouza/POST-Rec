@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 
-import type { RecommendationDefaults } from "@/shared/types/api";
+import { RunModeSelector } from "@/features/runs/components/RunModeSelector";
+import type { RecommendationDefaults, RunModeSelection } from "@/shared/types/api";
 import { formatSeedTopics, withParsedSeedTopics } from "@/features/profile/utils/seedTopics";
 
 interface RecommendationPreferencesFormProps {
@@ -18,6 +19,8 @@ interface RecommendationPreferencesFormProps {
   onResearchAreaChange?: (value: string) => void;
   formId?: string;
   submitDataCoach?: string;
+  runMode?: RunModeSelection;
+  onRunModeChange?: (mode: RunModeSelection) => void;
 }
 
 export function RecommendationPreferencesForm({
@@ -32,6 +35,8 @@ export function RecommendationPreferencesForm({
   onResearchAreaChange,
   formId,
   submitDataCoach,
+  runMode,
+  onRunModeChange,
 }: RecommendationPreferencesFormProps) {
   const { t } = useTranslation();
   const [topicsText, setTopicsText] = useState(() => formatSeedTopics(defaults.seed_topics));
@@ -82,6 +87,17 @@ export function RecommendationPreferencesForm({
         <Form.Text>{t("preferences.seedTopicsHint")}</Form.Text>
       </Form.Group>
 
+      {runMode !== undefined && onRunModeChange ? (
+        <div className="field-group" data-coach="coach-newrun-mode">
+          <RunModeSelector
+            value={runMode}
+            onChange={onRunModeChange}
+            disabled={submitting}
+            menuPlacement="bottom"
+          />
+        </div>
+      ) : null}
+
       <Button
         type="button"
         variant="link"
@@ -131,30 +147,20 @@ export function RecommendationPreferencesForm({
               </Form.Select>
             </Col>
           </Row>
-
-          <Row className="g-3 mb-4">
-            <Col md={12} className="d-flex align-items-end pb-1">
-              <Form.Check
-                type="switch"
-                id="pref-avoid-experiments"
-                label={t("preferences.avoidRealUserExperiments")}
-                checked={defaults.avoid_real_user_experiments ?? true}
-                onChange={(e) => update({ avoid_real_user_experiments: e.target.checked })}
-              />
-            </Col>
-          </Row>
         </>
       ) : null}
 
       {onSubmit ? (
         <div
-          className={submitDataCoach ? "d-none d-lg-block" : undefined}
+          className={`run-composer-footer ${submitDataCoach ? "d-none d-lg-block" : ""}`}
           {...(submitDataCoach ? { "data-coach": submitDataCoach } : {})}
         >
-          <Button type="submit" variant="primary" size="lg" className="w-100" disabled={submitting}>
-            {submitting ? t("common.saving") : buttonLabel}
-          </Button>
-          {submitHint ? <p className="form-submit-hint">{submitHint}</p> : null}
+          <div className="run-composer-footer__submit">
+            <Button type="submit" variant="primary" size="lg" className="w-100" disabled={submitting}>
+              {submitting ? t("common.saving") : buttonLabel}
+            </Button>
+            {submitHint ? <p className="form-submit-hint">{submitHint}</p> : null}
+          </div>
         </div>
       ) : null}
     </>
@@ -176,7 +182,6 @@ export function emptyRecommendationDefaults(expectedOutput = ""): Recommendation
     seed_topics: [],
     expected_output: expectedOutput,
     desired_depth: "medium",
-    avoid_real_user_experiments: true,
     max_article_age_years: 5,
   };
 }
@@ -198,8 +203,6 @@ export function mergeRecommendationDefaults(
     seed_topics: seedTopics,
     expected_output: fromProfile.expected_output ?? base.expected_output,
     desired_depth: fromProfile.desired_depth ?? base.desired_depth,
-    avoid_real_user_experiments:
-      fromProfile.avoid_real_user_experiments ?? base.avoid_real_user_experiments,
     max_article_age_years: fromProfile.max_article_age_years ?? base.max_article_age_years,
   };
 }

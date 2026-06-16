@@ -37,16 +37,16 @@ export interface UserProfile {
   updated_at?: string | null;
 }
 
+export type RunMode = "quick" | "sota" | "exploratory" | "fggv";
+export type RunModeSelection = "auto" | RunMode;
+
 export interface RecommendationDefaults {
   seed_topics?: string[];
   expected_output?: string | null;
   desired_depth?: string;
-  avoid_real_user_experiments?: boolean;
-  preferred_run_mode?: RunMode;
+  preferred_run_mode?: RunModeSelection;
   max_article_age_years?: number;
 }
-
-export type RunMode = "quick" | "sota" | "exploratory" | "fggv";
 
 export interface SotaAnchor {
   title?: string;

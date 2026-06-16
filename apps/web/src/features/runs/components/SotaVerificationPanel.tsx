@@ -1,35 +1,30 @@
-import { Badge } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 
-import type { Recommendation, SotaAnchor } from "@/shared/types/api";
-import type { SourceDocument } from "@/shared/types/api";
+import type { Recommendation, SotaAnchor, SourceDocument } from "@/shared/types/api";
 
 import { ScoreBar } from "./ScoreBar";
+
 interface SotaVerificationPanelProps {
   recommendation: Recommendation;
   sources?: SourceDocument[];
-  blind?: boolean;
 }
 
 export function SotaVerificationPanel({
   recommendation,
   sources = [],
-  blind = false,
 }: SotaVerificationPanelProps) {
   const { t } = useTranslation();
 
-  const hasSotaContent =
+  const hasNarrative =
     recommendation.sota_summary ||
     recommendation.novelty_delta ||
     recommendation.closest_prior_work ||
-    recommendation.differentiation_score_rationale ||
-    (!blind && recommendation.facet_deltas) ||
-    recommendation.sota_fit != null ||
-    recommendation.novelty_verified != null ||
-    (!blind && recommendation.facet_novelty_index != null) ||
-    recommendation.embedding_distance != null;
+    recommendation.differentiation_score_rationale;
 
-  if (!hasSotaContent) {
+  const hasSignals = recommendation.novelty_verified != null || recommendation.sota_fit != null;
+  const hasPapers = (recommendation.sota_anchors?.length ?? 0) > 0;
+
+  if (!hasNarrative && !hasSignals && !hasPapers) {
     return null;
   }
 
@@ -38,139 +33,70 @@ export function SotaVerificationPanel({
   );
 
   return (
-    <div className="sota-panel">
-      <div className="sota-panel__header">
-        <h3 className="sota-panel__title">{t("ideas.sotaVerification.title")}</h3>
-        <div className="sota-panel__badges">
-          {recommendation.critic_accepted != null ? (
-            <Badge bg={recommendation.critic_accepted ? "success" : "warning"}>
-              {recommendation.critic_accepted
-                ? t("ideas.sotaVerification.criticPassed")
-                : t("ideas.sotaVerification.criticReview")}
-            </Badge>
+    <section className="idea-verification" aria-labelledby="idea-verification-title">
+      <header className="idea-verification__header">
+        <div>
+          <h3 className="idea-verification__title" id="idea-verification-title">
+            {t("ideas.ideaVerification.title")}
+          </h3>
+          <p className="idea-verification__intro">{t("ideas.ideaVerification.intro")}</p>
+        </div>
+        {recommendation.novelty_verified != null && recommendation.novelty_verified >= 0.6 ? (
+          <span className="idea-verification__badge">{t("ideas.ideaVerification.verifiedBadge")}</span>
+        ) : null}
+      </header>
+
+      {hasNarrative ? (
+        <div className="idea-verification__blocks">
+          {recommendation.sota_summary ? (
+            <VerificationBlock
+              label={t("ideas.ideaVerification.literatureContext")}
+              value={recommendation.sota_summary}
+            />
           ) : null}
-          {recommendation.status === "needs_refinement" ? (
-            <Badge bg="warning">{t("ideas.refinement.badge")}</Badge>
+          {recommendation.novelty_delta ? (
+            <VerificationBlock
+              label={t("ideas.ideaVerification.whatsNew")}
+              value={recommendation.novelty_delta}
+            />
+          ) : null}
+          {recommendation.closest_prior_work ? (
+            <VerificationBlock
+              label={t("ideas.ideaVerification.closestWork")}
+              value={recommendation.closest_prior_work}
+            />
+          ) : null}
+          {recommendation.differentiation_score_rationale ? (
+            <VerificationBlock
+              label={t("ideas.ideaVerification.howItDiffers")}
+              value={recommendation.differentiation_score_rationale}
+            />
           ) : null}
         </div>
-      </div>
-
-      {recommendation.sota_summary ? (
-        <SotaBlock label={t("ideas.sotaVerification.sotaSummary")} value={recommendation.sota_summary} />
       ) : null}
 
-      {recommendation.novelty_delta ? (
-        <SotaBlock label={t("ideas.sotaVerification.noveltyDelta")} value={recommendation.novelty_delta} />
-      ) : null}
-
-      {recommendation.closest_prior_work ? (
-        <SotaBlock
-          label={t("ideas.sotaVerification.closestPriorWork")}
-          value={recommendation.closest_prior_work}
-        />
-      ) : null}
-
-      {recommendation.differentiation_score_rationale ? (
-        <SotaBlock
-          label={t("ideas.sotaVerification.differentiationRationale")}
-          value={recommendation.differentiation_score_rationale}
-        />
-      ) : null}
-
-      {(recommendation.sota_fit != null ||
-        recommendation.novelty_verified != null ||
-        (!blind && recommendation.facet_novelty_index != null) ||
-        (!blind && recommendation.gap_alignment_score != null) ||
-        (!blind && recommendation.fggv_score != null) ||
-        recommendation.embedding_distance != null ||
-        recommendation.recency_gap != null) && (
-        <div className="sota-panel__metrics">
-          {!blind && recommendation.fggv_score != null ? (
-            <MetricBar label={t("ideas.sotaVerification.fggvScore")} value={recommendation.fggv_score} />
-          ) : null}
-          {!blind && recommendation.facet_novelty_index != null ? (
-            <MetricBar
-              label={t("ideas.sotaVerification.facetNoveltyIndex")}
-              value={recommendation.facet_novelty_index}
-            />
-          ) : null}
-          {!blind && recommendation.scores?.false_novel_facet_count != null ? (
-            <div className="sota-panel__metric-note">
-              {t("ideas.sotaVerification.falseNovelFacets", {
-                count: recommendation.scores.false_novel_facet_count,
-              })}
-            </div>
-          ) : null}
-          {!blind && recommendation.gap_alignment_score != null ? (
-            <MetricBar
-              label={t("ideas.sotaVerification.gapAlignmentScore")}
-              value={recommendation.gap_alignment_score}
-            />
-          ) : null}
-          {recommendation.sota_fit != null ? (
-            <MetricBar label={t("ideas.sotaVerification.sotaFit")} value={recommendation.sota_fit} />
-          ) : null}
+      {hasSignals ? (
+        <div className="idea-verification__signals">
           {recommendation.novelty_verified != null ? (
-            <MetricBar
-              label={t("ideas.sotaVerification.noveltyVerified")}
+            <ScoreBar
+              label={t("ideas.ideaVerification.noveltyConfidence")}
               value={recommendation.novelty_verified}
             />
           ) : null}
-          {recommendation.embedding_distance != null ? (
-            <MetricBar
-              label={t("ideas.sotaVerification.embeddingDistance")}
-              value={recommendation.embedding_distance}
-              invert
+          {recommendation.sota_fit != null ? (
+            <ScoreBar
+              label={t("ideas.ideaVerification.literatureAlignment")}
+              value={recommendation.sota_fit}
             />
           ) : null}
-          {recommendation.recency_gap != null ? (
-            <MetricBar label={t("ideas.sotaVerification.recencyGap")} value={recommendation.recency_gap} />
-          ) : null}
-        </div>
-      )}
-
-      {recommendation.validation_issues?.length ? (
-        <div className="sota-panel__issues">
-          <div className="idea-block__label">{t("ideas.sotaVerification.validationIssues")}</div>
-          <ul className="idea-block__list">
-            {recommendation.validation_issues.map((issue) => (
-              <li key={issue}>{issue}</li>
-            ))}
-          </ul>
         </div>
       ) : null}
 
-      {!blind && recommendation.facet_deltas ? (
-        <div className="sota-panel__facets">
-          <div className="idea-block__label">{t("ideas.sotaVerification.facetDeltas")}</div>
-          <ul className="idea-block__list">
-            {Object.entries(recommendation.facet_deltas).map(([key, value]) =>
-              value ? (
-                <li key={key}>
-                  <strong>{key}:</strong> {value}
-                </li>
-              ) : null,
-            )}
-          </ul>
-        </div>
-      ) : null}
-
-      {!blind && recommendation.aligned_gaps?.length ? (
-        <div className="sota-panel__gaps">
-          <div className="idea-block__label">{t("ideas.sotaVerification.alignedGaps")}</div>
-          <ul className="idea-block__list">
-            {recommendation.aligned_gaps.map((gap) => (
-              <li key={gap}>{gap}</li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
-      {recommendation.sota_anchors?.length ? (
-        <div className="sota-panel__anchors">
-          <div className="idea-block__label">{t("ideas.sotaVerification.sotaAnchors")}</div>
-          <ul className="idea-block__list">
-            {recommendation.sota_anchors.map((anchor) => (
+      {hasPapers ? (
+        <div className="idea-verification__papers">
+          <p className="idea-verification__papers-label">{t("ideas.ideaVerification.keyPapers")}</p>
+          <ul className="idea-verification__paper-list">
+            {recommendation.sota_anchors!.map((anchor) => (
               <li key={`${anchor.title}-${anchor.year ?? "na"}`}>
                 <AnchorItem anchor={anchor} source={sourceByTitle.get((anchor.title ?? "").toLowerCase())} />
               </li>
@@ -178,29 +104,17 @@ export function SotaVerificationPanel({
           </ul>
         </div>
       ) : null}
-    </div>
+    </section>
   );
 }
 
-function SotaBlock({ label, value }: { label: string; value: string }) {
+function VerificationBlock({ label, value }: { label: string; value: string }) {
   return (
-    <div className="idea-block">
-      <div className="idea-block__label">{label}</div>
-      <p className="idea-block__text">{value}</p>
+    <div className="idea-verification__block">
+      <p className="idea-verification__block-label">{label}</p>
+      <p className="idea-verification__block-text">{value}</p>
     </div>
   );
-}
-
-function MetricBar({
-  label,
-  value,
-  invert = false,
-}: {
-  label: string;
-  value: number;
-  invert?: boolean;
-}) {
-  return <ScoreBar label={label} value={value} invert={invert} />;
 }
 
 function AnchorItem({
@@ -210,22 +124,25 @@ function AnchorItem({
   anchor: SotaAnchor;
   source?: SourceDocument;
 }) {
-  const role = anchor.role?.replace(/_/g, " ");
   const content = (
     <>
-      {anchor.title}
-      {anchor.year ? ` (${anchor.year})` : ""}
-      {role ? ` — ${role}` : ""}
+      <span className="idea-verification__paper-title">{anchor.title}</span>
+      {anchor.year ? <span className="idea-verification__paper-year">{anchor.year}</span> : null}
     </>
   );
 
   if (source?.url || anchor.url) {
     return (
-      <a href={source?.url ?? anchor.url ?? "#"} target="_blank" rel="noreferrer">
+      <a
+        className="idea-verification__paper-link"
+        href={source?.url ?? anchor.url ?? "#"}
+        target="_blank"
+        rel="noreferrer"
+      >
         {content}
       </a>
     );
   }
 
-  return <span>{content}</span>;
+  return <div className="idea-verification__paper-link idea-verification__paper-link--static">{content}</div>;
 }

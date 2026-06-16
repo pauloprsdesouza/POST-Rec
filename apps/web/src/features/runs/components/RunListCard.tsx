@@ -10,7 +10,6 @@ import {
   type RunOutcome,
 } from "@/features/runs/utils/runs";
 import type { RecommendationRun } from "@/shared/types/api";
-import { isBlindRun } from "@/features/experiments/utils/blindRun";
 
 interface RunListCardProps {
   run: RecommendationRun;
@@ -38,7 +37,6 @@ export function RunListCard({ run, recommendationCount, showSearchMeta = false }
   const isReviewed = outcome === "reviewed";
   const isActive = outcome === "in_progress";
   const displayProgress = getRunDisplayProgress(run);
-  const blind = isBlindRun(run);
   const absoluteDate = formatRunDateTime(run.created_at, i18n.language);
   const relativeDate = formatRelativeRunTime(run.created_at, i18n.language);
   const title = formatRunTopics(run, t("common.noTopics"), 120);
@@ -66,9 +64,6 @@ export function RunListCard({ run, recommendationCount, showSearchMeta = false }
 
             <div className="run-card__meta-row">
               <StatusPill outcome={outcome} run={run} />
-              {!blind && run.mode ? (
-                <span className="run-card__mode">{t(`newRun.runMode.${run.mode}.label`)}</span>
-              ) : null}
               {isReady && count > 0 ? (
                 <span className="run-card__ideas-count">{t("runs.ideasReady", { count })}</span>
               ) : null}
@@ -103,13 +98,16 @@ export function RunListCard({ run, recommendationCount, showSearchMeta = false }
                 })}
               </p>
             ) : null}
+
+            <span className="run-card__cta run-card__cta--mobile" aria-hidden>
+              {actionLabel}
+              <span className="run-card__arrow">→</span>
+            </span>
           </div>
 
-          <span className="run-card__cta">
+          <span className="run-card__cta run-card__cta--desktop" aria-hidden>
             {actionLabel}
-            <span className="run-card__arrow" aria-hidden>
-              →
-            </span>
+            <span className="run-card__arrow">→</span>
           </span>
         </div>
       </Link>

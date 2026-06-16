@@ -184,7 +184,7 @@ export function RunsPage() {
         <main className="runs-page__main">
           {searchError ? <InlineAlert variant="danger">{searchError}</InlineAlert> : null}
 
-          {!isSearching && completed.length > 0 && filter !== "active" ? (
+          {!isSearching && filter === "all" && completed.length > 0 ? (
             <RunsReadyBanner count={completed.length} firstRunId={firstReadyRunId} />
           ) : null}
 
@@ -216,7 +216,9 @@ export function RunsPage() {
               <div className="runs-page__sections">
                 <RunSection
                   title={t("runs.sectionReady")}
-                  description={t("runs.sectionReadyDesc")}
+                  description={
+                    filter === "all" && completed.length > 0 ? undefined : t("runs.sectionReadyDesc")
+                  }
                   count={completed.length}
                   dataCoach="coach-runs-ready"
                 >
@@ -229,8 +231,6 @@ export function RunsPage() {
                   title={t("runs.sectionInProgress")}
                   description={t("runs.sectionInProgressDesc")}
                   count={active.length}
-                  collapsible={focusReadyFirst}
-                  defaultOpen={filter === "active" || !focusReadyFirst}
                 >
                   {active.map((run) => (
                     <RunListCard key={run.id} run={run} recommendationCount={run.recommendation_count} />

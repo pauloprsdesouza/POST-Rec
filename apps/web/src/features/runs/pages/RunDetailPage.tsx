@@ -14,7 +14,6 @@ import { OutcomeBadge } from "@/shared/ui/OutcomeBadge";
 
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 
-import { isBlindRun } from "@/features/experiments/utils/blindRun";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { sessionService } from "@/shared/api";
 
@@ -122,7 +121,6 @@ export function RunDetailPage() {
   }
 
   const showIdeas = outcome === "ready" || outcome === "reviewed";
-  const blind = isBlindRun(run);
   const loadingIdeasOnly = showIdeas && loadingIdeas && recommendations.length === 0;
 
   return (
@@ -135,10 +133,6 @@ export function RunDetailPage() {
 
         <div className="run-detail__headline">
           <OutcomeBadge outcome={outcome ?? "in_progress"} />
-
-          {!blind && run.mode ? (
-            <span className="run-detail__mode">{t(`newRun.runMode.${run.mode}.label`)}</span>
-          ) : null}
 
           <time className="run-detail__date" dateTime={run.created_at ?? undefined}>
             {formatRunDateTime(run.created_at, i18n.language)}

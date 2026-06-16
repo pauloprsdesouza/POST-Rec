@@ -17,20 +17,13 @@ export function RefinementPanel({ items }: RefinementPanelProps) {
     <aside className="refinement-panel">
       <h3 className="refinement-panel__title">{t("ideas.refinement.title")}</h3>
       <p className="refinement-panel__subtitle">{t("ideas.refinement.subtitle", { count: items.length })}</p>
-      <div>
+      <ul className="refinement-panel__list">
         {items.map((item) => (
-          <div key={item.id} className="refinement-panel__item">
-            <div className="refinement-panel__item-title">{item.title}</div>
-            {item.validation_issues?.length ? (
-              <ul className="refinement-panel__issues mb-0">
-                {item.validation_issues.map((issue) => (
-                  <li key={issue}>{issue}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
+          <li key={item.id} className="refinement-panel__item">
+            <span className="refinement-panel__item-title">{item.title}</span>
+          </li>
         ))}
-      </div>
+      </ul>
     </aside>
   );
 }

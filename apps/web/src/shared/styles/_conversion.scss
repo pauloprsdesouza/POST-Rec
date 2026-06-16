@@ -202,10 +202,22 @@
   background: var(--postrec-surface);
 }
 
+.sticky-form-cta__row {
+  align-items: stretch;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sticky-form-cta__submit {
+  flex: 1 1 10rem;
+  min-width: 0;
+  white-space: nowrap;
+}
+
 .sticky-form-cta__hint {
   color: var(--postrec-muted);
   font-size: var(--postrec-text-xs);
-  margin-bottom: 0.5rem;
+  margin: 0.5rem 0 0;
   text-align: center;
 }
 
