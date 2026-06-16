@@ -14,12 +14,11 @@ const DESKTOP_NAV = [
   { to: "/runs/new", labelKey: "nav.newRun" as const },
   { to: "/runs", labelKey: "nav.runs" as const },
   { to: "/how-it-works", labelKey: "nav.howItWorks" as const },
-  { to: "/insights", labelKey: "nav.insights" as const },
 ] as const;
 
 export function AppLayout() {
   const { t } = useTranslation();
-  const { user, signOut, consentDone, profileDone } = useAuth();
+  const { user, signOut, consentDone, profileDone, isAdmin } = useAuth();
   const { startTourForCurrentPage, resetTours } = useCoachMarks();
   const online = useApiHealth();
   const navigate = useNavigate();
@@ -44,17 +43,24 @@ export function AppLayout() {
           <Navbar.Collapse id="main-nav">
             <Nav className="me-auto app-nav d-none d-lg-flex">
               {setupComplete ? (
-                DESKTOP_NAV.map((item) => (
-                  <Nav.Link
-                    as={NavLink}
-                    to={item.to}
-                    key={item.to}
-                    end={item.to === "/runs"}
-                    {...(item.to === "/runs/new" ? { "data-coach": "coach-nav-new-run" } : {})}
-                  >
-                    {t(item.labelKey)}
-                  </Nav.Link>
-                ))
+                <>
+                  {DESKTOP_NAV.map((item) => (
+                    <Nav.Link
+                      as={NavLink}
+                      to={item.to}
+                      key={item.to}
+                      end={item.to === "/runs"}
+                      {...(item.to === "/runs/new" ? { "data-coach": "coach-nav-new-run" } : {})}
+                    >
+                      {t(item.labelKey)}
+                    </Nav.Link>
+                  ))}
+                  {isAdmin ? (
+                    <Nav.Link as={NavLink} to="/admin">
+                      {t("nav.admin")}
+                    </Nav.Link>
+                  ) : null}
+                </>
               ) : (
                 <Nav.Link as={NavLink} to={setupHref} className="app-nav__setup-link">
                   {t("nav.completeSetup")}
@@ -84,6 +90,9 @@ export function AppLayout() {
                   <Dropdown.Header className="user-dropdown__header">
                     <div className="fw-semibold">{user?.fullName ?? t("common.researcher")}</div>
                     <div className="user-dropdown__email">{user?.email ?? user?.phoneNumber}</div>
+                    {isAdmin ? (
+                      <div className="user-dropdown__role text-muted">{t("nav.adminAndResearcher")}</div>
+                    ) : null}
                   </Dropdown.Header>
                   <Dropdown.Divider />
                   <Dropdown.Item as={Link} to="/profile?tab=account">
@@ -95,6 +104,11 @@ export function AppLayout() {
                   <Dropdown.Item as={Link} to="/profile?tab=preferences">
                     {t("nav.preferences")}
                   </Dropdown.Item>
+                  {isAdmin ? (
+                    <Dropdown.Item as={Link} to="/admin">
+                      {t("nav.admin")}
+                    </Dropdown.Item>
+                  ) : null}
                   <Dropdown.Item as={Link} to="/how-it-works">
                     {t("nav.howItWorks")}
                   </Dropdown.Item>

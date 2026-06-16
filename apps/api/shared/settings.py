@@ -60,38 +60,51 @@ class Settings(BaseSettings):
     gemini_embedding_dimensions: int = DEFAULT_GEMINI_EMBEDDING_DIMENSIONS
 
     openalex_email: str = ""
-    crossref_email: str = ""
-    semantic_scholar_api_key: str = ""
+    openalex_api_key: str = ""
 
     retrieval_fetch_max_attempts: int = 5
     retrieval_http_retries: int = 4
     retrieval_use_celery_deferred: bool = True
     retrieval_deferred_timeout_seconds: int = 180
     retrieval_min_relevance_score: float = 0.22
+    retrieval_domain_filter_enabled: bool = True
+    retrieval_min_domain_alignment: float = 0.40
     article_llm_validation_enabled: bool = True
     # LLM semantic rubric threshold (0-1). Distinct from retrieval_min_relevance_score (lexical).
-    article_llm_min_relevance_score: float = 0.5
-    article_min_valid_papers: int = 3
+    article_llm_min_relevance_score: float = 0.42
+    article_min_valid_papers: int = 2
+    article_grounding_best_effort_enabled: bool = True
+    article_sparse_corpus_threshold: int = 12
     retrieval_cache_enabled: bool = True
     retrieval_cache_ttl_seconds: int = 21_600
     retrieval_circuit_failure_threshold: int = 4
     retrieval_circuit_cooldown_seconds: float = 120.0
     retrieval_min_papers_before_skip: int = 12
     retrieval_openalex_min_interval: float = 0.35
-    retrieval_crossref_min_interval: float = 0.35
-    retrieval_semantic_scholar_min_interval: float = 5.0
-    retrieval_arxiv_min_interval: float = 4.0
-    retrieval_source_priority: str = "openalex,crossref,semantic_scholar,arxiv"
+    retrieval_openalex_field_filter_enabled: bool = True
+    retrieval_openalex_subfield_filter_enabled: bool = True
+    retrieval_openalex_topic_filter_enabled: bool = True
+    retrieval_openalex_require_core_source: bool = False
+    retrieval_openalex_filter_tier: str = "balanced"
+    retrieval_openalex_use_search: bool = True
+    retrieval_openalex_fallback_recall_enabled: bool = True
+    retrieval_openalex_fallback_min_results: int = 8
+    retrieval_openalex_topic_min_relevance: float = 75.0
+    retrieval_openalex_foundation_min_citations: int = 2
+    retrieval_openalex_sota_min_citations: int = 0
+    retrieval_openalex_citation_expansion_enabled: bool = True
+    retrieval_openalex_citation_expansion_seeds: int = 3
+    retrieval_openalex_citation_expansion_limit: int = 25
+    retrieval_openalex_log_rate_limit: bool = True
+    retrieval_openalex_taxonomy_cache_ttl_seconds: int = 86_400
+    retrieval_openalex_open_access_only: bool = False
+    retrieval_openalex_doi_enrichment_enabled: bool = True
+    retrieval_openalex_doi_batch_size: int = 25
+    retrieval_openalex_fwci_boost_enabled: bool = True
     retrieval_corpus_prefetch_enabled: bool = True
-    retrieval_s2_recommendations_enabled: bool = True
-    retrieval_s2_recommendation_seeds: int = 5
-    retrieval_s2_recommendation_limit: int = 50
+    retrieval_corpus_prefetch_min_score: float = 0.28
     retrieval_learned_topic_cap: int = 2
-    retrieval_crossref_max_queries: int = 2
     retrieval_openalex_per_page_max: int = 100
-    retrieval_crossref_rows_max: int = 80
-    retrieval_semantic_scholar_limit_max: int = 100
-    retrieval_arxiv_max_results: int = 40
     hybrid_retrieval_enabled: bool = True
     hybrid_sparse_weight: float = 0.4
     retrieval_max_article_age_years: int = 5
@@ -106,6 +119,12 @@ class Settings(BaseSettings):
     bm25_sparse_enabled: bool = True
     vector_retrieval_enabled: bool = True
     vector_retrieval_top_k: int = 100
+    qualis_enabled: bool = True
+    qualis_csv_path: str = ""
+    qualis_boost_weight: float = 0.10
+    qualis_use_redis_cache: bool = True
+    qualis_cache_ttl: int = 2_592_000  # 30d reference data; 0 = no expiry
+
     ranking_calibration_enabled: bool = True
     require_sota_fields_quick: bool = True
     fggv_facet_critic_enabled: bool = True
@@ -119,7 +138,7 @@ class Settings(BaseSettings):
     run_timeout_seconds: int = 900
     max_cost_per_run_usd: float = 2.00
 
-    experiment_fggv_vs_sota_enabled: bool = False
+    # Always-on blind A/B: SOTA (control) vs FGGV (treatment) when run mode is auto.
     experiment_fggv_vs_sota_id: str = "fggv_vs_sota_v1"
     experiment_treatment_fraction: float = 0.5
 
@@ -136,6 +155,8 @@ class Settings(BaseSettings):
     auth_enabled: bool = True
     api_internal_key: str = "dev-internal-key"
     jwt_secret: str = "dev-jwt-secret"
+    # Comma-separated emails promoted to admin on register or next login (bootstrap operators).
+    admin_bootstrap_emails: str = "paulo.prsdesouza@gmail.com"
 
     api_base_url: str = "http://localhost:8000"
     frontend_app_url: str = "http://localhost:5173"

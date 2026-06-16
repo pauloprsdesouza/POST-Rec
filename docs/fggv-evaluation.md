@@ -120,23 +120,16 @@ pytest tests/unit/test_fggv.py tests/evaluation/test_fggv_harness.py -q
 python scripts/run_offline_evaluation.py --output reports/fggv_offline.json
 ```
 
-Live runs: select **FGGV (Facet-Grounded)** mode when starting a run.
+Live runs: use **Auto** mode (default) for blind assignment, or pick a specific mode to force that pipeline.
 
 ## 6. Live blind A/B (product evaluation)
 
-When `EXPERIMENT_FGGV_VS_SOTA_ENABLED=true`, users who opt in (`avoid_real_user_experiments=false`) are randomly assigned **control (`sota`)** vs **treatment (`fggv`)** with sticky bucketing. The UI hides mode labels, FGGV-specific scores, and run cost.
+**Auto** mode always assigns **control (`sota`)** vs **treatment (`fggv`)** with sticky per-user bucketing. Explicit mode choices (Quick, SOTA-grounded, Exploratory, FGGV) bypass assignment and run that pipeline directly. Blind runs hide mode labels, FGGV-specific scores, and run cost in the UI.
 
 | Setting | Default | Purpose |
 |---------|---------|---------|
-| `EXPERIMENT_FGGV_VS_SOTA_ENABLED` | `false` | Master switch |
 | `EXPERIMENT_FGGV_VS_SOTA_ID` | `fggv_vs_sota_v1` | Study identifier stored on runs |
-| `EXPERIMENT_TREATMENT_FRACTION` | `0.5` | Share assigned to FGGV |
-
-**Enable for a pilot:**
-
-```bash
-EXPERIMENT_FGGV_VS_SOTA_ENABLED=true
-```
+| `EXPERIMENT_TREATMENT_FRACTION` | `0.5` | Share of Auto runs assigned to FGGV |
 
 **Analysis:** `GET /api/v1/validation/dashboard` includes an `experiment` section with EAS/originality/approval by variant. Admin export: `python scripts/export_anonymized_validation_data.py`.
 

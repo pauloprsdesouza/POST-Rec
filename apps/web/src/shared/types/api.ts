@@ -6,6 +6,21 @@ export interface AuthResponse {
   email?: string | null;
   full_name?: string | null;
   whatsapp_opt_in?: boolean;
+  role?: UserRole;
+}
+
+export type UserRole = "researcher" | "admin";
+
+export interface UserMe {
+  id: string;
+  phone_number: string;
+  email?: string | null;
+  full_name?: string | null;
+  whatsapp_opt_in?: boolean;
+  role: UserRole;
+  is_admin?: boolean;
+  can_access_admin?: boolean;
+  can_use_research_features?: boolean;
 }
 
 export interface OtpRequestResponse {
@@ -37,16 +52,16 @@ export interface UserProfile {
   updated_at?: string | null;
 }
 
+export type RunMode = "quick" | "sota" | "exploratory" | "fggv";
+export type RunModeSelection = "auto" | RunMode;
+
 export interface RecommendationDefaults {
   seed_topics?: string[];
   expected_output?: string | null;
   desired_depth?: string;
-  avoid_real_user_experiments?: boolean;
-  preferred_run_mode?: RunMode;
+  preferred_run_mode?: RunModeSelection;
   max_article_age_years?: number;
 }
-
-export type RunMode = "quick" | "sota" | "exploratory" | "fggv";
 
 export interface SotaAnchor {
   title?: string;
@@ -89,6 +104,7 @@ export interface RecommendationRun {
   current_step?: string | null;
   topics?: string[];
   created_at?: string;
+  started_at?: string | null;
   finished_at?: string | null;
   estimated_cost_usd?: number;
   error_message?: string | null;
@@ -122,6 +138,11 @@ export interface EvidencePaper {
   citation_count?: number;
   venue?: string;
   abstract?: string;
+  qualis_estrato?: string;
+  qualis_period?: string;
+  qualis_boost?: number;
+  relevance_score?: number;
+  matched_in_catalog?: boolean;
 }
 
 export interface Recommendation {
@@ -163,11 +184,15 @@ export interface Recommendation {
 }
 
 export interface SourceDocument {
+  id?: string;
   title?: string;
   year?: number;
   source?: string;
   url?: string;
   doi?: string;
+  venue?: string;
+  citation_count?: number;
+  qualis_estrato?: string;
 }
 
 export interface ValidationDashboard {
@@ -380,4 +405,73 @@ export interface ExperimentDashboard {
 
 export interface FeedbackResult {
   expectation_alignment_score: number;
+}
+
+export interface AdminOverview {
+  generated_at: string;
+  users: {
+    total: number;
+    active: number;
+    admins: number;
+    researchers: number;
+  };
+  runs: {
+    total: number;
+    completed: number;
+    failed: number;
+    completion_rate: number;
+    failure_rate: number;
+  };
+  feedback_total: number;
+  llm_cost_usd_total: number;
+  system_status: string;
+  health_checks: Record<string, string>;
+  app_env: string;
+}
+
+export interface AdminSystemConfig {
+  generated_at: string;
+  environment: Record<string, string | number | boolean>;
+}
+
+export interface AdminModelSummary {
+  provider: string;
+  model: string;
+  call_count: number;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  estimated_cost_usd: number;
+}
+
+export interface AdminModelEvaluation {
+  generated_at: string;
+  configured_models: {
+    generation: string;
+    embedding: string;
+    embedding_dimensions: number;
+  };
+  aggregate: {
+    call_count: number;
+    total_tokens: number;
+    estimated_cost_usd: number;
+  };
+  models: AdminModelSummary[];
+  operations: Array<AdminModelSummary & { operation: string }>;
+}
+
+export interface AdminUserRecord {
+  id: string;
+  email?: string | null;
+  full_name?: string | null;
+  phone_number?: string | null;
+  role: UserRole;
+  is_active: boolean;
+  is_admin: boolean;
+  created_at?: string | null;
+}
+
+export interface AdminUserList {
+  total: number;
+  items: AdminUserRecord[];
 }

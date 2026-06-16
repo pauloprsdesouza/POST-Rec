@@ -50,6 +50,8 @@
     "preferences": "Preferences",
     "consent": "Consent",
     "signOut": "Sign out",
+    "admin": "Admin",
+    "adminAndResearcher": "Administrator · full researcher access",
     "language": "Language",
     "themeDark": "Switch to dark mode",
     "themeLight": "Switch to light mode"
@@ -280,7 +282,6 @@
     "expectedOutput": "Expected output",
     "defaultExpectedOutput": "Ideas that can become a real paper using public datasets.",
     "defaultDepth": "Default depth",
-    "avoidRealUserExperiments": "Avoid real-user experiments",
     "depthShallow": "Shallow — quick overview",
     "depthMedium": "Medium — balanced",
     "depthDeep": "Deep — detailed plans",
@@ -314,10 +315,12 @@
     },
     "runMode": {
       "label": "Generation mode",
-      "intro": "Choose how deeply POST-Rec analyzes the literature. Not sure? Start with the recommended option.",
-      "recommended": "Recommended",
-      "showAdvanced": "Show advanced modes",
-      "hideAdvanced": "Hide advanced modes",
+      "recommended": "Default",
+      "auto": {
+        "label": "Auto",
+        "shortHint": "Let POST-Rec choose the generation method for this run.",
+        "hint": "Recommended for most users — POST-Rec picks the best pipeline automatically."
+      },
       "quick": {
         "label": "Quick",
         "shortHint": "Fast preview — good for a first look at possible directions.",
@@ -378,6 +381,7 @@
     "searchMatchCount": "{{count}} matching idea(s)",
     "readyBannerTitle": "{{count}} run(s) waiting for your feedback",
     "readyBannerText": "Quick thumb ratings help us personalize your next recommendations.",
+    "reviewFirst": "Review first run",
     "reviewAndRate": "Review & rate",
     "viewIdeas": "View ideas",
     "rateIdeasHint": "~30 sec · thumb up or down",
@@ -392,6 +396,20 @@
     "outcomeIncomplete": "No ideas generated",
     "completedWithoutIdeas": "This run finished but no recommendations were saved. You can start a new run with different topics.",
     "noIdeasGenerated": "Finished without ideas",
+    "actions": {
+      "title": "Run actions",
+      "retry": "Re-run",
+      "cancel": "Cancel run",
+      "archive": "Archive",
+      "remove": "Remove permanently",
+      "cancelConfirm": "Cancel this run? Work in progress will stop.",
+      "archiveConfirm": "Archive this run? It will be hidden from your runs list.",
+      "removeConfirm": "Permanently remove this run? This cannot be undone.",
+      "learnedTopicsLegend": "Profile topics linked to this run",
+      "learnedTopicsHint": "Select any topics you want removed from your profile's learned topics.",
+      "loadingLearnedTopics": "Checking your profile for related topics…",
+      "error": "Could not complete that action. Try again."
+    },
     "completeBanner": {
       "title": "Your ideas are ready",
       "text": "Tap Useful or Not useful on each idea — one second each.",
@@ -485,40 +503,60 @@
       "novelty": "Novelty",
       "impact": "Impact"
     },
-    "sotaVerification": {
-      "title": "SOTA verification",
-      "sotaSummary": "Current SOTA",
-      "noveltyDelta": "Novelty delta",
-      "closestPriorWork": "Closest prior work",
-      "sotaAnchors": "SOTA anchors",
-      "sotaFit": "SOTA fit",
-      "noveltyVerified": "Verified novelty",
-      "criticPassed": "Critic passed",
-      "criticReview": "Critic review",
-      "differentiationRationale": "Differentiation rationale",
-      "embeddingDistance": "Max similarity to sources (lower is better)",
-      "recencyGap": "Recency gap",
-      "validationIssues": "Validation issues",
-      "fggvScore": "FGGV score",
-      "facetNoveltyIndex": "Facet novelty index",
-      "gapAlignmentScore": "Gap alignment",
-      "facetDeltas": "Facet deltas",
-      "alignedGaps": "Aligned gaps",
-      "falseNovelFacets": "{{count}} facet(s) overlap heavily with literature"
+    "ideaVerification": {
+      "title": "Literature & novelty",
+      "intro": "How this idea relates to existing research and what makes it distinct.",
+      "verifiedBadge": "Literature checked",
+      "literatureContext": "What the literature shows",
+      "whatsNew": "What's new here",
+      "closestWork": "Closest related work",
+      "howItDiffers": "How this idea differs",
+      "noveltyConfidence": "Novelty confidence",
+      "literatureAlignment": "Literature alignment",
+      "keyPapers": "Key reference papers"
     },
     "refinement": {
-      "title": "Needs refinement",
-      "subtitle": "{{count}} idea(s) were saved but did not pass SOTA/novelty validation.",
-      "badge": "Needs refinement"
+      "title": "Ideas needing more work",
+      "subtitle": "{{count}} draft idea(s) were saved but need stronger evidence before we can recommend them.",
+      "badge": "Draft"
     }
   },
   "evidence": {
     "supportingArticles": "Supporting articles",
     "noArticles": "No supporting articles cited for this recommendation.",
     "articlesCited": "{{count}} article(s) cited as evidence.",
+    "explainedCount": "{{count}} with relevance notes",
+    "intro": "Each paper below includes a short note on how it supports this research idea.",
+    "whyRelevant": "Why this supports the idea",
+    "noRelevance": "No relevance explanation was provided for this citation.",
+    "showMore": "Read full explanation",
+    "showLess": "Show less",
+    "relevanceScoreTooltip": "Topic match strength: {{percent}}%",
+    "relevanceScoreAria": "Topic match {{percent}} percent",
+    "relevanceTier": {
+      "high": "Strong match",
+      "medium": "Good match",
+      "low": "Supporting"
+    },
     "catalogUnavailable": "Source catalog unavailable for this run.",
     "papersUsed": "{{count}} relevance-filtered papers used as context.",
-    "doi": "DOI"
+    "qualisCount": "{{count}} with Qualis classification",
+    "doi": "DOI",
+    "qualisPrefix": "Qualis",
+    "qualisShort": "Qualis {{estrato}}",
+    "qualisLabel": "Qualis CAPES classification: {{estrato}}",
+    "qualisLabelWithPeriod": "Qualis CAPES classification: {{estrato}} ({{period}})",
+    "qualisTooltip": "CAPES Qualis journal classification (estrato {{estrato}})",
+    "qualisTooltipWithPeriod": "CAPES Qualis journal classification (estrato {{estrato}}, period {{period}})",
+    "sourceLabel": "Retrieved from {{source}}",
+    "sourceTooltip": "Paper retrieved via {{source}}",
+    "sourceShort": {
+      "openalex": "OpenAlex",
+      "crossref": "Crossref",
+      "semantic_scholar": "S2",
+      "arxiv": "arXiv",
+      "unknown": "Other"
+    }
   },
   "insights": {
     "title": "Insights",
@@ -825,7 +863,7 @@
     "incomplete": "The run finished but no ideas were generated.",
     "queued": "Waiting in queue — we'll start searching soon.",
     "started": "Starting your personalized research run…",
-    "searching_papers": "Searching academic databases for papers that match your topics…",
+    "searching_papers": "Searching OpenAlex for papers that match your topics…",
     "normalizing_documents": "Cleaning and organizing retrieved papers…",
     "deduplicating_documents": "Removing duplicate articles from the corpus…",
     "generating_embeddings": "Understanding paper content to find the best matches…",
@@ -840,6 +878,9 @@
   },
   "progress": {
     "step": "Step: {{step}}",
+    "stageOf": "Step {{current}} of {{total}}",
+    "elapsed": "{{time}} elapsed",
+    "pipelineLabel": "Pipeline stages",
     "progressLabel": "Progress",
     "estCost": "Est. cost",
     "updating": "Updating every few seconds…",
@@ -898,8 +939,8 @@
           "body": "Your seed topics, research area, depth, run mode, and constraints are stored as a UserExpectation and linked to the run."
         },
         "retrieval": {
-          "title": "Dual-pass multi-source search",
-          "body": "Expanded queries are sent to OpenAlex, arXiv, Semantic Scholar, and Crossref in SOTA (recent) and foundation (highly cited) passes."
+          "title": "Dual-pass OpenAlex search",
+          "body": "Expanded queries are sent to OpenAlex with field, subfield, and topic filters in SOTA (recent) and foundation (highly cited) passes."
         },
         "relevance": {
           "title": "Relevance filtering",
@@ -941,7 +982,7 @@
       "researchArea": "Research area — broad field context",
       "expectedOutput": "Expected output — e.g. conference-ready ideas, survey angles",
       "depth": "Desired depth — quick vs. exhaustive exploration",
-      "constraints": "Constraints — e.g. avoid real-user experiments, paper limits",
+      "constraints": "Constraints — e.g. paper age limits",
       "profile": "If you have a research profile, learned topics and preferred techniques expand the query token set:",
       "expansionCaption": "Expanded topic set used for retrieval"
     },
@@ -1058,6 +1099,76 @@
       "semantic_scholar": "Semantic Scholar",
       "crossref": "Crossref",
       "unknown": "Unknown"
+    }
+  },
+  "admin": {
+    "title": "Administration",
+    "subtitle": "Platform operations, evaluation, and access control",
+    "badge": "Operator",
+    "sidebarLabel": "Admin navigation",
+    "loading": "Loading admin data…",
+    "loadError": "Could not load admin data.",
+    "backToResearch": "← Research workspace",
+    "nav": {
+      "overview": "Overview",
+      "evaluation": "Evaluation",
+      "models": "Models",
+      "system": "System",
+      "users": "Users"
+    },
+    "overview": {
+      "title": "Operations overview",
+      "subtitle": "High-level health and usage across POST-Rec",
+      "platform": "Platform metrics",
+      "users": "Total users",
+      "activeUsers": "Active users",
+      "admins": "Administrators",
+      "totalRuns": "Total runs",
+      "completionHint": "{{rate}} completion rate",
+      "feedback": "Feedback ratings",
+      "llmCost": "Estimated LLM cost",
+      "systemHealth": "System health",
+      "environment": "Environment",
+      "openEvaluation": "Open evaluation dashboard",
+      "openReport": "Full research report"
+    },
+    "evaluation": {
+      "title": "System evaluation",
+      "subtitle": "Volunteer validation metrics, experiments, and ranking quality"
+    },
+    "models": {
+      "title": "Model evaluation",
+      "subtitle": "Configured models and observed token usage across runs",
+      "configured": "Configured models",
+      "generation": "Generation model",
+      "embedding": "Embedding model",
+      "usage": "Aggregate usage",
+      "calls": "API calls",
+      "tokens": "Total tokens",
+      "cost": "Estimated cost (USD)",
+      "byModel": "Usage by model",
+      "tableModel": "Model",
+      "empty": "No LLM usage recorded yet."
+    },
+    "system": {
+      "title": "System configuration",
+      "subtitle": "Read-only snapshot of operational settings (secrets excluded)",
+      "readOnlyNote": "Changes require environment updates and a service restart. This view never exposes API keys or passwords."
+    },
+    "users": {
+      "title": "User access",
+      "subtitle": "{{count}} accounts registered",
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "you": "You",
+      "researcher": "Researcher",
+      "admin": "Administrator",
+      "active": "Active",
+      "inactive": "Inactive",
+      "roleFor": "Role for {{name}}",
+      "updateError": "Could not update user role."
     }
   }
 }

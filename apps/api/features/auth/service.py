@@ -10,6 +10,7 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from apps.api.features.auth.evolution import EvolutionError, evolution_service
+from apps.api.features.auth.roles import apply_bootstrap_admin_role, resolve_role_for_email
 from apps.api.shared.models import AuthOtpChallenge, User, UserResearchProfile
 from apps.api.shared.observability.logging import get_logger
 from apps.api.shared.settings import get_settings
@@ -174,6 +175,7 @@ class AuthService:
             email=normalized_email,
             phone_number=phone,
             whatsapp_opt_in=whatsapp_opt_in,
+            role=resolve_role_for_email(normalized_email),
         )
         db.add(user)
         db.flush()
@@ -236,6 +238,7 @@ class AuthService:
             raise AuthError("Invalid code.")
 
         challenge.consumed_at = now
+        apply_bootstrap_admin_role(user)
         db.commit()
         db.refresh(user)
         return user, self.create_access_token(user.id)

@@ -3,12 +3,18 @@
 import uuid
 from datetime import UTC, datetime
 
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
+from apps.api.features.profile.service import profile_service
+from apps.api.features.runs.cleanup import is_run_cancellable, is_run_retryable
+from apps.api.features.runs.query import published_recommendation_counts
 from apps.api.features.runs.stream_service import run_stream_service
 from apps.api.shared.infra.cache import cache_service
 from apps.api.shared.models import (
+    LLMUsage,
     RecommendationCandidate,
+    RecommendationFeedback,
     RecommendationRun,
     RecommendationRunEvent,
 )
@@ -73,7 +79,7 @@ class RunService:
             input={"topics": topics, "constraints": constraints},
             mode=mode,
             status=RunStatus.QUEUED,
-            progress=0,
+            progress=2,
             max_papers=max_papers,
             max_recommendations=max_recommendations,
             experiment_id=experiment_id,
@@ -131,10 +137,111 @@ class RunService:
         ):
             cache_service.invalidate_validation_dashboard()
 
-    def cancel_run(self, db: Session, run: RecommendationRun) -> None:
-        if run.status in (RunStatus.COMPLETED, RunStatus.FAILED, RunStatus.CANCELLED):
+    def bump_progress(self, db: Session, run: RecommendationRun, progress: int) -> None:
+        """Raise progress without changing status (e.g. long-running substeps)."""
+        if progress <= run.progress:
             return
+        run.progress = progress
+        db.commit()
+
+        cache_service.invalidate_run(str(run.id))
+
+        if run.user_id:
+            cache_service.invalidate_user_runs(str(run.user_id))
+
+        run_stream_service.publish(db, run)
+
+    def cancel_run(self, db: Session, run: RecommendationRun) -> None:
+        if not is_run_cancellable(run.status):
+            raise HTTPException(status_code=409, detail="Run cannot be cancelled in its current state")
         self.update_status(db, run, RunStatus.CANCELLED, run.progress, "Run cancelled by user")
+
+    def retry_run(self, db: Session, run: RecommendationRun) -> None:
+        if run.archived_at is not None:
+            raise HTTPException(status_code=409, detail="Archived runs cannot be retried")
+        published_count = published_recommendation_counts(db, [run.id]).get(run.id, 0)
+        if not is_run_retryable(run.status, published_count):
+            raise HTTPException(status_code=409, detail="Run cannot be retried in its current state")
+
+        self._clear_run_artifacts(db, run.id)
+        run.status = RunStatus.QUEUED
+        run.progress = 2
+        run.current_step = None
+        run.error_message = None
+        run.started_at = None
+        run.finished_at = None
+        self._add_event(db, run, "run_retried", "Recommendation run queued for retry")
+        db.commit()
+        db.refresh(run)
+        self._invalidate_user_run_caches(run)
+        run_stream_service.publish(db, run)
+
+        from apps.api.workers.tasks import process_recommendation_run
+
+        process_recommendation_run.delay(str(run.id))
+        logger.info("run_retried", run_id=str(run.id))
+
+    def archive_run(
+        self,
+        db: Session,
+        run: RecommendationRun,
+        *,
+        user_id: uuid.UUID,
+        remove_learned_topics: list[str] | None = None,
+    ) -> None:
+        if run.archived_at is not None:
+            return
+        if is_run_cancellable(run.status):
+            raise HTTPException(status_code=409, detail="Cancel the run before archiving it")
+
+        if remove_learned_topics:
+            profile_service.remove_learned_topics(db, user_id, remove_learned_topics)
+            cache_service.invalidate_user_profile(str(user_id))
+
+        run.archived_at = datetime.now(UTC)
+        self._add_event(db, run, "run_archived", "Run archived by user")
+        db.commit()
+        db.refresh(run)
+        self._invalidate_user_run_caches(run)
+        run_stream_service.publish(db, run)
+        logger.info("run_archived", run_id=str(run.id))
+
+    def remove_run(
+        self,
+        db: Session,
+        run: RecommendationRun,
+        *,
+        user_id: uuid.UUID,
+        remove_learned_topics: list[str] | None = None,
+    ) -> None:
+        if is_run_cancellable(run.status):
+            raise HTTPException(status_code=409, detail="Cancel the run before removing it")
+
+        if remove_learned_topics:
+            profile_service.remove_learned_topics(db, user_id, remove_learned_topics)
+            cache_service.invalidate_user_profile(str(user_id))
+
+        run_id = str(run.id)
+        owner_id = str(run.user_id) if run.user_id else None
+        self._clear_run_artifacts(db, run.id)
+        db.delete(run)
+        db.commit()
+        cache_service.invalidate_run(run_id)
+        if owner_id:
+            cache_service.invalidate_user_runs(owner_id)
+        logger.info("run_removed", run_id=run_id)
+
+    def _clear_run_artifacts(self, db: Session, run_id: uuid.UUID) -> None:
+        db.query(RecommendationFeedback).filter_by(run_id=run_id).delete(synchronize_session=False)
+        db.query(RecommendationCandidate).filter_by(run_id=run_id).delete(synchronize_session=False)
+        db.query(RecommendationRunEvent).filter_by(run_id=run_id).delete(synchronize_session=False)
+        db.query(LLMUsage).filter_by(run_id=run_id).delete(synchronize_session=False)
+        db.flush()
+
+    def _invalidate_user_run_caches(self, run: RecommendationRun) -> None:
+        cache_service.invalidate_run(str(run.id))
+        if run.user_id:
+            cache_service.invalidate_user_runs(str(run.user_id))
 
     def save_recommendations(
         self, db: Session, run: RecommendationRun, recommendations: list[dict]

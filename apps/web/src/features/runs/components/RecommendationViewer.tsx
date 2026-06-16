@@ -207,7 +207,6 @@ export function RecommendationViewer({
           sessionId={sessionId}
           token={token}
           sources={sources}
-          blind={blind}
           initialRating={ratings[active.id] ?? null}
           onRated={handleRated}
           onSkip={recommendations.length > 1 ? handleSkip : undefined}

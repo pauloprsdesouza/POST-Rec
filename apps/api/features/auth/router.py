@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from apps.api.features.auth.roles import has_researcher_access, is_admin
 from apps.api.features.auth.service import AuthError, auth_service
 from apps.api.shared.database import get_db
 from apps.api.shared.dependencies import get_current_user_required
@@ -27,6 +28,7 @@ def _auth_response(user: User, token: str) -> AuthResponse:
         email=user.email,
         full_name=user.full_name,
         whatsapp_opt_in=user.whatsapp_opt_in,
+        role=user.role,
     )
 
 
@@ -98,4 +100,8 @@ def me(current_user: User = Depends(get_current_user_required)):
         email=current_user.email,
         full_name=current_user.full_name,
         whatsapp_opt_in=current_user.whatsapp_opt_in,
+        role=current_user.role,
+        is_admin=is_admin(current_user),
+        can_access_admin=is_admin(current_user),
+        can_use_research_features=has_researcher_access(current_user),
     )

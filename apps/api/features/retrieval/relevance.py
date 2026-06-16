@@ -5,6 +5,13 @@ import re
 from datetime import UTC, datetime
 from typing import Any
 
+from apps.api.features.qualis.service import qualis_service
+from apps.api.shared.settings import get_settings
+from packages.postrec_core.retrieval.context_alignment import (
+    apply_context_alignment_to_score,
+    compute_context_alignment,
+)
+
 STOPWORDS = frozenset(
     {
         "a",
@@ -106,32 +113,78 @@ def compute_relevance_score(
         )
     )
 
-    query_tokens: set[str] = set()
+    topic_tokens: set[str] = set()
     for phrase in topics:
-        query_tokens.update(tokenize(phrase))
-    if research_area:
-        query_tokens.update(tokenize(research_area))
-    for phrase in learned_topics or []:
-        query_tokens.update(tokenize(phrase))
+        topic_tokens.update(tokenize(phrase))
 
-    if not query_tokens:
+    area_tokens = tokenize(research_area) if research_area else set()
+    if not topic_tokens and not area_tokens:
         return 0.5
 
-    title_overlap = _overlap_score(title_tokens, query_tokens)
-    body_overlap = _overlap_score(body_tokens, query_tokens)
+    learned_tokens: set[str] = set()
+    for phrase in learned_topics or []:
+        learned_tokens.update(tokenize(phrase))
+
+    title_overlap_topics = _overlap_score(title_tokens, topic_tokens) if topic_tokens else 0.0
+    body_overlap_topics = _overlap_score(body_tokens, topic_tokens) if topic_tokens else 0.0
+    title_overlap_area = _overlap_score(title_tokens, area_tokens) if area_tokens else 0.0
+    body_overlap_area = _overlap_score(body_tokens, area_tokens) if area_tokens else 0.0
+
+    title_overlap = max(title_overlap_topics, title_overlap_area * 0.9)
+    body_overlap = max(body_overlap_topics, body_overlap_area * 0.9)
 
     avoided_tokens: set[str] = set()
     for phrase in avoided_topics or []:
         avoided_tokens.update(tokenize(phrase))
-    avoid_penalty = 0.35 if avoided_tokens and body_tokens & avoided_tokens else 0.0
+    avoid_penalty = 0.0
+    if avoided_tokens and body_tokens & avoided_tokens:
+        distinctive_hits = body_tokens & (avoided_tokens - topic_tokens)
+        avoided_overlap = _overlap_score(body_tokens, avoided_tokens)
+        if len(distinctive_hits) >= 2 or avoided_overlap >= 0.45:
+            avoid_penalty = 0.35
 
     citations = paper.get("citation_count") or 0
     citation_boost = min(math.log1p(citations) / 12.0, 0.15)
 
     score = (0.55 * title_overlap) + (0.30 * body_overlap) + citation_boost - avoid_penalty
 
+    if area_tokens and title_overlap_area >= 0.12 and (title_overlap_topics >= 0.10 or body_overlap_topics >= 0.12):
+        score += 0.06
+
+    if learned_tokens:
+        learned_overlap = max(
+            _overlap_score(title_tokens, learned_tokens),
+            _overlap_score(body_tokens, learned_tokens),
+        )
+        if learned_overlap >= 0.20:
+            score += min(0.05, learned_overlap * 0.08)
+
     if title_overlap < 0.08 and body_overlap < 0.12:
-        score = min(score, 0.18)
+        if area_tokens and body_overlap_area >= 0.18 and body_overlap_topics >= 0.08:
+            score = max(score, 0.23)
+        else:
+            score = min(score, 0.18)
+
+    score, _ = qualis_service.apply_relevance_boost(score, paper)
+
+    settings = get_settings()
+    if settings.retrieval_openalex_fwci_boost_enabled:
+        fwci = paper.get("openalex_fwci")
+        if isinstance(fwci, (int, float)) and fwci > 1.0:
+            score += min(0.06, (float(fwci) - 1.0) * 0.03)
+
+    if settings.retrieval_domain_filter_enabled and (research_area or topics):
+        alignment = compute_context_alignment(
+            paper,
+            research_area=research_area,
+            topics=topics,
+            learned_topics=learned_topics,
+            avoided_topics=avoided_topics,
+            pass_threshold=settings.retrieval_min_domain_alignment,
+        )
+        score = apply_context_alignment_to_score(score, alignment)
+        if not alignment.passes:
+            score = min(score, max(0.12, settings.retrieval_min_relevance_score - 0.08))
 
     return max(0.0, min(score, 1.0))
 
@@ -175,7 +228,13 @@ def filter_and_rank_papers(
     max_papers: int | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, int]]:
     scored: list[tuple[float, dict[str, Any]]] = []
-    stats = {"input": len(papers), "filtered_out": 0, "kept": 0}
+    stats = {
+        "input": len(papers),
+        "filtered_out": 0,
+        "kept": 0,
+        "alignment_rejected": 0,
+        "keyword_traps_seen": 0,
+    }
 
     for paper in papers:
         if not isinstance(paper, dict):
@@ -188,7 +247,29 @@ def filter_and_rank_papers(
             learned_topics=learned_topics,
             avoided_topics=avoided_topics,
         )
-        paper = {**paper, "relevance_score": round(score, 4)}
+        alignment = compute_context_alignment(
+            paper,
+            research_area=research_area,
+            topics=topics,
+            learned_topics=learned_topics,
+            avoided_topics=avoided_topics,
+            pass_threshold=get_settings().retrieval_min_domain_alignment,
+        )
+        if alignment.keyword_trap:
+            stats["keyword_traps_seen"] += 1
+        paper = {
+            **paper,
+            "relevance_score": round(score, 4),
+            "domain_alignment_score": alignment.score,
+            "domain_alignment_passes": alignment.passes,
+            "context_alignment_rationale": alignment.rationale,
+            "context_keyword_trap": alignment.keyword_trap,
+        }
+        settings = get_settings()
+        if settings.retrieval_domain_filter_enabled and (research_area or topics) and not alignment.passes:
+            stats["alignment_rejected"] += 1
+            stats["filtered_out"] += 1
+            continue
         if score >= min_score:
             scored.append((score, paper))
         else:

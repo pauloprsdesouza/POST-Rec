@@ -1,95 +1,136 @@
-import { useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { RunMode } from "@/shared/types/api";
+import type { RunModeSelection } from "@/shared/types/api";
 
 interface RunModeSelectorProps {
-  value: RunMode;
-  onChange: (mode: RunMode) => void;
+  value: RunModeSelection;
+  onChange: (mode: RunModeSelection) => void;
   disabled?: boolean;
+  layout?: "default" | "compact";
+  menuPlacement?: "top" | "bottom";
+  showLabel?: boolean;
 }
 
-const PRIMARY_MODES: RunMode[] = ["sota", "quick"];
-const ADVANCED_MODES: RunMode[] = ["exploratory", "fggv"];
-const RECOMMENDED_MODE: RunMode = "sota";
+const MODE_OPTIONS: RunModeSelection[] = ["auto", "sota", "quick", "exploratory", "fggv"];
 
-function ModeCard({
-  mode,
-  selected,
+export function RunModeSelector({
+  value,
+  onChange,
   disabled,
-  onSelect,
-}: {
-  mode: RunMode;
-  selected: boolean;
-  disabled?: boolean;
-  onSelect: () => void;
-}) {
+  layout = "default",
+  menuPlacement = "bottom",
+  showLabel = true,
+}: RunModeSelectorProps) {
   const { t } = useTranslation();
-  const recommended = mode === RECOMMENDED_MODE;
+  const menuId = useId();
+  const labelId = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const compact = layout === "compact";
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [open]);
+
+  const selectMode = (mode: RunModeSelection) => {
+    onChange(mode);
+    setOpen(false);
+  };
+
+  const modeHint = t(`newRun.runMode.${value}.hint`, {
+    defaultValue: t(`newRun.runMode.${value}.shortHint`),
+  });
 
   return (
-    <button
-      type="button"
-      className={`run-mode-card ${selected ? "run-mode-card--selected" : ""}`}
-      disabled={disabled}
-      aria-pressed={selected}
-      onClick={onSelect}
+    <div
+      className={`run-mode-picker ${compact ? "run-mode-picker--compact" : ""}`}
+      ref={rootRef}
     >
-      <div className="run-mode-card__head">
-        <span className="run-mode-card__label">{t(`newRun.runMode.${mode}.label`)}</span>
-        {recommended ? <span className="run-mode-card__badge">{t("newRun.runMode.recommended")}</span> : null}
-      </div>
-      <p className="run-mode-card__hint">{t(`newRun.runMode.${mode}.shortHint`)}</p>
-    </button>
-  );
-}
+      {showLabel && !compact ? (
+        <span className="run-mode-picker__label" id={labelId}>
+          {t("newRun.runMode.label")}
+        </span>
+      ) : null}
 
-export function RunModeSelector({ value, onChange, disabled }: RunModeSelectorProps) {
-  const { t } = useTranslation();
-  const [showAdvanced, setShowAdvanced] = useState(ADVANCED_MODES.includes(value));
-
-  return (
-    <Form.Group className="field-group">
-      <Form.Label>{t("newRun.runMode.label")}</Form.Label>
-      <p className="run-mode-selector__intro">{t("newRun.runMode.intro")}</p>
-
-      <div className="run-mode-cards">
-        {PRIMARY_MODES.map((mode) => (
-          <ModeCard
-            key={mode}
-            mode={mode}
-            selected={value === mode}
-            disabled={disabled}
-            onSelect={() => onChange(mode)}
-          />
-        ))}
-      </div>
-
-      <Button
+      <button
         type="button"
-        variant="link"
-        className="run-mode-selector__advanced-toggle"
-        onClick={() => setShowAdvanced((open) => !open)}
+        className="run-mode-picker__trigger"
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={menuId}
+        aria-labelledby={showLabel && !compact ? labelId : undefined}
+        onClick={() => setOpen((current) => !current)}
       >
-        {showAdvanced ? t("newRun.runMode.hideAdvanced") : t("newRun.runMode.showAdvanced")}
-      </Button>
+        <span className="run-mode-picker__trigger-text">
+          <span className="run-mode-picker__trigger-label">{t(`newRun.runMode.${value}.label`)}</span>
+          {!compact ? (
+            <span className="run-mode-picker__trigger-hint">{t(`newRun.runMode.${value}.shortHint`)}</span>
+          ) : null}
+        </span>
+        <span className="run-mode-picker__chevron" aria-hidden>
+          {open ? "▴" : "▾"}
+        </span>
+      </button>
 
-      {showAdvanced ? (
-        <div className="run-mode-cards">
-          {ADVANCED_MODES.map((mode) => (
-            <ModeCard
-              key={mode}
-              mode={mode}
-              selected={value === mode}
-              disabled={disabled}
-              onSelect={() => onChange(mode)}
-            />
-          ))}
+      {open ? (
+        <div
+          className={`run-mode-picker__menu run-mode-picker__menu--${menuPlacement}`}
+          id={menuId}
+          role="listbox"
+          aria-label={t("newRun.runMode.label")}
+        >
+          {MODE_OPTIONS.map((mode) => {
+            const selected = value === mode;
+            return (
+              <button
+                key={mode}
+                type="button"
+                role="option"
+                aria-selected={selected}
+                className={`run-mode-picker__option ${selected ? "run-mode-picker__option--selected" : ""}`}
+                onClick={() => selectMode(mode)}
+              >
+                <span className="run-mode-picker__option-main">
+                  <span className="run-mode-picker__option-head">
+                    <span className="run-mode-picker__option-label">{t(`newRun.runMode.${mode}.label`)}</span>
+                    {mode === "auto" ? (
+                      <span className="run-mode-picker__option-badge">{t("newRun.runMode.recommended")}</span>
+                    ) : null}
+                  </span>
+                  <span className="run-mode-picker__option-hint">{t(`newRun.runMode.${mode}.shortHint`)}</span>
+                </span>
+                {selected ? (
+                  <span className="run-mode-picker__option-check" aria-hidden>
+                    ✓
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
         </div>
       ) : null}
 
-      <Form.Text className="inline-meta d-block">{t(`newRun.runMode.${value}.hint`)}</Form.Text>
-    </Form.Group>
+      {!compact ? <p className="run-mode-picker__hint">{modeHint}</p> : null}
+    </div>
   );
 }

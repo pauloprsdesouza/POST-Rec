@@ -43,8 +43,10 @@ class FetchJob:
     attempt: int = 1
     max_attempts: int = 5
     priority: int = 50
-    job_type: str = "search"
-    seed_paper_ids: tuple[str, ...] = ()
+    research_area: str | None = None
+    topics: tuple[str, ...] = ()
+    openalex_tier: str = "balanced"
+    use_search: bool = True
 
 
 @dataclass

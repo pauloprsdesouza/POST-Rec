@@ -78,8 +78,6 @@ export function ProfilePage() {
           expected_output:
             profileData.recommendation_defaults?.expected_output ?? defaultOutput,
           desired_depth: profileData.recommendation_defaults?.desired_depth ?? "medium",
-          avoid_real_user_experiments:
-            profileData.recommendation_defaults?.avoid_real_user_experiments ?? true,
           max_article_age_years:
             profileData.recommendation_defaults?.max_article_age_years ?? 5,
         });

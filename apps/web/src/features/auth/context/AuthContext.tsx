@@ -8,8 +8,8 @@ import {
   type ReactNode,
 } from "react";
 
-import { profileService, sessionService } from "@/shared/api";
-import type { AuthResponse } from "@/shared/types/api";
+import { profileService, sessionService, authService } from "@/shared/api";
+import type { AuthResponse, UserRole } from "@/shared/types/api";
 
 const STORAGE_KEY = "postrec.auth";
 
@@ -19,6 +19,7 @@ export interface AuthUser {
   fullName?: string | null;
   email?: string | null;
   whatsappOptIn?: boolean;
+  role: UserRole;
 }
 
 interface StoredAuth {
@@ -34,6 +35,7 @@ interface AuthContextValue {
   accessToken: string | null;
   user: AuthUser | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   consentDone: boolean;
   profileDone: boolean;
   sessionId: string | null;
@@ -55,7 +57,11 @@ function readStorage(): StoredAuth | null {
     return null;
   }
   try {
-    return JSON.parse(raw) as StoredAuth;
+    const parsed = JSON.parse(raw) as StoredAuth;
+    if (parsed.user && !parsed.user.role) {
+      parsed.user.role = "researcher";
+    }
+    return parsed;
   } catch {
     return null;
   }
@@ -70,15 +76,20 @@ function writeStorage(data: StoredAuth | null): void {
 }
 
 async function resolveOnboardingFlags(accessToken: string) {
-  const [profileResult, consentResult] = await Promise.allSettled([
+  const [profileResult, consentResult, meResult] = await Promise.allSettled([
     profileService.getProfile(accessToken),
     sessionService.getConsentStatus(accessToken),
+    authService.getMe(accessToken),
   ]);
 
   return {
     profileDone:
       profileResult.status === "fulfilled" ? Boolean(profileResult.value.research_area) : null,
     consentDone: consentResult.status === "fulfilled" ? consentResult.value.accepted : null,
+    role: meResult.status === "fulfilled" ? meResult.value.role : null,
+    isAdmin: meResult.status === "fulfilled" ? Boolean(meResult.value.is_admin) : null,
+    canUseResearchFeatures:
+      meResult.status === "fulfilled" ? meResult.value.can_use_research_features !== false : null,
   };
 }
 
@@ -110,8 +121,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const profileDone = flags.profileDone ?? current.profileDone;
         const consentDone = flags.consentDone ?? current.consentDone;
+        const role = flags.isAdmin ? "admin" : (flags.role ?? current.user?.role ?? "researcher");
 
-        if (profileDone === current.profileDone && consentDone === current.consentDone) {
+        if (
+          profileDone === current.profileDone &&
+          consentDone === current.consentDone &&
+          role === current.user?.role
+        ) {
           return current;
         }
 
@@ -119,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ...current,
           profileDone,
           consentDone,
+          user: current.user ? { ...current.user, role } : current.user,
         };
       });
     })();
@@ -129,15 +146,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [stored?.accessToken]);
 
   const signIn = useCallback(async (response: AuthResponse) => {
+    const flags = await resolveOnboardingFlags(response.access_token);
+
     const user: AuthUser = {
       userId: response.user_id,
       phoneNumber: response.phone_number,
       fullName: response.full_name,
       email: response.email,
       whatsappOptIn: response.whatsapp_opt_in,
+      role: flags.isAdmin || response.role === "admin" ? "admin" : (response.role ?? flags.role ?? "researcher"),
     };
-
-    const flags = await resolveOnboardingFlags(response.access_token);
 
     setStored((previous) => {
       const consentDone = flags.consentDone ?? previous?.consentDone ?? false;
@@ -198,6 +216,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       accessToken: stored?.accessToken ?? null,
       user: stored?.user ?? null,
       isAuthenticated: Boolean(stored?.accessToken),
+      isAdmin: stored?.user?.role === "admin",
       consentDone: stored?.consentDone ?? false,
       profileDone: stored?.profileDone ?? false,
       sessionId: stored?.sessionId ?? null,

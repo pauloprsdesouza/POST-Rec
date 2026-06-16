@@ -56,6 +56,7 @@ def _alter_to_enum(
     nullable: bool,
     default: str | None = None,
 ) -> None:
+    op.execute(sa.text(f"ALTER TABLE {table} ALTER COLUMN {column} DROP DEFAULT"))
     using = _case_cast(column, enum_name, values, default or values[0])
     op.execute(sa.text(f"ALTER TABLE {table} ALTER COLUMN {column} TYPE {enum_name} USING ({using})"))
     if default is not None:

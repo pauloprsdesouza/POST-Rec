@@ -48,11 +48,115 @@ const FAILED_STATUSES = new Set([
   "failed_schema_validation",
 ]);
 
+const RETRYABLE_STATUSES = new Set([
+  "failed",
+  "cancelled",
+  "cost_limit_exceeded",
+  "failed_schema_validation",
+]);
+
 export function isRunActive(status: string): boolean {
   return !["completed", ...FAILED_STATUSES].includes(status);
 }
 
+const STATUS_PROGRESS_FLOORS: Record<string, number> = {
+  queued: 2,
+  started: 5,
+  searching_papers: 10,
+  normalizing_documents: 20,
+  deduplicating_documents: 25,
+  generating_embeddings: 40,
+  ranking_candidates: 55,
+  generating_recommendations: 75,
+  validating_output: 88,
+};
+
+/** Ordered pipeline stages shown in the run progress UI. */
+export const RUN_PIPELINE_STAGES = [
+  "queued",
+  "started",
+  "searching_papers",
+  "generating_embeddings",
+  "ranking_candidates",
+  "generating_recommendations",
+  "validating_output",
+] as const;
+
+export type RunPipelineStage = (typeof RUN_PIPELINE_STAGES)[number];
+
+const PIPELINE_STAGE_INDEX = Object.fromEntries(
+  RUN_PIPELINE_STAGES.map((stage, index) => [stage, index]),
+) as Record<RunPipelineStage, number>;
+
+/** Map backend statuses to a pipeline step for the stepper (non-breaking alias support). */
+export function resolvePipelineStage(status: string): RunPipelineStage | null {
+  if (status === "normalizing_documents" || status === "deduplicating_documents") {
+    return "searching_papers";
+  }
+  if (status in PIPELINE_STAGE_INDEX) {
+    return status as RunPipelineStage;
+  }
+  return null;
+}
+
+export function getRunPipelineStageIndex(status: string): number {
+  const stage = resolvePipelineStage(status);
+  return stage ? PIPELINE_STAGE_INDEX[stage] : -1;
+}
+
+/** Format seconds elapsed since run start for live progress displays. */
+export function formatRunElapsed(
+  startedAt: string | null | undefined,
+  locale: string,
+  nowMs = Date.now(),
+): string | null {
+  if (!startedAt) {
+    return null;
+  }
+  const elapsedSec = Math.max(0, Math.floor((nowMs - new Date(startedAt).getTime()) / 1000));
+  if (elapsedSec < 60) {
+    return new Intl.NumberFormat(locale, { style: "unit", unit: "second", unitDisplay: "narrow" }).format(elapsedSec);
+  }
+  const minutes = Math.floor(elapsedSec / 60);
+  const seconds = elapsedSec % 60;
+  const minuteLabel = new Intl.NumberFormat(locale, { style: "unit", unit: "minute", unitDisplay: "narrow" }).format(
+    minutes,
+  );
+  if (seconds === 0) {
+    return minuteLabel;
+  }
+  const secondLabel = new Intl.NumberFormat(locale, { style: "unit", unit: "second", unitDisplay: "narrow" }).format(
+    seconds,
+  );
+  return `${minuteLabel} ${secondLabel}`;
+}
+
+/** Minimum visible progress for active runs so the bar never sits at 0% while work is underway. */
+export function getRunDisplayProgress(run: Pick<RecommendationRun, "status" | "progress">): number {
+  const progress = run.progress ?? 0;
+  if (!isRunActive(run.status)) {
+    return Math.min(Math.max(progress, 0), 100);
+  }
+  const floor = STATUS_PROGRESS_FLOORS[run.status] ?? 0;
+  return Math.min(Math.max(progress, floor), 100);
+}
+
 export type RunOutcome = "ready" | "reviewed" | "in_progress" | "failed" | "incomplete";
+
+export function canRetryRun(run: Pick<RecommendationRun, "status" | "recommendation_count">): boolean {
+  if (RETRYABLE_STATUSES.has(run.status)) {
+    return true;
+  }
+  return run.status === "completed" && (run.recommendation_count ?? 0) === 0;
+}
+
+export function canCancelRun(status: string): boolean {
+  return isRunActive(status);
+}
+
+export function canDismissRun(status: string): boolean {
+  return !canCancelRun(status);
+}
 
 export function getRunOutcome(run: RecommendationRun): RunOutcome {
   const recommendationCount = run.recommendation_count ?? 0;

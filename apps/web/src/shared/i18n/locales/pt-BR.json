@@ -50,6 +50,8 @@
     "preferences": "Preferências",
     "consent": "Consentimento",
     "signOut": "Sair",
+    "admin": "Administração",
+    "adminAndResearcher": "Administrador · acesso completo de pesquisador",
     "language": "Idioma",
     "themeDark": "Ativar modo escuro",
     "themeLight": "Ativar modo claro"
@@ -280,7 +282,6 @@
     "expectedOutput": "Resultado esperado",
     "defaultExpectedOutput": "Ideias que possam virar um artigo real usando conjuntos de dados públicos.",
     "defaultDepth": "Profundidade padrão",
-    "avoidRealUserExperiments": "Evitar experimentos com usuários reais",
     "depthShallow": "Rasa — visão geral rápida",
     "depthMedium": "Média — equilibrada",
     "depthDeep": "Profunda — planos detalhados",
@@ -314,10 +315,12 @@
     },
     "runMode": {
       "label": "Modo de geração",
-      "intro": "Escolha o quão profundo o POST-Rec analisa a literatura. Em dúvida? Comece com a opção recomendada.",
-      "recommended": "Recomendado",
-      "showAdvanced": "Mostrar modos avançados",
-      "hideAdvanced": "Ocultar modos avançados",
+      "recommended": "Padrão",
+      "auto": {
+        "label": "Auto",
+        "shortHint": "Deixe o POST-Rec escolher o método de geração para esta execução.",
+        "hint": "Recomendado para a maioria — o POST-Rec escolhe o melhor pipeline automaticamente."
+      },
       "quick": {
         "label": "Rápido",
         "shortHint": "Prévia rápida — bom para uma primeira exploração.",
@@ -378,6 +381,7 @@
     "searchMatchCount": "{{count}} ideia(s) correspondente(s)",
     "readyBannerTitle": "{{count}} execução(ões) aguardando seu feedback",
     "readyBannerText": "Avaliações rápidas nos ajudam a personalizar suas próximas recomendações.",
+    "reviewFirst": "Revisar primeira execução",
     "reviewAndRate": "Revisar e avaliar",
     "viewIdeas": "Ver ideias",
     "rateIdeasHint": "~30 s · polegar cima ou baixo",
@@ -392,6 +396,20 @@
     "outcomeIncomplete": "Sem ideias geradas",
     "completedWithoutIdeas": "Esta execução terminou, mas nenhuma recomendação foi salva. Você pode iniciar uma nova com outros tópicos.",
     "noIdeasGenerated": "Concluiu sem ideias",
+    "actions": {
+      "title": "Ações da execução",
+      "retry": "Executar novamente",
+      "cancel": "Cancelar execução",
+      "archive": "Arquivar",
+      "remove": "Remover permanentemente",
+      "cancelConfirm": "Cancelar esta execução? O trabalho em andamento será interrompido.",
+      "archiveConfirm": "Arquivar esta execução? Ela será ocultada da sua lista.",
+      "removeConfirm": "Remover permanentemente esta execução? Isso não pode ser desfeito.",
+      "learnedTopicsLegend": "Tópicos do perfil vinculados a esta execução",
+      "learnedTopicsHint": "Selecione os tópicos que deseja remover dos tópicos aprendidos do seu perfil.",
+      "loadingLearnedTopics": "Verificando tópicos relacionados no seu perfil…",
+      "error": "Não foi possível concluir essa ação. Tente novamente."
+    },
     "completeBanner": {
       "title": "Suas ideias estão prontas",
       "text": "Toque em Útil ou Não útil em cada ideia — um segundo cada.",
@@ -485,39 +503,60 @@
       "novelty": "Novidade",
       "impact": "Impacto"
     },
-    "sotaVerification": {
-      "title": "Verificação SOTA",
-      "sotaSummary": "SOTA atual",
-      "noveltyDelta": "Delta de novidade",
-      "closestPriorWork": "Trabalho anterior mais próximo",
-      "sotaAnchors": "Âncoras SOTA",
-      "sotaFit": "Ajuste SOTA",
-      "noveltyVerified": "Novidade verificada",
-      "criticPassed": "Crítico aprovado",
-      "criticReview": "Revisão do crítico",
-      "differentiationRationale": "Justificativa de diferenciação",
-      "embeddingDistance": "Similaridade máxima com fontes (menor é melhor)",
-      "recencyGap": "Lacuna de recência",
-      "validationIssues": "Problemas de validação",
-      "fggvScore": "Pontuação FGGV",
-      "facetNoveltyIndex": "Índice de novidade por faceta",
-      "gapAlignmentScore": "Alinhamento com lacunas",
-      "facetDeltas": "Deltas por faceta",
-      "alignedGaps": "Lacunas alinhadas"
+    "ideaVerification": {
+      "title": "Literatura e novidade",
+      "intro": "Como esta ideia se relaciona com a pesquisa existente e o que a torna distinta.",
+      "verifiedBadge": "Literatura verificada",
+      "literatureContext": "O que a literatura mostra",
+      "whatsNew": "O que há de novo",
+      "closestWork": "Trabalho relacionado mais próximo",
+      "howItDiffers": "Como esta ideia difere",
+      "noveltyConfidence": "Confiança na novidade",
+      "literatureAlignment": "Alinhamento com a literatura",
+      "keyPapers": "Artigos de referência"
     },
     "refinement": {
-      "title": "Precisa de refinamento",
-      "subtitle": "{{count}} ideia(s) foram salvas, mas não passaram na validação SOTA/novidade.",
-      "badge": "Precisa de refinamento"
+      "title": "Ideias que precisam de mais trabalho",
+      "subtitle": "{{count}} rascunho(s) foram salvos, mas precisam de evidências mais fortes antes de recomendarmos.",
+      "badge": "Rascunho"
     }
   },
   "evidence": {
     "supportingArticles": "Artigos de apoio",
     "noArticles": "Nenhum artigo de apoio citado para esta recomendação.",
     "articlesCited": "{{count}} artigo(s) citado(s) como evidência.",
+    "explainedCount": "{{count}} com notas de relevância",
+    "intro": "Cada artigo abaixo inclui uma nota sobre como apoia esta ideia de pesquisa.",
+    "whyRelevant": "Por que apoia a ideia",
+    "noRelevance": "Nenhuma explicação de relevância foi fornecida para esta citação.",
+    "showMore": "Ler explicação completa",
+    "showLess": "Mostrar menos",
+    "relevanceScoreTooltip": "Força de correspondência temática: {{percent}}%",
+    "relevanceScoreAria": "Correspondência temática {{percent}} por cento",
+    "relevanceTier": {
+      "high": "Forte correspondência",
+      "medium": "Boa correspondência",
+      "low": "Apoio"
+    },
     "catalogUnavailable": "Catálogo de fontes indisponível para esta execução.",
     "papersUsed": "{{count}} artigos filtrados por relevância usados como contexto.",
-    "doi": "DOI"
+    "qualisCount": "{{count}} com classificação Qualis",
+    "doi": "DOI",
+    "qualisPrefix": "Qualis",
+    "qualisShort": "Qualis {{estrato}}",
+    "qualisLabel": "Classificação Qualis CAPES: {{estrato}}",
+    "qualisLabelWithPeriod": "Classificação Qualis CAPES: {{estrato}} ({{period}})",
+    "qualisTooltip": "Classificação Qualis CAPES do periódico (estrato {{estrato}})",
+    "qualisTooltipWithPeriod": "Classificação Qualis CAPES do periódico (estrato {{estrato}}, período {{period}})",
+    "sourceLabel": "Recuperado via {{source}}",
+    "sourceTooltip": "Artigo recuperado via {{source}}",
+    "sourceShort": {
+      "openalex": "OpenAlex",
+      "crossref": "Crossref",
+      "semantic_scholar": "S2",
+      "arxiv": "arXiv",
+      "unknown": "Outro"
+    }
   },
   "insights": {
     "title": "Métricas",
@@ -824,7 +863,7 @@
     "incomplete": "A execução terminou, mas nenhuma ideia foi gerada.",
     "queued": "Na fila — começaremos a buscar em breve.",
     "started": "Iniciando sua execução de pesquisa personalizada…",
-    "searching_papers": "Buscando artigos acadêmicos que correspondam aos seus tópicos…",
+    "searching_papers": "Buscando artigos no OpenAlex que correspondam aos seus tópicos…",
     "normalizing_documents": "Organizando e limpando os artigos recuperados…",
     "deduplicating_documents": "Removendo artigos duplicados do corpus…",
     "generating_embeddings": "Analisando o conteúdo para encontrar as melhores correspondências…",
@@ -839,6 +878,9 @@
   },
   "progress": {
     "step": "Etapa: {{step}}",
+    "stageOf": "Etapa {{current}} de {{total}}",
+    "elapsed": "{{time}} decorrido",
+    "pipelineLabel": "Etapas do processo",
     "progressLabel": "Progresso",
     "estCost": "Custo est.",
     "updating": "Atualizando a cada poucos segundos…",
@@ -924,8 +966,8 @@
           "body": "Seus tópicos, área, profundidade e restrições são armazenados como UserExpectation vinculada à execução."
         },
         "retrieval": {
-          "title": "Busca multi-fonte",
-          "body": "Consultas em paralelo ao OpenAlex, arXiv, Semantic Scholar e Crossref."
+          "title": "Busca dual-pass no OpenAlex",
+          "body": "Consultas expandidas ao OpenAlex com filtros de campo, subcampo e tópico em passes SOTA (recentes) e foundation (altamente citados)."
         },
         "relevance": {
           "title": "Filtragem por relevância",
@@ -959,7 +1001,7 @@
       "researchArea": "Área de pesquisa — contexto do campo",
       "expectedOutput": "Saída esperada — ex.: ideias para conferência",
       "depth": "Profundidade desejada — exploração rápida ou exaustiva",
-      "constraints": "Restrições — ex.: evitar experimentos com usuários reais",
+      "constraints": "Restrições — ex.: idade máxima dos artigos",
       "profile": "Com perfil de pesquisa, tópicos aprendidos e técnicas preferidas expandem o conjunto de tokens Q:",
       "expansionCaption": "Conjunto de tópicos expandido para recuperação"
     },
@@ -1043,6 +1085,76 @@
       "l3": "A recuperação é lexical — artigos semanticamente relevantes podem ser perdidos.",
       "l4": "Contagem de citações inclina levemente para trabalhos muito citados.",
       "l5": "Custos de API são aproximados; veja o painel de uso em execuções concluídas."
+    }
+  },
+  "admin": {
+    "title": "Administração",
+    "subtitle": "Operações da plataforma, avaliação e controle de acesso",
+    "badge": "Operador",
+    "sidebarLabel": "Navegação administrativa",
+    "loading": "Carregando dados administrativos…",
+    "loadError": "Não foi possível carregar os dados administrativos.",
+    "backToResearch": "← Área de pesquisa",
+    "nav": {
+      "overview": "Visão geral",
+      "evaluation": "Avaliação",
+      "models": "Modelos",
+      "system": "Sistema",
+      "users": "Usuários"
+    },
+    "overview": {
+      "title": "Visão operacional",
+      "subtitle": "Saúde e uso geral do POST-Rec",
+      "platform": "Métricas da plataforma",
+      "users": "Usuários totais",
+      "activeUsers": "Usuários ativos",
+      "admins": "Administradores",
+      "totalRuns": "Execuções totais",
+      "completionHint": "{{rate}} de conclusão",
+      "feedback": "Avaliações",
+      "llmCost": "Custo LLM estimado",
+      "systemHealth": "Saúde do sistema",
+      "environment": "Ambiente",
+      "openEvaluation": "Abrir painel de avaliação",
+      "openReport": "Relatório de pesquisa completo"
+    },
+    "evaluation": {
+      "title": "Avaliação do sistema",
+      "subtitle": "Métricas de validação, experimentos e qualidade de ranking"
+    },
+    "models": {
+      "title": "Avaliação de modelos",
+      "subtitle": "Modelos configurados e uso de tokens observado",
+      "configured": "Modelos configurados",
+      "generation": "Modelo de geração",
+      "embedding": "Modelo de embeddings",
+      "usage": "Uso agregado",
+      "calls": "Chamadas API",
+      "tokens": "Tokens totais",
+      "cost": "Custo estimado (USD)",
+      "byModel": "Uso por modelo",
+      "tableModel": "Modelo",
+      "empty": "Nenhum uso de LLM registrado ainda."
+    },
+    "system": {
+      "title": "Configuração do sistema",
+      "subtitle": "Instantâneo somente leitura das configurações operacionais (sem segredos)",
+      "readOnlyNote": "Alterações exigem atualização do ambiente e reinício dos serviços. Esta visualização nunca expõe chaves de API ou senhas."
+    },
+    "users": {
+      "title": "Acesso de usuários",
+      "subtitle": "{{count}} contas registradas",
+      "name": "Nome",
+      "email": "E-mail",
+      "role": "Papel",
+      "status": "Status",
+      "you": "Você",
+      "researcher": "Pesquisador",
+      "admin": "Administrador",
+      "active": "Ativo",
+      "inactive": "Inativo",
+      "roleFor": "Papel de {{name}}",
+      "updateError": "Não foi possível atualizar o papel do usuário."
     }
   }
 }

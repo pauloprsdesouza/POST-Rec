@@ -4,22 +4,25 @@ from apps.api.shared.models import RecommendationRunEvent, SourceDocument
 from apps.api.shared.schemas.common import SourceDocumentResponse
 
 
+def _serialize_source_document(doc: SourceDocument) -> dict:
+    qualis = _qualis_fields_from_metadata(doc.metadata_)
+    return SourceDocumentResponse(
+        id=doc.id,
+        source=doc.source,
+        title=doc.title,
+        abstract=doc.abstract,
+        authors=doc.authors,
+        year=doc.year,
+        venue=doc.venue,
+        doi=doc.doi,
+        url=doc.url,
+        citation_count=doc.citation_count or 0,
+        qualis_estrato=qualis.get("qualis_estrato"),
+    ).model_dump(mode="json")
+
+
 def serialize_source_documents(documents: list[SourceDocument]) -> list[dict]:
-    return [
-        SourceDocumentResponse(
-            id=d.id,
-            source=d.source,
-            title=d.title,
-            abstract=d.abstract,
-            authors=d.authors,
-            year=d.year,
-            venue=d.venue,
-            doi=d.doi,
-            url=d.url,
-            citation_count=d.citation_count or 0,
-        ).model_dump(mode="json")
-        for d in documents
-    ]
+    return [_serialize_source_document(d) for d in documents]
 
 
 def get_run_source_documents(db, run_id) -> list[SourceDocument]:
@@ -47,6 +50,40 @@ def build_source_lookup(documents: list[SourceDocument]) -> tuple[dict, dict]:
             by_doi[str(doc.doi).lower()] = doc
         by_title[doc.title.lower().strip()] = doc
     return by_doi, by_title
+
+
+def _qualis_fields_from_metadata(metadata: dict | None) -> dict[str, str | float]:
+    if not isinstance(metadata, dict):
+        return {}
+
+    fields: dict[str, str | float] = {}
+    estrato = metadata.get("qualis_estrato")
+    if isinstance(estrato, str) and estrato.strip():
+        fields["qualis_estrato"] = estrato.strip().upper()
+
+    boost = metadata.get("qualis_boost")
+    if isinstance(boost, (int, float)):
+        fields["qualis_boost"] = float(boost)
+
+    period = metadata.get("qualis_period")
+    if isinstance(period, str) and period.strip():
+        fields["qualis_period"] = period.strip()
+
+    return fields
+
+
+def _relevance_score_from_metadata(metadata: dict | None) -> float | None:
+    if not isinstance(metadata, dict):
+        return None
+
+    for key in ("llm_relevance_score", "relevance_score", "deterministic_relevance_score"):
+        raw = metadata.get(key)
+        if isinstance(raw, (int, float)):
+            score = float(raw)
+            if score > 1.0:
+                score /= 100.0
+            return max(0.0, min(1.0, score))
+    return None
 
 
 def enrich_evidence_papers(evidence_papers: list | None, documents: list[SourceDocument]) -> list[dict]:
@@ -78,6 +115,11 @@ def enrich_evidence_papers(evidence_papers: list | None, documents: list[SourceD
         }
         if matched and not entry["url"]:
             entry["url"] = matched.url
+        if matched:
+            entry.update(_qualis_fields_from_metadata(matched.metadata_))
+            relevance = _relevance_score_from_metadata(matched.metadata_)
+            if relevance is not None:
+                entry["relevance_score"] = relevance
         enriched.append(entry)
 
     return enriched

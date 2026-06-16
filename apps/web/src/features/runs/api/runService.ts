@@ -7,6 +7,19 @@ import type {
 } from "@/shared/types/api";
 import type { IHttpClient } from "@/shared/api/httpClient";
 
+export interface RunCleanupPreview {
+  learned_topics: string[];
+}
+
+export interface RunActionResult {
+  status: string;
+  message: string;
+}
+
+export interface RunCleanupPayload {
+  remove_learned_topics?: string[];
+}
+
 export interface IRunService {
   listMyRuns(token: string, limit?: number, query?: string): Promise<RecommendationRun[]>;
   getRun(token: string, runId: string): Promise<RecommendationRun>;
@@ -16,6 +29,11 @@ export interface IRunService {
   createExpectation(token: string, payload: Record<string, unknown>): Promise<{ id: string }>;
   createRun(token: string, payload: Record<string, unknown>): Promise<{ run_id: string }>;
   submitFeedback(token: string, recommendationId: string, payload: Record<string, unknown>): Promise<FeedbackResult>;
+  cancelRun(token: string, runId: string): Promise<RunActionResult>;
+  retryRun(token: string, runId: string): Promise<RunActionResult>;
+  getRunCleanupPreview(token: string, runId: string): Promise<RunCleanupPreview>;
+  archiveRun(token: string, runId: string, payload?: RunCleanupPayload): Promise<RunActionResult>;
+  removeRun(token: string, runId: string, payload?: RunCleanupPayload): Promise<RunActionResult>;
 }
 
 export class RunService implements IRunService {
@@ -65,5 +83,25 @@ export class RunService implements IRunService {
     payload: Record<string, unknown>,
   ): Promise<FeedbackResult> {
     return this.client.post(`/api/v1/recommendations/${recommendationId}/feedback`, payload, { token });
+  }
+
+  cancelRun(token: string, runId: string): Promise<RunActionResult> {
+    return this.client.post(`/api/v1/recommendation-runs/${runId}/cancel`, {}, { token });
+  }
+
+  retryRun(token: string, runId: string): Promise<RunActionResult> {
+    return this.client.post(`/api/v1/recommendation-runs/${runId}/retry`, {}, { token });
+  }
+
+  getRunCleanupPreview(token: string, runId: string): Promise<RunCleanupPreview> {
+    return this.client.get(`/api/v1/recommendation-runs/${runId}/cleanup-preview`, { token });
+  }
+
+  archiveRun(token: string, runId: string, payload: RunCleanupPayload = {}): Promise<RunActionResult> {
+    return this.client.post(`/api/v1/recommendation-runs/${runId}/archive`, payload, { token });
+  }
+
+  removeRun(token: string, runId: string, payload: RunCleanupPayload = {}): Promise<RunActionResult> {
+    return this.client.post(`/api/v1/recommendation-runs/${runId}/remove`, payload, { token });
   }
 }

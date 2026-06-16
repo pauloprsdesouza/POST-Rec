@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter
 
+from apps.api.features.admin.router import router as admin_router
 from apps.api.features.auth.router import router as auth_router
 from apps.api.features.consent.router import router as consent_router
 from apps.api.features.experiments.router import router as experiments_router
@@ -27,6 +28,7 @@ for feature_router in (
     validation_router,
     experiments_router,
     health_router,
+    admin_router,
 ):
     api_router.include_router(feature_router)
 

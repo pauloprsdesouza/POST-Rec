@@ -36,12 +36,32 @@ def _invalidate_run_caches(run: RecommendationRun) -> None:
         cache_service.invalidate_user_runs(str(run.user_id))
 
 
+def _report_substep(db: Session, run: RecommendationRun, message: str, progress: int | None = None) -> None:
+    """Publish a user-facing pipeline update without changing run status."""
+    run_service._add_event(db, run, "pipeline_progress", message)
+    db.commit()
+    _invalidate_run_caches(run)
+    run_stream_service.publish(db, run)
+    if progress is not None:
+        run_service.bump_progress(db, run, progress)
+
+
 def _resolve_run_context(
     db: Session,
     run: RecommendationRun,
     topics: list[str],
     constraints: dict,
-) -> tuple[list[str], dict, SessionExpectation | None, str | None, list[str] | None, list[str] | None, int]:
+) -> tuple[
+    list[str],
+    dict,
+    SessionExpectation | None,
+    str | None,
+    list[str] | None,
+    list[str] | None,
+    int,
+    str,
+    str,
+]:
     expectation = None
     if run.expectation_id:
         expectation = db.query(SessionExpectation).filter_by(id=run.expectation_id).first()
@@ -52,6 +72,8 @@ def _resolve_run_context(
     constraints = merge_expectation_into_constraints(expectation, constraints)
 
     research_area = expectation.research_area if expectation else None
+    expected_output = expectation.expected_output if expectation else ""
+    desired_depth = expectation.desired_depth if expectation else "medium"
     learned_topics: list[str] | None = None
     avoided_topics: list[str] | None = None
     expanded_topics = topics
@@ -66,10 +88,12 @@ def _resolve_run_context(
             learned_topics = list(profile.learned_topics or [])
             avoided_topics = list(profile.avoided_topics or [])
             expanded_topics = profile_service.expanded_seed_topics(profile, topics)
-            if constraints.get("max_article_age_years") is None:
-                defaults = profile.recommendation_defaults or {}
-                if defaults.get("max_article_age_years") is not None:
-                    max_article_age_years = int(defaults["max_article_age_years"])
+            defaults = profile.recommendation_defaults or {}
+            if not expectation:
+                expected_output = expected_output or defaults.get("expected_output") or ""
+                desired_depth = defaults.get("desired_depth") or desired_depth or "medium"
+            if constraints.get("max_article_age_years") is None and defaults.get("max_article_age_years") is not None:
+                max_article_age_years = int(defaults["max_article_age_years"])
 
     return (
         expanded_topics,
@@ -79,6 +103,8 @@ def _resolve_run_context(
         learned_topics,
         avoided_topics,
         max_article_age_years,
+        expected_output or "",
+        desired_depth or "medium",
     )
 
 
@@ -126,12 +152,19 @@ def process_recommendation_run(self, run_id: str) -> dict:
         if run.status == RunStatus.COMPLETED:
             return {"status": "completed"}
 
-        if run.status in (RunStatus.FAILED, RunStatus.FAILED_SCHEMA_VALIDATION):
+        if run.status in (
+            RunStatus.FAILED,
+            RunStatus.FAILED_SCHEMA_VALIDATION,
+            RunStatus.COST_LIMIT_EXCEEDED,
+        ):
             run.error_message = None
             run.finished_at = None
             run.status = run.current_step or RunStatus.SEARCHING_PAPERS
             db.commit()
             _invalidate_run_caches(run)
+
+        if run.status == RunStatus.QUEUED:
+            run_service.update_status(db, run, RunStatus.STARTED, 5, "Starting run")
 
         run_input = run.input or {}
         topics = run_input.get("topics", [])
@@ -144,9 +177,15 @@ def process_recommendation_run(self, run_id: str) -> dict:
             learned_topics,
             avoided_topics,
             max_article_age_years,
+            expected_output,
+            desired_depth,
         ) = _resolve_run_context(db, run, topics, constraints)
 
         run_service.update_status(db, run, RunStatus.SEARCHING_PAPERS, 15, "Searching papers")
+        _report_substep(db, run, "Personalizing search from your topics and profile", 12)
+
+        def _retrieval_milestone(message: str, progress: int) -> None:
+            _report_substep(db, run, message, progress)
 
         papers = asyncio.run(
             retrieval_service.retrieve_papers(
@@ -157,6 +196,7 @@ def process_recommendation_run(self, run_id: str) -> dict:
                 learned_topics=learned_topics,
                 avoided_topics=avoided_topics,
                 max_article_age_years=max_article_age_years,
+                on_milestone=_retrieval_milestone,
             )
         )
         run_service._add_event(
@@ -173,12 +213,14 @@ def process_recommendation_run(self, run_id: str) -> dict:
         db.commit()
         _invalidate_run_caches(run)
         run_stream_service.publish(db, run)
+        run_service.bump_progress(db, run, 30)
 
         run_service.update_status(db, run, RunStatus.GENERATING_EMBEDDINGS, 45, "Embedding papers")
         texts = [f"{p.title}. {p.abstract or ''}" for p in papers]
         embeddings = gemini_service.generate_embeddings(db, run_id, texts)
         embedding_model = resolve_embedding_model(get_settings().gemini_embedding_model)
         embedding_by_paper_id = _persist_embeddings(db, papers, embeddings, embedding_model)
+        _report_substep(db, run, f"Analyzed content of {len(papers)} papers", 52)
 
         run_service.update_status(db, run, RunStatus.RANKING_CANDIDATES, 60, "Ranking")
 
@@ -201,11 +243,13 @@ def process_recommendation_run(self, run_id: str) -> dict:
             payload=ranking_payload,
         )
         db.commit()
+        run_service.bump_progress(db, run, 72)
 
         ranked_embeddings = [
             embedding_by_paper_id[str(paper.id)] for paper in papers if str(paper.id) in embedding_by_paper_id
         ]
 
+        _report_substep(db, run, f"Selected {len(papers)} strongest papers for idea generation")
         run_service.update_status(
             db,
             run,
@@ -237,10 +281,10 @@ def process_recommendation_run(self, run_id: str) -> dict:
             db=db,
             run_id=run_id,
             mode=run_mode,
-            research_area=expectation.research_area if expectation else "",
+            research_area=research_area or "",
             seed_topics=topics,
-            expected_output=expectation.expected_output if expectation else "",
-            desired_depth=expectation.desired_depth if expectation else "medium",
+            expected_output=expected_output,
+            desired_depth=desired_depth,
             constraints=constraints,
             papers=paper_dicts,
             paper_embeddings=ranked_embeddings,
@@ -248,6 +292,7 @@ def process_recommendation_run(self, run_id: str) -> dict:
             avoided_topics=avoided_topics,
         )
 
+        _report_substep(db, run, "Drafted research ideas — checking quality and feasibility", 86)
         run_service.update_status(db, run, RunStatus.VALIDATING_OUTPUT, 90, "Validating output")
         published = [rec for rec in recommendations if rec.get("_publication_status", "published") == "published"]
         if not recommendations:

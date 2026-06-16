@@ -25,7 +25,7 @@ async def test_fetch_queue_requeues_retryable_errors(monkeypatch):
     )
 
     processor = FetchQueueProcessor(handler, max_attempts=4)
-    result = await processor.process([FetchJob(source="arxiv", query="test", limit=3)])
+    result = await processor.process([FetchJob(source="openalex", query="test", limit=3)])
 
     assert calls["count"] == 3
     assert len(result.papers) == 1
@@ -47,7 +47,7 @@ async def test_fetch_queue_exhausts_after_max_attempts(monkeypatch):
     )
 
     processor = FetchQueueProcessor(handler, max_attempts=2)
-    result = await processor.process([FetchJob(source="semantic_scholar", query="test", limit=3)])
+    result = await processor.process([FetchJob(source="openalex", query="test", limit=3)])
 
     assert result.papers == []
     assert len(result.exhausted_jobs) == 1

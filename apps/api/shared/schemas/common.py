@@ -200,6 +200,7 @@ class SourceDocumentResponse(BaseModel):
     doi: str | None
     url: str | None
     citation_count: int
+    qualis_estrato: str | None = None
 
 
 class FeedbackCreate(BaseModel):
@@ -376,6 +377,7 @@ class AuthResponse(BaseModel):
     email: str | None = None
     full_name: str | None = None
     whatsapp_opt_in: bool = True
+    role: str = "researcher"
 
 
 class UserMeResponse(BaseModel):
@@ -384,6 +386,10 @@ class UserMeResponse(BaseModel):
     email: str | None = None
     full_name: str | None = None
     whatsapp_opt_in: bool = True
+    role: str = "researcher"
+    is_admin: bool = False
+    can_access_admin: bool = False
+    can_use_research_features: bool = True
 
 
 class UserAccountResponse(BaseModel):
@@ -442,6 +448,19 @@ class RunSummaryResponse(BaseModel):
     search_snippet: str | None = None
 
 
+class RunCleanupRequest(BaseModel):
+    remove_learned_topics: list[str] = Field(default_factory=list)
+
+
+class RunCleanupPreviewResponse(BaseModel):
+    learned_topics: list[str] = Field(default_factory=list)
+
+
+class RunActionResponse(BaseModel):
+    status: str
+    message: str
+
+
 class ExperimentEnrollmentResponse(BaseModel):
     experiment_active: bool
     experiment_id: str | None = None
@@ -449,6 +468,98 @@ class ExperimentEnrollmentResponse(BaseModel):
     presentation_profile: str = "standard"
     control_mode: str = "sota"
     treatment_mode: str = "fggv"
+
+
+class AdminUserCounts(BaseModel):
+    total: int
+    active: int
+    admins: int
+    researchers: int
+
+
+class AdminRunCounts(BaseModel):
+    total: int
+    completed: int
+    failed: int
+    completion_rate: float
+    failure_rate: float
+
+
+class AdminOverviewResponse(BaseModel):
+    generated_at: str
+    users: AdminUserCounts
+    runs: AdminRunCounts
+    feedback_total: int
+    llm_cost_usd_total: float
+    system_status: str
+    health_checks: dict[str, str]
+    app_env: str
+
+
+class AdminSystemConfigResponse(BaseModel):
+    generated_at: str
+    environment: dict
+
+
+class AdminModelAggregate(BaseModel):
+    call_count: int
+    total_tokens: int
+    estimated_cost_usd: float
+
+
+class AdminConfiguredModels(BaseModel):
+    generation: str
+    embedding: str
+    embedding_dimensions: int
+
+
+class AdminModelSummary(BaseModel):
+    provider: str
+    model: str
+    call_count: int
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+    estimated_cost_usd: float
+
+
+class AdminModelOperation(BaseModel):
+    provider: str
+    model: str
+    operation: str
+    call_count: int
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+    estimated_cost_usd: float
+
+
+class AdminModelEvaluationResponse(BaseModel):
+    generated_at: str
+    configured_models: AdminConfiguredModels
+    aggregate: AdminModelAggregate
+    models: list[AdminModelSummary]
+    operations: list[AdminModelOperation]
+
+
+class AdminUserResponse(BaseModel):
+    id: UUID
+    email: str | None = None
+    full_name: str | None = None
+    phone_number: str | None = None
+    role: str
+    is_active: bool
+    is_admin: bool
+    created_at: str | None = None
+
+
+class AdminUserListResponse(BaseModel):
+    total: int
+    items: list[AdminUserResponse]
+
+
+class AdminUserRoleUpdate(BaseModel):
+    role: str = Field(pattern="^(researcher|admin)$")
 
 
 class ReadyResponse(BaseModel):

@@ -108,6 +108,7 @@ def search_run_summaries_payload(
                 & (RecommendationCandidate.status == "published"),
             )
             .filter(RecommendationRun.user_id == user_id)
+            .filter(RecommendationRun.archived_at.is_(None))
             .filter(token_match)
             .group_by(RecommendationRun.id)
             .order_by(desc(func.max(RecommendationRun.created_at)))

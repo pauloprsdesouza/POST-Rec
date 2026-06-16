@@ -18,7 +18,6 @@ interface RecommendationDetailProps {
   sessionId: string | null;
   token: string;
   sources?: SourceDocument[];
-  blind?: boolean;
   initialRating?: number | null;
   onRated?: (recommendationId: string, rating: number, isFirstRating: boolean) => void;
   onSkip?: () => void;
@@ -32,7 +31,6 @@ export function RecommendationDetail({
   sessionId,
   token,
   sources = [],
-  blind = false,
   initialRating = null,
   onRated,
   onSkip,
@@ -177,7 +175,7 @@ export function RecommendationDetail({
             <Section label={t("ideas.hypothesis")} value={recommendation.hypothesis} />
             <Section label={t("ideas.contribution")} value={recommendation.expected_contribution} />
             <Section label={t("ideas.relatedWork")} value={recommendation.related_work_summary} />
-            <SotaVerificationPanel recommendation={recommendation} sources={sources} blind={blind} />
+            <SotaVerificationPanel recommendation={recommendation} sources={sources} />
             {recommendation.scores ? (
               <div className="idea-scores">
                 <p className="idea-scores__heading">{t("ideas.qualityScores")}</p>

@@ -1,4 +1,4 @@
-import type { AuthResponse, OtpRequestResponse } from "@/shared/types/api";
+import type { AuthResponse, OtpRequestResponse, UserMe } from "@/shared/types/api";
 import type { IHttpClient } from "@/shared/api/httpClient";
 
 export interface IAuthService {
@@ -10,6 +10,7 @@ export interface IAuthService {
   ): Promise<OtpRequestResponse>;
   requestLoginOtp(email: string): Promise<OtpRequestResponse>;
   verifyOtp(email: string, code: string): Promise<AuthResponse>;
+  getMe(token: string): Promise<UserMe>;
   health(): Promise<{ status: string }>;
 }
 
@@ -40,6 +41,10 @@ export class AuthService implements IAuthService {
 
   verifyOtp(email: string, code: string): Promise<AuthResponse> {
     return this.client.post("/api/v1/auth/otp/verify", { email, code });
+  }
+
+  getMe(token: string): Promise<UserMe> {
+    return this.client.get("/api/v1/auth/me", { token });
   }
 
   health(): Promise<{ status: string }> {

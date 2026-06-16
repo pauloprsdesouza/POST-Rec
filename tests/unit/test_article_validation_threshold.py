@@ -10,14 +10,15 @@ FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "golden_eval_topics
 
 
 def test_article_llm_min_relevance_score_default_is_semantic_rubric():
-    """0.5 is the LLM rubric midpoint; lexical scores on golden fixtures are much lower."""
-    assert Settings().article_llm_min_relevance_score == 0.5
+    """0.42 accepts partial rubric matches while staying above weak-match band."""
+    assert Settings().article_llm_min_relevance_score == 0.42
 
 
 def test_golden_eval_fixture_papers_score_low_on_lexical_relevance():
     """Golden fixture titles/abstracts are minimal stubs — not used to tune the LLM threshold."""
     payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
     lexical_threshold = Settings().retrieval_min_relevance_score
+    stub_ceiling = Settings().article_llm_min_relevance_score
 
     for topic in payload["topics"]:
         for paper in topic["papers"]:
@@ -26,4 +27,4 @@ def test_golden_eval_fixture_papers_score_low_on_lexical_relevance():
                 topics=topic["seed_topics"],
                 research_area=topic["research_area"],
             )
-            assert score < lexical_threshold or score < Settings().article_llm_min_relevance_score
+            assert score < lexical_threshold or score < stub_ceiling

@@ -1,4 +1,4 @@
-"""Per-source request pacing to respect external API limits."""
+"""OpenAlex request pacing to respect API limits."""
 
 import asyncio
 import time
@@ -8,14 +8,6 @@ from apps.api.shared.observability.logging import get_logger
 from apps.api.shared.settings import get_settings
 
 logger = get_logger("postrec-retrieval")
-
-# Conservative defaults (Semantic Scholar / arXiv are strictest).
-DEFAULT_SOURCE_MIN_INTERVAL_SECONDS = {
-    "openalex": 0.35,
-    "crossref": 0.35,
-    "semantic_scholar": 5.0,
-    "arxiv": 4.0,
-}
 
 
 class SourceRateLimiter:
@@ -38,13 +30,9 @@ class SourceRateLimiter:
 
     def _interval(self, source: str) -> float:
         settings = get_settings()
-        configured = {
-            "openalex": settings.retrieval_openalex_min_interval,
-            "crossref": settings.retrieval_crossref_min_interval,
-            "semantic_scholar": settings.retrieval_semantic_scholar_min_interval,
-            "arxiv": settings.retrieval_arxiv_min_interval,
-        }
-        return configured.get(source, DEFAULT_SOURCE_MIN_INTERVAL_SECONDS.get(source, 0.5))
+        if source == "openalex":
+            return settings.retrieval_openalex_min_interval
+        return 0.5
 
     def _wait_local(self, source: str) -> float:
         interval = self._interval(source)

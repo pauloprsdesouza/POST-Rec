@@ -1,15 +1,22 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useTranslation } from "react-i18next";
 
 import type { RecommendationRun, RunEvent } from "@/shared/types/api";
 
-import { getRunOutcome } from "@/features/runs/utils/runs";
+import {
+  RUN_PIPELINE_STAGES,
+  formatRunElapsed,
+  getRunDisplayProgress,
+  getRunOutcome,
+  getRunPipelineStageIndex,
+} from "@/features/runs/utils/runs";
 
 import { formatEstimatedCost } from "@/features/runs/utils/formatCost";
 
 import { filterUserFacingEvents } from "@/features/runs/utils/runLog";
 
+import { RunPipelineStepper } from "./RunPipelineStepper";
 import { RunProgressBar } from "./RunProgressBar";
 interface RunProgressPanelProps {
   run: RecommendationRun;
@@ -39,20 +46,53 @@ export function RunProgressPanel({ run, events, live = true }: RunProgressPanelP
     defaultValue: t("statusDescriptions.default", { step: stepLabel }),
   });
   const isActive = outcome === "in_progress";
+  const displayProgress = getRunDisplayProgress(run);
   const costFormatted = formatEstimatedCost(run.estimated_cost_usd ?? 0, i18n.language);
+  const pipelineIndex = getRunPipelineStageIndex(run.current_step ?? run.status);
+  const pipelineStep =
+    pipelineIndex >= 0 ? pipelineIndex + 1 : null;
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!isActive) {
+      return;
+    }
+    const timer = window.setInterval(() => setNowMs(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [isActive]);
+
+  const elapsed = formatRunElapsed(run.started_at, i18n.language, nowMs);
 
   return (
     <div className="run-progress panel">
       {isActive ? (
         <p className="run-progress__encourage">{t("progress.encourage")}</p>
       ) : null}
-      <p className="run-progress__step">{stepDescription}</p>
-      {!isActive ? (
-        <p className="run-progress__step-label">{stepLabel}</p>
+      {isActive ? (
+        <div className="run-progress__meta">
+          {pipelineStep ? (
+            <span className="run-progress__meta-item">
+              {t("progress.stageOf", {
+                current: pipelineStep,
+                total: RUN_PIPELINE_STAGES.length,
+              })}
+            </span>
+          ) : null}
+          {elapsed ? (
+            <span className="run-progress__meta-item">
+              {t("progress.elapsed", { time: elapsed })}
+            </span>
+          ) : null}
+        </div>
       ) : null}
+      <p className="run-progress__step">{stepDescription}</p>
+      <p className="run-progress__step-label">{stepLabel}</p>
+
+      {isActive ? <RunPipelineStepper status={run.current_step ?? run.status} /> : null}
 
       <RunProgressBar
-        value={run.progress}
+        value={displayProgress}
+        indeterminate={isActive && run.status === "searching_papers" && displayProgress < 32}
         tone={outcome === "failed" ? "danger" : outcome === "ready" ? "success" : "default"}
         label={t("progress.progressLabel")}
       />
@@ -60,7 +100,7 @@ export function RunProgressPanel({ run, events, live = true }: RunProgressPanelP
         <div className="run-progress__stats">
           <div className="run-progress__stat">
             <span className="run-progress__stat-label">{t("progress.progressLabel")}</span>
-            <span className="run-progress__stat-value">{run.progress}%</span>
+            <span className="run-progress__stat-value">{displayProgress}%</span>
           </div>
           <div className="run-progress__stat">
             <span className="run-progress__stat-label">{t("progress.estCost")}</span>
