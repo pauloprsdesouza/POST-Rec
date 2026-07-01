@@ -22,7 +22,8 @@ import { useRuns } from "@/features/runs/context/RunsContext";
 import { useRunDetail } from "@/features/runs/hooks/useRunDetail";
 
 import { RunManageActions } from "@/features/runs/components/RunManageActions";
-import { formatRunDateTime, formatRunTopics } from "@/features/runs/utils/runs";
+import type { RecommendationRun } from "@/shared/types/api";
+import { formatRunDateTime, formatRunTopics, isRunActive } from "@/features/runs/utils/runs";
 
 export function RunDetailPage() {
   const { t, i18n } = useTranslation();
@@ -46,6 +47,8 @@ export function RunDetailPage() {
     activeIndex,
     setActiveIndex,
     usingFallbackPoll,
+    patchRun,
+    restartTracking,
   } = useRunDetail({
     token: accessToken ?? "",
     runId: runId ?? "",
@@ -88,6 +91,19 @@ export function RunDetailPage() {
       }
     },
     [refreshRuns, run, updateRun],
+  );
+
+  const handleRunUpdated = useCallback(
+    (updated: RecommendationRun) => {
+      updateRun(updated);
+      void refreshRuns();
+      if (run && isRunActive(updated.status) && !isRunActive(run.status)) {
+        restartTracking();
+        return;
+      }
+      patchRun(updated);
+    },
+    [patchRun, refreshRuns, restartTracking, run, updateRun],
   );
 
   if (!runId || !accessToken) {
@@ -145,7 +161,7 @@ export function RunDetailPage() {
         <RunManageActions
           token={accessToken}
           run={run}
-          onRunUpdated={updateRun}
+          onRunUpdated={handleRunUpdated}
           onRunsChanged={refreshRuns}
         />
 

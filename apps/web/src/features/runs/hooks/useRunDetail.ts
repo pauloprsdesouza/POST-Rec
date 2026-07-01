@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import i18n from "@/shared/i18n";
 import { runService } from "@/shared/api";
@@ -26,6 +26,19 @@ export function useRunDetail({ token, runId, onRunUpdate }: UseRunDetailOptions)
   const [loadingIdeas, setLoadingIdeas] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [usingFallbackPoll, setUsingFallbackPoll] = useState(false);
+  const [trackingEpoch, setTrackingEpoch] = useState(0);
+
+  const restartTracking = useCallback(() => {
+    setTrackingEpoch((epoch) => epoch + 1);
+  }, []);
+
+  const patchRun = useCallback(
+    (data: RecommendationRun) => {
+      setRun(data);
+      onRunUpdate?.(data);
+    },
+    [onRunUpdate],
+  );
 
   useEffect(() => {
     if (!token || !runId) {
@@ -185,7 +198,7 @@ export function useRunDetail({ token, runId, onRunUpdate }: UseRunDetailOptions)
       stream?.close();
       stopPolling();
     };
-  }, [token, runId, onRunUpdate]);
+  }, [token, runId, trackingEpoch, onRunUpdate]);
 
   const outcome = run ? getRunOutcome(run) : null;
   const loading =
@@ -206,5 +219,7 @@ export function useRunDetail({ token, runId, onRunUpdate }: UseRunDetailOptions)
     activeIndex,
     setActiveIndex,
     usingFallbackPoll,
+    patchRun,
+    restartTracking,
   };
 };

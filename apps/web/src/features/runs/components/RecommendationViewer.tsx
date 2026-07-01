@@ -9,7 +9,6 @@ import { IdeaCarousel } from "./IdeaCarousel";
 import { RatingCelebration } from "./RatingCelebration";
 import { RecommendationDetail } from "./RecommendationDetail";
 import { RefinementPanel } from "./RefinementPanel";
-import { RunCompleteBanner } from "./RunCompleteBanner";
 import { SessionQuickFeedback } from "./SessionQuickFeedback";
 import { SourceCatalog } from "./EvidenceList";
 import { RunUsagePanel } from "./RunUsagePanel";
@@ -171,8 +170,6 @@ export function RecommendationViewer({
         message={celebrationMessage}
         onDismiss={() => setCelebration(null)}
       />
-
-      <RunCompleteBanner ideaCount={recommendations.length} ratedCount={ratedCount} />
 
       {recommendations.length > 1 ? (
         <FeedbackProgress
