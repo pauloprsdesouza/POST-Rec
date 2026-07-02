@@ -201,6 +201,7 @@ class SourceDocumentResponse(BaseModel):
     url: str | None
     citation_count: int
     qualis_estrato: str | None = None
+    paper_id: str | None = None
 
 
 class FeedbackCreate(BaseModel):

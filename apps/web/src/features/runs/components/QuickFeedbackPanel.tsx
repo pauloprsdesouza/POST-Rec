@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Form } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 
@@ -77,13 +76,13 @@ export function QuickFeedbackPanel({
   onCommentBlur,
 }: QuickFeedbackPanelProps) {
   const { t } = useTranslation();
-  const [showFineTune, setShowFineTune] = useState(false);
-  const [showNote, setShowNote] = useState(Boolean(comment));
 
   return (
     <section className="quick-feedback" aria-label={t("ideas.quickRatingLabel")}>
-      <div className="quick-feedback__primary">
+      <div className="quick-feedback__card">
         <p className="quick-feedback__prompt">{t("ideas.quickFeedbackPrompt")}</p>
+        <p className="quick-feedback__hint">{t("ideas.quickFeedbackHint")}</p>
+
         <div className="quick-feedback__actions">
           <button
             type="button"
@@ -111,31 +110,15 @@ export function QuickFeedbackPanel({
             </button>
           ) : null}
         </div>
-        {message ? (
-          <span className="quick-feedback__saved">
-            <CheckIcon />
-            {message}
-          </span>
-        ) : null}
-        {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
-      </div>
 
-      <button        type="button"
-        className="quick-feedback__fine-tune-toggle"
-        aria-expanded={showFineTune}
-        onClick={() => setShowFineTune((open) => !open)}
-      >
-        {showFineTune ? t("ideas.hideFineTune") : t("ideas.showFineTune")}
-      </button>
-
-      {showFineTune ? (
-        <div className="quick-feedback__fine-tune">
-          <div className="quick-rating__stars" role="group" aria-label={t("ideas.quickRatingLabel")}>
+        <div className="quick-feedback__refine">
+          <span className="quick-feedback__refine-label">{t("ideas.orPickScore")}</span>
+          <div className="quick-rating__stars quick-rating__stars--compact" role="group" aria-label={t("ideas.quickRatingLabel")}>
             {[1, 2, 3, 4, 5].map((value) => (
               <button
                 key={value}
                 type="button"
-                className={`quick-rating__star ${rating === value ? "quick-rating__star--selected" : ""} ${rating != null && rating >= value ? "quick-rating__star--filled" : ""}`}
+                className={`quick-rating__star quick-rating__star--compact ${rating === value ? "quick-rating__star--selected" : ""} ${rating != null && rating >= value ? "quick-rating__star--filled" : ""}`}
                 disabled={submitting}
                 aria-label={t("ideas.rateValue", { value })}
                 aria-pressed={rating === value}
@@ -145,7 +128,10 @@ export function QuickFeedbackPanel({
               </button>
             ))}
           </div>
-          <div className="quick-rating__chips">
+        </div>
+
+        {rating != null ? (
+          <div className="quick-rating__chips quick-rating__chips--inline">
             <span className="quick-rating__chips-label">{t("ideas.useInPaper")}</span>
             {(["yes", "maybe", "no"] as const).map((value) => (
               <button
@@ -160,25 +146,28 @@ export function QuickFeedbackPanel({
               </button>
             ))}
           </div>
-          {!showNote && !comment ? (
-            <button type="button" className="quick-rating__note-toggle" onClick={() => setShowNote(true)}>
-              {t("ideas.addNote")}
-            </button>
-          ) : (
-            <Form.Group className="field-group quick-rating__note">
-              <Form.Label className="visually-hidden">{t("ideas.addNote")}</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={2}
-                placeholder={t("ideas.notePlaceholder")}
-                value={comment}
-                onChange={(e) => onCommentChange(e.target.value)}
-                onBlur={onCommentBlur}
-              />
-            </Form.Group>
-          )}
-        </div>
-      ) : null}
+        ) : null}
+
+        <Form.Group className="quick-rating__note quick-rating__note--inline">
+          <Form.Label className="visually-hidden">{t("ideas.addNote")}</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder={t("ideas.notePlaceholder")}
+            value={comment}
+            onChange={(e) => onCommentChange(e.target.value)}
+            onBlur={onCommentBlur}
+            disabled={submitting}
+          />
+        </Form.Group>
+
+        {message ? (
+          <span className="quick-feedback__saved">
+            <CheckIcon />
+            {message}
+          </span>
+        ) : null}
+        {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
+      </div>
     </section>
   );
 }

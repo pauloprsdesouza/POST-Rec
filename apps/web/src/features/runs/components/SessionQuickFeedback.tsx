@@ -78,7 +78,7 @@ export function SessionQuickFeedback({
           <Link to="/runs/new" className="btn btn-primary btn-sm">
             {t("runs.completeBanner.newRun")}
           </Link>
-          <Link to="/runs" className="btn btn-outline-secondary btn-sm">
+          <Link to="/runs" className="btn btn-link btn-sm session-quick-feedback__secondary">
             {t("survey.backToRuns")}
           </Link>
         </div>
@@ -91,6 +91,7 @@ export function SessionQuickFeedback({
       {!compact ? (
         <p className="session-quick-feedback__prompt">{t("survey.quickPrompt")}</p>
       ) : null}
+      <p className="session-quick-feedback__intro">{t("survey.sessionFeedbackIntro")}</p>
       <p className="session-quick-feedback__hint">{t("survey.autoSaveHint")}</p>
 
       <div className="session-quick-feedback__row">

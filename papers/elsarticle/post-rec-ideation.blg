@@ -1,0 +1,55 @@
+This is BibTeX, Version 0.99e
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: post-rec-ideation.aux
+Reallocating 'name_of_file' (item size: 1) to 15 items.
+The style file: elsarticle-num.bst
+Reallocating 'name_of_file' (item size: 1) to 20 items.
+Database file #1: post-rec-references.bib
+Warning--empty journal in ricci2015handbook
+Warning--empty pages in si2025llmideas
+Warning--empty pages in baek2025researchagent
+Warning--empty pages in hu2025nova
+Warning--empty pages in wang2024scimon
+Warning--empty pages in ramesh2025inc
+You've used 14 entries,
+            2952 wiz_defined-function locations,
+            740 strings with 7824 characters,
+and the built_in function-call counts, 3837 in all, are:
+= -- 309
+> -- 173
+< -- 0
++ -- 67
+- -- 53
+* -- 230
+:= -- 571
+add.period$ -- 14
+call.type$ -- 14
+change.case$ -- 15
+chr.to.int$ -- 0
+cite$ -- 20
+duplicate$ -- 128
+empty$ -- 462
+format.name$ -- 67
+if$ -- 997
+int.to.chr$ -- 0
+int.to.str$ -- 14
+missing$ -- 14
+newline$ -- 50
+num.names$ -- 14
+pop$ -- 105
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 266
+stack$ -- 0
+substring$ -- 83
+swap$ -- 9
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 6
+while$ -- 20
+width$ -- 16
+write$ -- 119
+(There were 6 warnings)

@@ -1,0 +1,401 @@
+%%
+%% POST-Rec methodology article — Elsevier elsarticle template
+%% Compile: make  (or pdflatex + bibtex + pdflatex x2)
+%%
+\documentclass[preprint,12pt]{elsarticle}
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{url}
+\usepackage{hyperref}
+
+\journal{Expert Systems with Applications}
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Literature-Grounded Research Ideation with State-of-the-Art Pipelines and Facet-Grounded Gap Verification}
+
+\author[ufba]{Paulo Roberto de Souza\corref{cor1}}
+\ead{paulo.prsdesouza@ufba.br}
+
+\author[ufba]{Frederico Ara\'{u}jo Dur\~{a}o}
+\ead{fdurao@ufba.br}
+
+\cortext[cor1]{Corresponding author.}
+\affiliation[ufba]{organization={Institute of Computing, Federal University of Bahia},
+            addressline={Adhemar de Barros Avenue},
+            city={Salvador},
+            postcode={40170-110},
+            state={Bahia},
+            country={Brazil}}
+
+\begin{abstract}
+Many computational techniques have been proposed to help researchers explore scientific directions, yet the volume of published literature often exceeds what any individual can survey before proposing new work. This problem, known as \emph{literature overload}, makes it difficult to filter relevant papers, identify open gaps, and generate ideas that are genuinely grounded in evidence. This paper presents \textsc{POST-Rec} (Paper-Oriented Scientific Topic Recommender), a reproducible ideation system that models research proposal generation as a recommender problem over literature-backed items. The proposed method combines dual-pass bibliographic retrieval over OpenAlex, deterministic relevance filtering, hybrid BM25--dense--vector re-ranking with explicit state-of-the-art (SOTA) tier quotas, and a multi-stage pipeline that materializes landscape summaries and gap matrices before idea generation. An extension called \emph{Facet-Grounded Gap Verification} (FGGV) adds literature facet maps, gap--facet alignment, contrastive facet novelty indices, and diversity-aware selection. We formalize notation, component metrics, composite ranking equations, and pseudocode algorithms. A motivation scenario in computer science illustrates relevance scoring, gap-matrix construction, and facet-level verification. The deployed system evaluates methods online through a blind A/B study between SOTA and FGGV, collecting volunteer feedback via the Expectation Alignment Score and related metrics.
+\end{abstract}
+
+\begin{highlights}
+\item Explicit SOTA tier definition with dual-pass retrieval and hybrid re-ranking over open scholarly catalogs.
+\item Reproducible landscape $\rightarrow$ gap matrix $\rightarrow$ proposal pipeline with evidence-only generation rules.
+\item FGGV extension for facet-level novelty, gap alignment, and diversity-aware recommendation lists.
+\item Formal notation, equations, algorithms, and online evaluation protocol for transparent auditing.
+\end{highlights}
+
+\begin{keyword}
+Recommender systems \sep research ideation \sep state of the art \sep retrieval-augmented generation \sep facet novelty \sep expert systems
+\end{keyword}
+
+\end{frontmatter}
+
+%% =============================================================================
+\section{Introduction}
+\label{sec:intro}
+
+The exponential growth of scholarly publishing has increased the difficulty of identifying relevant literature, recognizing underserved research gaps, and proposing novel directions that remain faithful to current evidence~\cite{ricci2015handbook,si2025llmideas}. A computer-science researcher investigating retrieval-augmented generation (RAG) for literature-grounded research ideation, for example, may need to analyze thousands of papers on LLM agents, hybrid retrieval, and novelty verification before articulating a feasible proposal. Too much information can quickly exceed cognitive limits, while unconstrained large language model (LLM) outputs may invent citations, recycle saturated ideas, or hide how ``state of the art'' was defined~\cite{lu2024aiscientist}.
+
+Recommender systems (RSs) have emerged as a practical response to overload problems by filtering items according to user preferences~\cite{adomavicius2005toward,ricci2015handbook}. In \textsc{POST-Rec}, the recommended \emph{items} are structured research ideas; user preferences are expressed through seed topics, research area, depth, constraints, and subsequent feedback. Retrieval-augmented generation (RAG)~\cite{lewis2020rag} grounds generation in retrieved documents, but RAG alone does not specify SOTA tiers, explicit gap matrices, or facet-level verification. Recent ideation agents---including ResearchAgent~\cite{baek2025researchagent}, NOVA~\cite{hu2025nova}, SciMON~\cite{wang2024scimon}, Scideator~\cite{roy2024scideator}, and the Idea Novelty Checker~\cite{ramesh2025inc}---improve retrieval and novelty assessment, yet rarely expose all methodological artifacts within one reproducible pipeline.
+
+This paper aims to investigate, model, and quantify literature-grounded research ideation by proposing a transparent pipeline that:
+\begin{enumerate}
+  \item defines SOTA through configurable recency and citation tiers;
+  \item constructs an explicit gap matrix before proposal generation;
+  \item verifies novelty at document and facet levels;
+  \item learns from volunteer feedback through an Expectation Alignment Score (EAS).
+\end{enumerate}
+
+The main contributions of this work are:
+\begin{itemize}
+  \item \textbf{The SOTA-grounded ideation pipeline}, which produces landscape summaries and a gap matrix before generating proposals linked to concrete evidence papers;
+  \item \textbf{The hybrid retrieval and relevance model}, combining dual-pass OpenAlex fetching, lexical relevance scoring, BM25 + dense embedding + pgvector ranking, and SOTA tier quotas;
+  \item \textbf{Facet-Grounded Gap Verification (FGGV)}, extending the baseline with literature facet maps (LFMs), gap--facet alignment (GFA), contrastive facet novelty (CFN), and facet diversity selection (FDS);
+  \item \textbf{An online evaluation protocol}, centered on blind A/B assignment between SOTA and FGGV in Auto mode, with volunteer feedback aggregated on a validation dashboard.
+\end{itemize}
+
+The remaining aspects of this paper are structured as follows. Section~\ref{sec:related} discusses related work. Section~\ref{sec:proposal} introduces the proposed system, including notation, equations, algorithms, and a motivation scenario. Section~\ref{sec:evaluation} presents the experimental evaluation. Section~\ref{sec:discussion} discusses limitations, and Section~\ref{sec:conclusion} concludes the paper and presents future work.
+
+%% =============================================================================
+\section{Related work}
+\label{sec:related}
+
+In the realm of literature-grounded ideation, numerous studies employ retrieval, planning, or facet-based verification to recommend research directions. However, a significant gap remains in jointly exposing explicit SOTA tiering, gap-matrix artifacts, and facet-level verification within one pipeline.
+
+Table~\ref{tab:related} compares representative systems. Si et al.~\cite{si2025llmideas} provide rigorous human evaluation but no facet map or gap matrix. ResearchAgent~\cite{baek2025researchagent} and NOVA~\cite{hu2025nova} emphasize iterative expansion over graphs or planned search at higher computational cost. Scideator~\cite{roy2024scideator} and the Idea Novelty Checker~\cite{ramesh2025inc} apply facet-level checks, typically post-hoc rather than during gap-driven generation. SciMON~\cite{wang2024scimon} optimizes contrastive novelty against inspiration papers but does not materialize a landscape matrix artifact. Chain of Ideas~\cite{li2025coi} models temporal literature chains without an explicit gap cell structure.
+
+\begin{table}[t]
+  \centering
+  \caption{Comparison of literature-grounded ideation approaches (2023--2026).}
+  \label{tab:related}
+  \small
+  \begin{tabular}{@{}p{2.1cm}p{2.4cm}p{2.2cm}p{2.2cm}p{2.5cm}@{}}
+    \toprule
+    \textbf{System} & \textbf{Retrieval} & \textbf{Gap structure} & \textbf{Novelty unit} & \textbf{Limitation} \\
+    \midrule
+    Si et al. & Semantic Scholar API & Implicit in abstracts & Human-rated originality & No facet map \\
+    ResearchAgent & Citation graph & Agent review loops & Multi-agent debate & High cost \\
+    NOVA & Planned embedding search & Iterative broadening & Planning steps & Weak SOTA tiering \\
+    Scideator & Paper-pool facets & UI recombination & Facet-level checks & Weak gap alignment \\
+    INC & Retrieve--rerank & Post-hoc & Per-facet LLM compare & Not gap-driven \\
+    \textbf{POST-Rec SOTA} & OpenAlex dual-pass + hybrid rank & \textbf{Landscape + gap matrix} & Document + verified signals & LLM-synthesized gaps \\
+    \textbf{POST-Rec FGGV} & Same as SOTA & Gap matrix + LFM & \textbf{Per-facet FNI + GFA} & Online sample size \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Unlike these approaches, \textsc{POST-Rec} materializes \texttt{sota\_landscape} and \texttt{gap\_matrix} JSON artifacts before proposal generation, making gap-driven ideation inspectable by reviewers. Hybrid lexical--neural retrieval follows established practice in scientific search~\cite{zuccon2015integrating}, while facet re-ranking relates to RankGPT-style rerankers~\cite{sun2023rankgpt}.
+
+%% =============================================================================
+\section{The proposal}
+\label{sec:proposal}
+
+This section describes the proposed \textsc{POST-Rec} system. It begins with a recommendation overview. Subsequently, it presents the bibliographic data features, notation, document preprocessing, component metrics, composite ranking equations, and recommendation algorithms. A motivation scenario with numeric illustration is provided to demonstrate how the methodology operates in practice.
+
+\subsection{Recommendation overview}
+
+Figure~\ref{fig:pipeline} summarizes the macro pipeline. Given a user expectation $E$, the system executes five major steps: (1)~expectation parsing and topic expansion; (2)~dual-pass retrieval over OpenAlex~\cite{priem2022openalex}; (3)~relevance filtering and hybrid re-ranking; (4)~mode-dependent generation (Quick single-pass or SOTA/FGGV multi-stage); and (5)~verification and final ranking. Progress events in the deployed interface map one-to-one to these stages.
+
+\begin{figure}[t]
+  \centering
+  \fbox{\parbox{0.92\linewidth}{
+    \small
+    \textbf{1. Expectation parsing} $\rightarrow$
+    \textbf{2. Dual-pass retrieval} $\rightarrow$
+    \textbf{3. Relevance filter + hybrid rank} $\rightarrow$\\
+    \textbf{4. Landscape $\rightarrow$ gap matrix $\rightarrow$ proposals $\rightarrow$ critic} $\rightarrow$
+    \textbf{5. Verification + ranking}
+  }}
+  \caption{Overview of the \textsc{POST-Rec} recommendation pipeline.}
+  \label{fig:pipeline}
+\end{figure}
+
+\subsection{Bibliographic data features}
+
+\textsc{POST-Rec} uses OpenAlex as its primary literature source, with optional normalization from arXiv, Semantic Scholar, and Crossref metadata. Each document is represented by features used across retrieval, ranking, and generation:
+\begin{itemize}
+  \item \textbf{Text features:} title, abstract, and venue for lexical overlap and embedding;
+  \item \textbf{Bibliographic features:} DOI, publication year, and citation count for deduplication and tiering;
+  \item \textbf{Domain features:} field, subfield, and topic tags for alignment filtering.
+\end{itemize}
+Only papers that pass relevance filtering and hybrid ranking are passed to the generation stage.
+
+\subsection{Notation}
+\label{subsec:notation}
+
+Understanding the notation is crucial for comprehending the equations and algorithms presented below. Table~\ref{tab:notation} summarizes the main symbols.
+
+\begin{table}[t]
+  \centering
+  \caption{Notation used in the proposed method.}
+  \label{tab:notation}
+  \begin{tabular}{@{}cl@{}}
+    \toprule
+    \textbf{Symbol} & \textbf{Description} \\
+    \midrule
+    $U$ & Researcher user \\
+    $E$ & User expectation $\langle T_{\mathrm{seed}}, A, O, D, C \rangle$ \\
+    $T_{\mathrm{seed}}$ & Seed topic phrases \\
+    $A$ & Research area \\
+    $Q$ & Query token set for retrieval and relevance \\
+    $p \in \mathcal{D}$ & Normalized paper \\
+    $O(X,Q)$ & Token overlap ratio $|X \cap Q| / |Q|$ \\
+    $s_{\mathrm{rel}}(p)$ & Paper relevance score in $[0,1]$ \\
+    $e_p$ & Embedding of paper $p$ \\
+    $\mathcal{S}_{\mathrm{SOTA}}$ & SOTA-recent tier subset \\
+    $\mathcal{S}_{\mathrm{found}}$ & Foundation (seminal) tier subset \\
+    $G$ & Gap matrix from landscape analysis \\
+    $\mathrm{FNI}_f$ & Facet Novelty Index for facet $f$ \\
+    $\mathrm{GFA}$ & Gap--facet alignment score \\
+    $S_{\mathrm{verified}}$ & Verified final ranking score \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The expanded topic set is defined as
+\begin{equation}
+  T^{*} = \mathrm{unique}\bigl(T_{\mathrm{seed}} \cup T_{\mathrm{learned}} \cup T_{\mathrm{techniques}}\bigr),
+  \label{eq:topic-expansion}
+\end{equation}
+and query tokens are $Q = \mathrm{tokens}(T^{*} \cup A)$ after stopword removal and token-length filtering ($|\mathrm{token}| > 2$). The retained paper set is
+\begin{equation}
+  \mathcal{P} = \{\, p \in \mathcal{D} \mid s_{\mathrm{rel}}(p) \geq \tau_{\mathrm{rel}} \,\},
+  \label{eq:retained-set}
+\end{equation}
+with default threshold $\tau_{\mathrm{rel}} = 0.22$.
+
+\subsection{Document preprocessing and relevance filtering}
+
+Retrieved papers are normalized (title, DOI, year, source), deduplicated, and scored before any LLM call. For each paper $p$, token sets $T_{\mathrm{title}}(p)$ and $T_{\mathrm{body}}(p)$ are built from the title and from title$\Vert$abstract$\Vert$venue, respectively. The overlap function is
+\begin{equation}
+  O(X, Q) = \frac{|X \cap Q|}{|Q|}, \quad Q \neq \emptyset.
+  \label{eq:overlap}
+\end{equation}
+The relevance score is
+\begin{align}
+  s_{\mathrm{rel}}(p) &= w_t O(T_{\mathrm{title}}, Q) + w_b O(T_{\mathrm{body}}, Q) + b_{\mathrm{cite}} - p_{\mathrm{avoid}}, \label{eq:relevance}\\
+  b_{\mathrm{cite}} &= \min\!\left(\frac{\ln(1 + c_p)}{\delta},\, b_{\max}\right), \label{eq:cite-boost}
+\end{align}
+with defaults $w_t = 0.55$, $w_b = 0.30$, $\delta = 12$, $b_{\max} = 0.15$, and avoided-topic penalty $p_{\mathrm{avoid}} = 0.35$ when applicable. If both title and body overlap are very low, the score is capped at $0.18$.
+
+\subsection{SOTA tier metrics}
+
+SOTA membership is defined explicitly rather than implicitly through retrieval alone:
+\begin{align}
+  p &\in \mathcal{S}_{\mathrm{SOTA}} \Leftrightarrow \mathrm{year}(p) \geq y_{\mathrm{now}} - Y, \label{eq:sota-recent}\\
+  p &\in \mathcal{S}_{\mathrm{found}} \Leftrightarrow c_p \geq \tau_c, \label{eq:seminal}
+\end{align}
+with defaults $Y = 3$ and $\tau_c = 50$. Dual-pass retrieval queries OpenAlex separately for recent SOTA and foundation tiers, then merges the results.
+
+\subsection{Hybrid re-ranking metric}
+
+Each $p \in \mathcal{P}$ receives a sparse score $s_{\mathrm{BM25}}(p,Q)$ and a dense score $s_{\mathrm{dense}}(p,Q) = \cos(e_p, e_Q)$. The hybrid score blends both signals (sparse weight $0.4$ by default) with pgvector retrieval (blend factor $0.25$). After sorting, tier quota $\phi = 0.6$ ensures that fraction of the top-$k$ context papers belong to $\mathcal{S}_{\mathrm{SOTA}}$.
+
+\subsection{Landscape and gap matrix}
+
+Let $\mathcal{P}_k$ denote the top-$k$ papers after hybrid ranking. The SOTA pipeline:
+\begin{enumerate}
+  \item clusters $\mathcal{P}_k$ into thematic groups;
+  \item summarizes problems, methods, datasets, evaluation protocols, and limitations per cluster;
+  \item builds gap matrix $G$ with rows as sub-problems and columns as method/data/evaluation families;
+  \item labels each cell $G_{ij} \in \{\text{well-covered}, \text{partial}, \text{underserved}\}$.
+\end{enumerate}
+The generator samples underserved cells and requires each proposal to cite SOTA anchors from $\mathcal{P}_k$. A critic pass rejects ungrounded or near-duplicate ideas.
+
+\subsection{Verified ranking and FGGV metrics}
+
+Each idea $i$ receives LLM-estimated dimensions $\mathrm{dim}_{i,j} \in [0,100]$ and verified signals $\mathrm{SOTA\_fit}(i)$, $\mathrm{novelty\_verified}(i)$. The verified score is
+\begin{equation}
+  S_{\mathrm{verified}}(i) = \sum_{j} w_j \cdot \mathrm{dim}_{i,j} + w_{\mathrm{sota}} \cdot \mathrm{SOTA\_fit}(i) + w_{\mathrm{nov}} \cdot \mathrm{novelty\_verified}(i).
+  \label{eq:verified}
+\end{equation}
+
+FGGV extends Eq.~\eqref{eq:verified} with facet-level structure. For facets $f \in \{\mathrm{problem}, \mathrm{method}, \mathrm{data}, \mathrm{evaluation}\}$,
+\begin{equation}
+  \mathrm{FNI}_f(i) = 1 - \max_{s \in \mathrm{LFM}_f} \mathrm{sim}\bigl(\mathrm{facet}_f(i), s\bigr),
+  \label{eq:fni}
+\end{equation}
+and the composite FGGV score is
+\begin{equation}
+  \mathrm{FGGV}(i) = \alpha S_{\mathrm{verified}}(i) + \beta \mathrm{FNI}(i) + \gamma \mathrm{GFA}(i) + \eta \cdot \mathrm{doc\_novelty}(i),
+  \label{eq:fggv}
+\end{equation}
+with defaults $\alpha=0.30$, $\beta=0.32$, $\gamma=0.23$, $\eta=0.15$.
+
+\subsection{Motivation scenario}
+\label{subsec:scenario}
+
+To demonstrate the utility of the proposed method, this subsection presents a practical example of the full recommendation process, including relevance filtering, tier selection, gap-matrix construction, and facet scoring.
+
+Consider a researcher $U$ who submits:
+\begin{itemize}
+  \item $T_{\mathrm{seed}} = \{$\texttt{retrieval-augmented generation}, \texttt{research ideation agents}$\}$;
+  \item $A = $\texttt{artificial intelligence};
+  \item mode = SOTA.
+\end{itemize}
+
+\textbf{Paper $p_1$} (retained): title \emph{``Benchmarking retrieval-augmented generation pipelines for scientific question answering''}, year 2024, citations 92. Token overlap yields $O(T_{\mathrm{title}}, Q) = 0.45$ and $O(T_{\mathrm{body}}, Q) = 0.31$. With $b_{\mathrm{cite}} = 0.15$,
+\[
+  s_{\mathrm{rel}}(p_1) = 0.55(0.45) + 0.30(0.31) + 0.15 = 0.490 > \tau_{\mathrm{rel}}.
+\]
+
+\textbf{Paper $p_2$} (filtered): title \emph{``Introduction to classical information retrieval models''}, year 1999, citations 680. Although $b_{\mathrm{cite}} = 0.15$, weak overlap caps $s_{\mathrm{rel}}(p_2) \leq 0.18$. Thus $p_2$ is excluded despite high citations.
+
+After hybrid ranking, suppose $|\mathcal{P}| = 52$, with 31 \texttt{sota\_recent} and 21 \texttt{seminal} papers. With context size 30 and quota $\phi = 0.6$, at least 18 SOTA-recent papers enter the generation context. A simplified gap matrix for this run is:
+
+\begin{table}[h]
+  \centering
+  \small
+  \caption{Excerpt of gap matrix $G$ for the motivation scenario.}
+  \label{tab:gap-example}
+  \begin{tabular}{lccc}
+    \toprule
+    & \textbf{Hybrid retrieval} & \textbf{Facet verification} & \textbf{Human eval.} \\
+    \midrule
+    Literature-grounded ideation & partial & underserved & partial \\
+    Scientific QA with RAG & well-covered & partial & underserved \\
+  \end{tabular}
+\end{table}
+
+An generated idea targeting literature-grounded ideation $\times$ facet verification receives high $\mathrm{GFA}$ if it declares alignment with the underserved cell. If its method facet is distant from dominant single-pass RAG statements in the literature facet map, $\mathrm{FNI}_{\mathrm{method}}$ remains high (e.g., $0.76$), supporting ranking under FGGV mode.
+
+\subsection{Recommendation algorithms}
+
+Algorithm~\ref{alg:relevance} filters papers by relevance. Algorithm~\ref{alg:sota} performs SOTA-grounded generation. Algorithm~\ref{alg:eas} updates the user profile from feedback.
+
+\begin{algorithm}[t]
+  \caption{Paper relevance filtering}
+  \label{alg:relevance}
+  \begin{algorithmic}[1]
+    \Require Papers $\mathcal{D}$, query tokens $Q$, threshold $\tau_{\mathrm{rel}}$
+    \Ensure Filtered set $\mathcal{P}$
+    \State $\mathcal{P} \gets \emptyset$
+    \For{each $p \in \mathcal{D}$}
+      \State Compute $O(T_{\mathrm{title}}, Q)$ and $O(T_{\mathrm{body}}, Q)$ using Eq.~\eqref{eq:overlap}
+      \State $b_{\mathrm{cite}} \gets$ Eq.~\eqref{eq:cite-boost}
+      \State $s_{\mathrm{rel}}(p) \gets$ Eq.~\eqref{eq:relevance}; apply weak-overlap cap
+      \If{$s_{\mathrm{rel}}(p) \geq \tau_{\mathrm{rel}}$}
+        \State $\mathcal{P} \gets \mathcal{P} \cup \{p\}$
+      \EndIf
+    \EndFor
+    \State \Return $\mathcal{P}$
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+  \caption{SOTA-grounded idea generation}
+  \label{alg:sota}
+  \begin{algorithmic}[1]
+    \Require Expectation $E$, ranked papers $\mathcal{P}_k$, mode $m$
+    \Ensure Ranked idea set $\mathcal{I}$
+    \State Build landscape summary from $\mathcal{P}_k$
+    \State Construct gap matrix $G$
+    \State Sample underserved cells from $G$
+    \State $\mathcal{I}_0 \gets \textsc{LLM-Generate}(E, \mathcal{P}_k, G)$ under evidence-only rules
+    \State $\mathcal{I}_1 \gets \textsc{Critic}(\mathcal{I}_0, \mathcal{P}_k)$
+    \If{$m = \mathrm{fggv}$}
+      \State Build LFM; compute FNI and GFA; apply FDS
+      \State Score ideas with Eq.~\eqref{eq:fggv}
+    \Else
+      \State Score ideas with Eq.~\eqref{eq:verified}
+    \EndIf
+    \State \Return $\mathcal{I}$ sorted by final score
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+  \caption{Expectation Alignment Score and profile update}
+  \label{alg:eas}
+  \begin{algorithmic}[1]
+    \Require Ratings: usefulness $U$, relevance $R$, clarity $C$, feasibility $F$, trust $T$, would-use $W$
+    \Ensure $\mathrm{EAS}$ and updated topic profile
+    \State Map $W \in \{\mathrm{yes}, \mathrm{maybe}, \mathrm{no}\}$ to $\{5, 3, 1\}$
+    \State $\mathrm{EAS} \gets 0.25 U + 0.20 R + 0.20 C + 0.15 F + 0.10 T + 0.10 W$
+    \State Update $T_{\mathrm{learned}}$ or avoided topics
+    \State \Return EAS
+  \end{algorithmic}
+\end{algorithm}
+
+%% =============================================================================
+\section{Experimental evaluation}
+\label{sec:evaluation}
+
+This section presents the evaluation of the proposed system. In the current deployment, validation is performed \textbf{online}: researchers execute runs in the live platform, rate generated ideas, and contribute feedback aggregated by experimental variant. Supplementary offline scripts support regression testing during development but are not the principal evidence source.
+
+\subsection{Online evaluation setup}
+
+When a user selects \textbf{Auto} mode, the system assigns sticky buckets:
+\begin{itemize}
+  \item \textbf{Control (SOTA):} landscape $\rightarrow$ gap matrix $\rightarrow$ proposals $\rightarrow$ critic;
+  \item \textbf{Treatment (FGGV):} SOTA pipeline plus LFM, GFA, CFN, and FDS.
+\end{itemize}
+Assignment uses a deterministic hash of user identity and experiment identifier \texttt{fggv\_vs\_sota\_v1}, with treatment fraction $0.5$. Method labels and FGGV sub-scores are hidden during blind runs.
+
+\subsection{Evaluation metrics}
+
+The primary online metrics are:
+\begin{itemize}
+  \item \textbf{Expectation Alignment Score (EAS)}
+  \begin{equation}
+    \mathrm{EAS} = 0.25 U + 0.20 R + 0.20 C + 0.15 F + 0.10 T + 0.10 W;
+    \label{eq:eas}
+  \end{equation}
+  \item \textbf{Originality} --- user-reported novelty of each idea;
+  \item \textbf{Approval rate} --- proportion of ideas marked as suitable for use in a paper or project.
+\end{itemize}
+Feedback updates $T_{\mathrm{learned}}$ and avoided topics, influencing subsequent retrieval through $Q$ and $p_{\mathrm{avoid}}$ in Eq.~\eqref{eq:relevance}. The validation dashboard aggregates means by \texttt{experiment\_variant}.
+
+\subsection{Results and monitoring}
+
+In the current pilot, run counts, mean EAS, originality, and approval rates are monitored separately for \texttt{sota} and \texttt{fggv}. When sufficient ratings are available, significance tests on alignment differences are reported in the research-insights interface. Thus, the system supports continuous online comparison under realistic usage rather than relying solely on a fixed offline benchmark.
+
+\subsection{Supplementary offline checks}
+
+The repository provides \texttt{scripts/run\_offline\_evaluation.py} to replay golden topics and compare Quick (B1), SOTA (B2), and FGGV (M) with ablation variants. These checks verify implementation consistency when retrieval or scoring code changes; they do not replace volunteer judgments in the online study.
+
+%% =============================================================================
+\section{Discussion}
+\label{sec:discussion}
+
+The proposed methodology makes SOTA definition, gap structure, and ranking components explicit through notation, equations, and stored artifacts. This transparency supports auditing by reviewers and collaborators. The motivation scenario in Section~\ref{subsec:scenario} shows how lexical relevance, tier quotas, and gap-matrix alignment interact in a concrete computer-science run.
+
+Current limitations include dependence on OpenAlex metadata quality, LLM-synthesized gap matrices, imperfect facet extraction, and the need for larger online samples before claiming superiority over all systems in Table~\ref{tab:related}. Online evaluation also depends on volunteer availability and self-selected topics, which may introduce sampling bias.
+
+%% =============================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+This paper presented \textsc{POST-Rec}, a literature-grounded research ideation methodology combining hybrid retrieval, explicit SOTA tiers, gap-matrix-driven generation, verified ranking, and the FGGV extension for facet-level novelty and alignment. The proposal was described through notation, component metrics, composite equations, pseudocode algorithms, and a worked scenario. Online blind A/B evaluation between SOTA and FGGV provides the primary empirical validation path in the deployed system.
+
+Future work includes deeper citation-graph integration, cross-system benchmarks against ResearchAgent and Scideator, multilingual catalog expansion, and scaling the online evaluation cohort. The open implementation aims to support reproducible comparison as the scientific ideation landscape continues to evolve.
+
+%% =============================================================================
+\section*{Acknowledgements}
+
+This work was partially supported by CAPES (Coordena\c{c}\~{a}o de Aperfei\c{c}oamento de Pessoal de N\'{i}vel Superior -- Brazil), Finance Code 001.
+
+\bibliographystyle{elsarticle-num}
+\bibliography{post-rec-references}
+
+\end{document}

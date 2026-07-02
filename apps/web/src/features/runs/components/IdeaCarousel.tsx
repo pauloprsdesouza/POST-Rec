@@ -8,10 +8,20 @@ interface IdeaCarouselProps {
   activeIndex: number;
   ratedIds?: Set<string>;
   skippedIds?: Set<string>;
+  ratedCount?: number;
   onSelect: (index: number) => void;
+  onJumpToUnrated?: () => void;
 }
 
-export function IdeaCarousel({ items, activeIndex, ratedIds, skippedIds, onSelect }: IdeaCarouselProps) {
+export function IdeaCarousel({
+  items,
+  activeIndex,
+  ratedIds,
+  skippedIds,
+  ratedCount = 0,
+  onSelect,
+  onJumpToUnrated,
+}: IdeaCarouselProps) {
   const { t } = useTranslation();
   const trackRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -100,9 +110,20 @@ export function IdeaCarousel({ items, activeIndex, ratedIds, skippedIds, onSelec
     <div className="idea-carousel" aria-label={t("ideas.generatedIdeas")}>
       <div className="idea-carousel__header">
         <span className="idea-carousel__label">{t("ideas.generatedIdeas")}</span>
-        <span className="idea-carousel__count">
-          {t("ideas.countOfTotal", { current: activeIndex + 1, total: items.length })}
-        </span>
+        <div className="idea-carousel__header-end">
+          <span className="idea-carousel__count">
+            {ratedCount > 0 && items.length > 1
+              ? ratedCount >= items.length
+                ? t("ideas.feedbackProgressComplete", { count: items.length })
+                : t("ideas.feedbackProgress", { rated: ratedCount, total: items.length })
+              : t("ideas.countOfTotal", { current: activeIndex + 1, total: items.length })}
+          </span>
+          {onJumpToUnrated ? (
+            <button type="button" className="idea-carousel__jump" onClick={onJumpToUnrated}>
+              {t("ideas.jumpToUnrated")}
+            </button>
+          ) : null}
+        </div>
       </div>
 
       <div className="idea-carousel__stage">

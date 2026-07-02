@@ -6,7 +6,6 @@ import { Navigate, useNavigate } from "react-router-dom";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
-import { OnboardingProgress } from "@/shared/ui/OnboardingProgress";
 import { useConsentStrings } from "@/shared/i18n/useConsentStrings";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { sessionService } from "@/shared/api";
@@ -51,10 +50,7 @@ export function ConsentPage() {
       <div className="page-stack page-stack--tight">
         <PageHeader title={t("consent.pageTitle")} subtitle={t("consent.pageSubtitle")} />
 
-        <div className="consent-setup">
-          <OnboardingProgress />
-          <span className="consent-time-badge">{t("setup.timeEstimate")}</span>
-        </div>
+        <p className="consent-time-badge consent-time-badge--solo">{t("setup.timeEstimate")}</p>
 
         <div className="panel consent-page__panel">
           <p className="lead-text mb-4">

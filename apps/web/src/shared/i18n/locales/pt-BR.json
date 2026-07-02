@@ -254,12 +254,14 @@
     "academicLevel": "Nível acadêmico",
     "experience": "Experiência",
     "experienceAi": "IA",
-    "experienceRecsys": "Sistemas de recomendação",
     "experienceWriting": "Redação científica",
     "goalLabel": "O que você espera do POST-Rec?",
     "goalPlaceholder": "Encontrar ideias de pesquisa acionáveis que eu possa transformar em um artigo.",
     "saveResearchProfile": "Salvar perfil de pesquisa",
+    "saveAndContinue": "Salvar e continuar",
     "startRun": "Iniciar execução",
+    "accountIntro": "Contato e idioma. Usados para login e notificações.",
+    "researchIntro": "Sua área e experiência definem como as ideias são enquadradas e quais artigos buscamos.",
     "researchProfileSaved": "Perfil de pesquisa salvo.",
     "researchAreaRequired": "A área de pesquisa é obrigatória.",
     "researchSetupHint": "Conte-nos sua área de pesquisa para que as recomendações combinem com seu campo. Você só precisa fazer isso uma vez.",
@@ -276,9 +278,14 @@
   "preferences": {
     "researchArea": "Área de pesquisa",
     "researchAreaPlaceholder": "ex.: Sistemas de recomendação e LLMs",
+    "researchAreaHint": "Usada em cada execução para definir o escopo da busca na literatura.",
+    "seedTopicsWhy": "Essas frases orientam a busca — seja específico sobre métodos ou problemas.",
+    "depthHint": "Quão detalhado deve ser o plano de cada ideia.",
+    "expectedOutputHint": "Opcional — descreva como seria uma ideia útil para você.",
     "seedTopics": "Tópicos semente padrão",
-    "seedTopicsPlaceholder": "Um tópico por linha (espaços permitidos na linha)",
-    "seedTopicsHint": "Preenchidos ao iniciar uma nova execução. Enter para novo tópico; frases podem ter espaços.",
+    "seedTopicsPlaceholder": "Digite um tópico e pressione Enter",
+    "seedTopicsHint": "Cada tópico aparece como uma etiqueta. Pressione Enter para adicionar; frases podem ter espaços.",
+    "seedTopicsRemove": "Remover {{topic}}",
     "expectedOutput": "Resultado esperado",
     "defaultExpectedOutput": "Ideias que possam virar um artigo real usando conjuntos de dados públicos.",
     "defaultDepth": "Profundidade padrão",
@@ -309,6 +316,7 @@
     "experimentBlindNotice": "Você está inscrito em um estudo de avaliação cega. O sistema atribuirá um método de recomendação automaticamente — você não verá qual foi usado.",
     "gettingStarted": {
       "title": "Como funciona",
+      "intro": "Três passos dos tópicos às ideias — expanda se for sua primeira execução.",
       "step1": "Adicione tópicos semente que descrevam o que você quer explorar.",
       "step2": "Buscamos artigos reais e analisamos lacunas na literatura.",
       "step3": "Revise ideias com evidências e avalie o que foi útil."
@@ -345,6 +353,7 @@
   },
   "runs": {
     "title": "Execuções",
+    "subtitle": "Abra uma execução pronta para revisar ideias ou inicie uma nova.",
     "subtitleEmpty": "Inicie uma execução para obter ideias de pesquisa com artigos reais.",
     "subtitleStats": "{{total}} no total · {{active}} em andamento · {{completed}} prontas para revisar",
     "emptyHeroEyebrow": "Comece aqui",
@@ -435,6 +444,16 @@
     "rateIdea": "Avaliar esta ideia",
     "quickRatingLabel": "Quão útil é esta ideia?",
     "quickFeedbackPrompt": "Esta ideia foi útil?",
+    "quickFeedbackHint": "Um toque basta — avançamos automaticamente para a próxima ideia.",
+    "orPickScore": "Ou escolha uma nota",
+    "readGuide": "Explore as abas acima e avalie com um toque.",
+    "sectionAboutIntro": "A lacuna de pesquisa, a pergunta e a contribuição esperada.",
+    "sectionSummaryIntro": "Contexto e enquadramento desta direção de pesquisa.",
+    "sectionMethodIntro": "Como você poderia transformar isso em um estudo.",
+    "sectionEvidenceIntro": "Artigos citados para apoiar esta ideia, com notas de relevância.",
+    "scoreHint": "Estimativa geral de qualidade desta ideia",
+    "confidenceHint": "Quão confiante o sistema está nesta recomendação",
+    "sourcesHint": "Número de artigos usados como evidência",
     "useful": "Útil",
     "notUseful": "Não útil",
     "skipIdea": "Pular",
@@ -457,7 +476,11 @@
     "feedbackHint": "As avaliações melhoram sua próxima execução.",
     "feedbackSaved": "Salvo · alinhamento {{score}}",
     "feedbackError": "Não foi possível salvar o feedback.",
+    "about": "Sobre",
     "summary": "Resumo",
+    "paperRefTitleWithYear": "{{title}} ({{year}})",
+    "paperRefOpen": "Abrir fonte: {{citation}}",
+    "paperRefViewEvidence": "Ver evidência: {{citation}}",
     "methodPlan": "Método e plano",
     "evidence": "Evidências ({{count}})",
     "researchGap": "Lacuna de pesquisa",
@@ -822,6 +845,7 @@
     "quickUseAgain": "Usaria o POST-Rec novamente?",
     "quickSubmit": "Concluir",
     "autoSaveHint": "Salva automaticamente ao responder as duas perguntas.",
+    "sessionFeedbackIntro": "Suas respostas melhoram execuções futuras e nos ajudam a medir a utilidade do POST-Rec.",
     "backToRuns": "Voltar às execuções",
     "thankYouShort": "Obrigado pelo feedback!",
     "expectationsMet": "Os resultados atenderam suas expectativas? ({{score}})",
@@ -940,23 +964,56 @@
     "tocLabel": "Nesta página",
     "sections": {
       "overview": "Visão geral",
+      "contributions": "Contribuições metodológicas",
       "pipeline": "Pipeline ponta a ponta",
+      "notation": "Notação",
       "inputs": "Entradas e perfil",
       "retrieval": "Recuperação bibliográfica",
+      "sotaTiers": "Definição de tiers SOTA",
       "relevance": "Pontuação de relevância",
       "embeddings": "Embeddings de documentos",
+      "landscape": "Landscape e matriz de lacunas",
       "generation": "Geração de ideias (LLM)",
       "ideaScores": "Dimensões por ideia",
       "finalScore": "Pontuação final",
+      "fggv": "Extensão FGGV",
       "feedback": "Loop de feedback",
+      "evaluation": "Desenho de avaliação",
       "limitations": "Limitações e transparência"
+    },
+    "contributions": {
+      "intro": "O POST-Rec apresenta quatro componentes metodológicos explícitos:",
+      "c1": "Pipeline de ideação fundamentado em SOTA — artefatos de landscape e matriz de lacunas antes da geração de propostas",
+      "c2": "Modelo de recuperação híbrida — busca dual-pass no OpenAlex, relevância lexical, ranking BM25 + denso + pgvector e cotas por tier",
+      "c3": "Facet-Grounded Gap Verification (FGGV) — mapas de facetas, alinhamento lacuna–faceta, novidade contrastiva por faceta e seleção por diversidade",
+      "c4": "Avaliação online transparente — A/B cego ao vivo entre SOTA e FGGV com feedback de voluntários (EAS, originalidade, aprovação); harnesses offline para regressão em desenvolvimento"
     },
     "overview": {
       "p1": "O POST-Rec é um recomendador de pesquisa fundamentado em literatura. Cada execução combina fontes bibliográficas abertas, filtragem determinística de relevância e um LLM restrito a citar apenas artigos recuperados.",
-      "p2": "O sistema separa três camadas:",
-      "bullet1": "Recuperação e ranking de relevância determinísticos (equações abaixo)",
-      "bullet2": "Síntese LLM de ideias estruturadas com pontuações multidimensionais",
-      "bullet3": "Aprendizado em loop fechado a partir das suas avaliações (Expectation Alignment Score)"
+      "p2": "O sistema separa quatro camadas:",
+      "bullet1": "Recuperação dual-pass, ranking híbrido BM25 + denso + pgvector",
+      "bullet2": "Geração multiestágio fundamentada em SOTA com verificação determinística",
+      "bullet3": "Ranking verificado (SOTA fit + novelty_verified) com calibração por feedback",
+      "bullet4": "Aprendizado em loop fechado a partir das suas avaliações (Expectation Alignment Score)"
+    },
+    "notation": {
+      "intro": "Símbolos usados na proposta (veja também papers/POST-Rec_Literature-Grounded_Research_Ideation.md):",
+      "colSymbol": "Símbolo",
+      "colMeaning": "Significado",
+      "expansionCaption": "Conjunto de tópicos expandido e conjunto de artigos retidos",
+      "symbols": {
+        "queryTokens": "Conjunto de tokens de consulta a partir de tópicos semente, área e tópicos aprendidos",
+        "paper": "Um artigo recuperado",
+        "overlap": "Razão de sobreposição de tokens |A ∩ Q| / |Q| (sem stopwords)",
+        "relevance": "Pontuação determinística de relevância do artigo em [0, 1]",
+        "embedding": "Vetor de embedding do documento d (título ∥ resumo)",
+        "sotaSet": "Subconjunto tier SOTA-recente da execução",
+        "foundationSet": "Subconjunto tier foundation (seminal)",
+        "gapMatrix": "Matriz de lacunas da análise de landscape",
+        "fni": "Facet Novelty Index para a faceta f",
+        "gfa": "Pontuação de alinhamento lacuna–faceta",
+        "verifiedScore": "Pontuação final verificada de ranking"
+      }
     },
     "pipeline": {
       "intro": "Cada execução segue o mesmo pipeline ordenado. Os eventos de progresso na UI correspondem a estas etapas.",
@@ -979,19 +1036,27 @@
         },
         "embedding": {
           "title": "Embedding",
-          "body": "Artigos retidos são embeddados com o modelo Gemini configurado."
+          "body": "Artigos retidos são embeddados com o modelo Gemini configurado e armazenados para re-ranking híbrido."
         },
-        "generation": {
-          "title": "Geração estruturada",
-          "body": "Um LLM produz JSON citando apenas artigos recuperados, com pontuações por dimensão."
+        "hybridRank": {
+          "title": "Re-ranking híbrido",
+          "body": "Artigos são re-pontuados com BM25 + similaridade densa + pgvector; cotas de tier impõem mix SOTA-recente."
+        },
+        "sotaPipeline": {
+          "title": "Pipeline SOTA",
+          "body": "Modo Quick usa geração single-pass; modos SOTA/Exploratory executam landscape → matriz de lacunas → propostas → crítico."
+        },
+        "verification": {
+          "title": "Verificação de novidade e citações",
+          "body": "Cada ideia é verificada quanto a fundamentação, âncoras SOTA, distância de embedding e lacuna de recência."
         },
         "validation": {
-          "title": "Validação",
-          "body": "A saída é parseada e validada; falhas são marcadas sem ideias parciais."
+          "title": "Validação e refinamento",
+          "body": "Ideias aprovadas são publicadas; outras ficam com status needs_refinement e são exibidas separadamente."
         },
         "ranking": {
-          "title": "Ranking e exibição",
-          "body": "Ideias são salvas com pontuação final e exibidas da maior para a menor."
+          "title": "Ranking verificado e exibição",
+          "body": "Ideias publicadas são ordenadas por final_score verificado com métricas de verificação SOTA."
         }
       }
     },
@@ -1007,7 +1072,16 @@
     },
     "retrieval": {
       "p1": "O POST-Rec consulta estes catálogos abertos:",
-      "p2": "Resultados são mesclados, normalizados (título, resumo, DOI, ano, citações) e pontuados. Apenas os melhor ranqueados seguem para geração."
+      "p2": "Resultados são mesclados, normalizados (título, resumo, DOI, ano, citações) e pontuados. Apenas os melhor ranqueados seguem para geração.",
+      "dualPass": "Cada consulta executa dois passes: SOTA (artigos recentes) e foundation (clássicos altamente citados), mesclados com cota SOTA configurável.",
+      "hybridNote": "Após embedding, artigos são re-ranqueados com BM25 + similaridade densa + pgvector; cotas de tier garantem ~{{quota}} de artigos SOTA-recentes no contexto final."
+    },
+    "sotaTiers": {
+      "intro": "O POST-Rec define estado da arte explicitamente como tier configurável — não um único benchmark da comunidade. Em cada execução:",
+      "recent": "Tier SOTA-recente: artigos dos últimos {{years}} anos (sota_recent_years)",
+      "seminal": "Tier foundation: clássicos com ≥ {{citations}} citações (sota_seminal_citation_threshold)",
+      "quota": "O ranking híbrido garante ~{{quota}} das vagas do contexto final para o tier SOTA-recente (sota_tier_quota)",
+      "audit": "Atribuições de tier, logs de recuperação e registros de fontes permitem reconstruir quais artigos contaram como evidência SOTA."
     },
     "relevance": {
       "intro": "Antes de qualquer LLM, cada artigo p é pontuado por sobreposição lexical entre seus tokens Q e o texto do artigo.",
@@ -1021,7 +1095,15 @@
     "embeddings": {
       "p1": "Cada documento retido d é embeddado a partir de título e resumo:",
       "formulaCaption": "Vetor de embedding do documento d",
-      "p2": "Embeddings são persistidos para deduplicação e custos; a geração usa os melhores artigos como contexto textual (título, ano, DOI)."
+      "p2": "Embeddings são persistidos para re-ranking híbrido (BM25 + denso + pgvector). A geração usa os melhores artigos como contexto; modos SOTA/exploratory executam pipeline landscape → lacunas → propostas → crítico."
+    },
+    "landscape": {
+      "intro": "Nos modos SOTA e FGGV, o sistema constrói artefatos inspecionáveis antes de gerar ideias:",
+      "step1": "Agrupar artigos recuperados em clusters temáticos a partir dos embeddings",
+      "step2": "Resumir problemas, métodos, datasets e protocolos de avaliação por cluster",
+      "step3": "Construir matriz de lacunas G — linhas são subproblemas, colunas são famílias de método/dado/avaliação",
+      "step4": "Marcar células como bem cobertas, parciais ou subatendidas; amostrar células subatendidas para propostas",
+      "gapNote": "Cada ideia deve citar âncoras SOTA do conjunto recuperado e declarar quais células de lacuna ataca. O crítico rejeita propostas sem fundamentação na evidência."
     },
     "generation": {
       "p1": "O LLM recebe seus campos de expectativa e até 30 artigos. Regras do sistema:",
@@ -1053,10 +1135,29 @@
       "strategic_fit": "Correspondência com objetivos e restrições"
     },
     "finalScore": {
-      "intro": "A pontuação exibida (0–100) é combinação linear ponderada. Os pesos coincidem com compute_final_ranking_score no backend:",
+      "intro": "Ideias publicadas são ranqueadas com pontuação verificada que combina dimensões do LLM com sinais determinísticos de SOTA-fit e novelty_verified. Pesos variam por modo (Quick, SOTA, Exploratory).",
+      "verifiedCaption": "Pontuação verificada (perfil modo SOTA)",
+      "verifiedNote": "novelty_verified combina distância de embedding, sobreposição de claims e novidade LLM opcional. sota_fit mede engajamento com âncoras recentes.",
+      "legacyNote": "Pesos legados só-LLM (quando sinais verificados não estão disponíveis):",
       "formulaCaption": "Pontuação final de ranking (pesos somam 1)",
-      "display": "Se o LLM omitir final_score, o backend recalcula com os mesmos pesos (ex.: relevância em {{weight}}).",
-      "sort": "Recomendações são ordenadas por final_score decrescente na UI e API."
+      "display": "Se o LLM omitir final_score, o backend recalcula com os mesmos pesos.",
+      "sort": "Recomendações são ordenadas por final_score verificado decrescente na UI e API."
+    },
+    "fggv": {
+      "intro": "Facet-Grounded Gap Verification (FGGV) estende o pipeline SOTA com quatro componentes:",
+      "lfm": "Literature Facet Map (LFM) — decompor cada artigo em facetas problem, method, data e evaluation com pontuações de saturação",
+      "gfa": "Gap–Facet Alignment (GFA) — pontuar como facet_deltas e aligned_gaps da ideia correspondem à matriz de lacunas",
+      "cfn": "Contrastive Facet Novelty (CFN) — Facet Novelty Index por faceta, com peso maior em method e problem",
+      "fds": "Facet Diversity Selection (FDS) — re-ranking MMR em tokens de faceta para listas top-k diversas",
+      "formulaCaption": "Pontuação composta FGGV (padrões v2)",
+      "modeNote": "Selecione o modo FGGV explicitamente ou use Auto para atribuição cega e persistente entre SOTA (controle) e FGGV (tratamento)."
+    },
+    "evaluation": {
+      "intro": "No sistema em produção, a avaliação é principalmente online: pesquisadores reais usam o POST-Rec, avaliam ideias e o feedback é agregado por variante experimental.",
+      "online": "A/B cego online — modo Auto atribui buckets persistentes SOTA (controle) vs FGGV (tratamento); rótulos de método ocultos; EAS, originalidade e aprovação no painel de validação",
+      "offline": "Harness offline (suplementar) — testes de regressão em tópicos golden para Quick (B1), SOTA (B2) e FGGV (M); apoia desenvolvimento, não validação principal",
+      "expert": "Protocolo estendido com especialistas (planejado) — complementa avaliações de voluntários com julgamentos cegos de originalidade (docs/fggv-evaluation.md)",
+      "docNote": "Artigo metodológico completo: papers/elsarticle/post-rec-ideation.tex (template Elsevier elsarticle)"
     },
     "feedback": {
       "intro": "Ao avaliar uma ideia, o POST-Rec calcula um Expectation Alignment Score (EAS) na escala 1–5:",

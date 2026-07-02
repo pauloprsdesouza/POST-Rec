@@ -139,6 +139,13 @@
   transform: rotate(90deg);
 }
 
+.getting-started__intro {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-sm);
+  line-height: var(--postrec-leading);
+  margin: 0 0 var(--postrec-space-2);
+}
+
 .getting-started__steps {
   display: grid;
   gap: var(--postrec-space-2);
@@ -342,6 +349,11 @@
   font-size: var(--postrec-text-xs);
   line-height: 1.4;
   margin: var(--postrec-space-2) 0 0;
+}
+
+.run-mode-picker__hint--compact {
+  margin-top: var(--postrec-space-1);
+  text-align: center;
 }
 
 .run-mode-picker--compact .run-mode-picker__trigger {

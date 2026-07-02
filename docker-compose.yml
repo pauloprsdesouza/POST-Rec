@@ -52,6 +52,7 @@ services:
       - "5432:5432"
     volumes:
       - postrec_postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postrec -d postrec"]
       interval: 5s
@@ -59,10 +60,29 @@ services:
       retries: 10
       start_period: 10s
 
+  shared-db-init:
+    image: pgvector/pgvector:pg16
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: postrec
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for f in /init/01-evolution.sql /init/02-coolify.sql; do
+          psql -h postgres -U postrec -d postgres -v ON_ERROR_STOP=1 -f "$$f"
+        done
+        echo 'Shared PostgreSQL databases ready (evolution, coolify)'
+    volumes:
+      - ./docker/postgres/init:/init:ro
+    restart: "no"
+
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    command: redis-server --save 60 1 --loglevel warning
+    # Redis logical DBs: 0=postrec, 1=celery, 2=cache, 3=evolution, 4=coolify, 5=coolify-cache
+    command: redis-server --appendonly yes --save 60 1 --loglevel warning
     ports:
       - "6379:6379"
     volumes:
@@ -124,41 +144,13 @@ services:
       "
     restart: "no"
 
-  evolution-postgres:
-    image: postgres:15-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: evolution
-      POSTGRES_USER: evolution
-      POSTGRES_PASSWORD: evolution
-    volumes:
-      - postrec_evolution_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U evolution -d evolution"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
-      start_period: 10s
-
-  evolution-redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    command: redis-server --appendonly yes --loglevel warning
-    volumes:
-      - postrec_evolution_redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-
   evolution-api:
     image: evoapicloud/evolution-api:v2.3.7
     restart: unless-stopped
     depends_on:
-      evolution-postgres:
-        condition: service_healthy
-      evolution-redis:
+      shared-db-init:
+        condition: service_completed_successfully
+      redis:
         condition: service_healthy
     ports:
       - "8080:8080"
@@ -169,11 +161,14 @@ services:
         required: false
     environment:
       SERVER_URL: http://localhost:8080
+      SERVER_DISABLE_MANAGER: "false"
+      AUTHENTICATION_TYPE: apikey
+      AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES: "true"
       AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY:-dev-evolution-api-key}
       DATABASE_PROVIDER: postgresql
-      DATABASE_CONNECTION_URI: postgresql://evolution:evolution@evolution-postgres:5432/evolution?schema=evolution_api
+      DATABASE_CONNECTION_URI: postgresql://evolution:evolution@postgres:5432/evolution?schema=evolution_api
       CACHE_REDIS_ENABLED: "true"
-      CACHE_REDIS_URI: redis://evolution-redis:6379/1
+      CACHE_REDIS_URI: redis://redis:6379/3
       CACHE_REDIS_PREFIX_KEY: evolution
       LOG_LEVEL: ERROR,WARN,INFO
       LANGUAGE: en
@@ -182,11 +177,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 15
-      start_period: 45s
+      start_period: 60s
 
   evolution-manager:
     image: evoapicloud/evolution-manager:latest
     restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      if [ -f /etc/nginx/conf.d/nginx.conf ]; then
+        sed -i 's/ must-revalidate//g' /etc/nginx/conf.d/nginx.conf;
+      fi &&
+      exec /docker-entrypoint.sh nginx -g 'daemon off;'
     depends_on:
       evolution-api:
         condition: service_healthy
@@ -291,6 +292,5 @@ volumes:
   postrec_redis_data:
   postrec_rabbitmq_data:
   postrec_minio_data:
-  postrec_evolution_postgres_data:
-  postrec_evolution_redis_data:
   postrec_evolution_instances:
+  postrec_portainer_data:

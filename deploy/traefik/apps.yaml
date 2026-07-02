@@ -1,0 +1,191 @@
+# Auto-generated from deploy/apps/registry.json — do not edit manually.
+# Re-run: python scripts/generate_traefik_apps.py --write
+
+http:
+  routers:
+    postrec-http:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/postrec`)
+      entryPoints: [http]
+      service: app-postrec
+      priority: 100
+
+    postrec-https:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/postrec`)
+      entryPoints: [https]
+      service: app-postrec
+      tls:
+        certResolver: letsencrypt
+      priority: 100
+
+    evolution-http:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/evolution`)
+      entryPoints: [http]
+      middlewares: [strip-evolution]
+      service: app-evolution
+      priority: 100
+
+    evolution-https:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/evolution`)
+      entryPoints: [https]
+      middlewares: [strip-evolution]
+      service: app-evolution
+      tls:
+        certResolver: letsencrypt
+      priority: 100
+
+    evolution-root0-http:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/manager`)
+      entryPoints: [http]
+      service: app-evolution
+      priority: 105
+
+    evolution-root0-https:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/manager`)
+      entryPoints: [https]
+      service: app-evolution
+      priority: 105
+      tls:
+        certResolver: letsencrypt
+
+    evolution-root1-http:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/assets`)
+      entryPoints: [http]
+      service: app-evolution
+      priority: 105
+
+    evolution-root1-https:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/assets`)
+      entryPoints: [https]
+      service: app-evolution
+      priority: 105
+      tls:
+        certResolver: letsencrypt
+
+    portainer-http:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/portainer`)
+      entryPoints: [http]
+      service: app-portainer
+      priority: 100
+
+    portainer-https:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/portainer`)
+      entryPoints: [https]
+      service: app-portainer
+      tls:
+        certResolver: letsencrypt
+      priority: 100
+
+    portainer-root0-http:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/locales`)
+      entryPoints: [http]
+      service: app-portainer
+      priority: 105
+
+    portainer-root0-https:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/locales`)
+      entryPoints: [https]
+      service: app-portainer
+      priority: 105
+      tls:
+        certResolver: letsencrypt
+
+    portainer-root1-http:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/api`)
+      entryPoints: [http]
+      service: app-portainer
+      priority: 105
+
+    portainer-root1-https:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/api`)
+      entryPoints: [https]
+      service: app-portainer
+      priority: 105
+      tls:
+        certResolver: letsencrypt
+
+    www-redirect-http:
+      rule: Host(`www.paulorobertosouza.com.br`)
+      entryPoints: [http]
+      middlewares: [www-to-apex]
+      service: noop
+      priority: 90
+
+    www-redirect-https:
+      rule: Host(`www.paulorobertosouza.com.br`)
+      entryPoints: [https]
+      middlewares: [www-to-apex]
+      service: noop
+      priority: 90
+      tls:
+        certResolver: letsencrypt
+
+    landing-http:
+      rule: Host(`paulorobertosouza.com.br`) && Path(`/`)
+      entryPoints: [http]
+      service: landing
+      priority: 80
+
+    landing-https:
+      rule: Host(`paulorobertosouza.com.br`) && Path(`/`)
+      entryPoints: [https]
+      service: landing
+      priority: 80
+      tls:
+        certResolver: letsencrypt
+
+    unknown-app-http:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/`) && !Path(`/`) && !PathPrefix(`/postrec`) && !PathPrefix(`/evolution`) && !PathPrefix(`/portainer`) && !PathPrefix(`/manager`) && !PathPrefix(`/assets`) && !PathPrefix(`/locales`) && !PathPrefix(`/api`)
+      entryPoints: [http]
+      service: unknown-app
+      priority: 50
+
+    unknown-app-https:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/`) && !Path(`/`) && !PathPrefix(`/postrec`) && !PathPrefix(`/evolution`) && !PathPrefix(`/portainer`) && !PathPrefix(`/manager`) && !PathPrefix(`/assets`) && !PathPrefix(`/locales`) && !PathPrefix(`/api`)
+      entryPoints: [https]
+      service: unknown-app
+      priority: 50
+      tls:
+        certResolver: letsencrypt
+
+  middlewares:
+    strip-evolution:
+      stripPrefix:
+        prefixes:
+          - /evolution
+
+    www-to-apex:
+      redirectRegex:
+        regex: '^https?://www\.paulorobertosouza\.com\.br/(.*)'
+        replacement: "https://paulorobertosouza.com.br/${1}"
+        permanent: true
+
+  services:
+    app-postrec:
+      loadBalancer:
+        servers:
+          - url: http://postrec-web:80
+
+    app-evolution:
+      loadBalancer:
+        servers:
+          - url: http://postrec-evolution-api:8080
+
+    app-portainer:
+      loadBalancer:
+        servers:
+          - url: http://postrec-portainer-proxy:80
+
+    landing:
+      loadBalancer:
+        servers:
+          - url: http://postrec-landing:80
+
+    unknown-app:
+      loadBalancer:
+        servers:
+          - url: http://postrec-unknown-app:80
+
+    noop:
+      loadBalancer:
+        servers:
+          - url: http://127.0.0.1:9

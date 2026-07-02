@@ -21,7 +21,7 @@ if (-not (Test-Path ".env")) {
 }
 
 Write-Host "Starting POST-Rec Docker infrastructure..."
-docker compose up -d postgres redis rabbitmq minio minio-init evolution-postgres evolution-redis evolution-api evolution-manager
+docker compose up -d postgres redis rabbitmq minio minio-init evolution-api evolution-manager
 
 Write-Host "Waiting for PostgreSQL..."
 $ready = $false

@@ -64,6 +64,7 @@ export interface RecommendationDefaults {
 }
 
 export interface SotaAnchor {
+  paper_id?: string;
   title?: string;
   year?: number;
   doi?: string | null;
@@ -129,10 +130,12 @@ export interface RunEvent {
 }
 
 export interface EvidencePaper {
+  paper_id?: string;
   title?: string;
   year?: number;
   doi?: string;
   url?: string;
+  authors?: string[];
   why_relevant?: string;
   retrieval_source?: string;
   citation_count?: number;
@@ -185,11 +188,13 @@ export interface Recommendation {
 
 export interface SourceDocument {
   id?: string;
+  paper_id?: string;
   title?: string;
   year?: number;
   source?: string;
   url?: string;
   doi?: string;
+  authors?: string[];
   venue?: string;
   citation_count?: number;
   qualis_estrato?: string;

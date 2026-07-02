@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { QualisEstratoBadge } from "@/shared/ui/QualisEstratoBadge";
 import { SourceBadge } from "@/shared/ui/SourceBadge";
 import type { EvidencePaper } from "@/shared/types/api";
+import { PaperRefText } from "./PaperRefText";
+import { normalizePaperId } from "@/features/runs/utils/paperRefs";
 
 type RelevanceTier = "high" | "medium" | "low";
 
@@ -80,7 +82,7 @@ function EvidenceRelevanceNote({ text }: { text: string }) {
           id={bodyId}
           className={`evidence-card__relevance-text ${expanded ? "evidence-card__relevance-text--expanded" : ""}`}
         >
-          {text}
+          <PaperRefText text={text} />
         </p>
       </blockquote>
       {clampable ? (
@@ -135,9 +137,10 @@ export function EvidenceCard({ paper, index }: EvidenceCardProps) {
     paper.year,
     paper.citation_count != null ? t("common.citations", { count: paper.citation_count }) : null,
   ].filter(Boolean);
+  const anchorId = `paper-ref-${normalizePaperId(paper.paper_id ?? `P${index + 1}`)}`;
 
   return (
-    <article className="evidence-card">
+    <article className="evidence-card" id={anchorId}>
       <header className="evidence-card__header">
         <span className="evidence-card__index" aria-hidden>
           {index + 1}

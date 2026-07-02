@@ -201,3 +201,101 @@
   font-size: var(--postrec-text-sm);
   margin-top: var(--postrec-space-3);
 }
+
+// ── Seed topics chip input ──────────────────────────────
+
+.seed-topics-input {
+  align-items: center;
+  background: var(--postrec-surface);
+  border: 1px solid var(--postrec-border);
+  border-radius: var(--postrec-radius);
+  cursor: text;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  min-height: 2.75rem;
+  padding: 0.375rem 0.5rem;
+  transition:
+    border-color var(--postrec-duration),
+    box-shadow var(--postrec-duration);
+}
+
+.seed-topics-input:focus-within {
+  border-color: var(--postrec-primary);
+  box-shadow: var(--postrec-shadow-focus);
+}
+
+.seed-topics-input--disabled {
+  background: var(--postrec-surface-muted);
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.seed-topics-input__chip {
+  align-items: center;
+  background: var(--postrec-primary-light);
+  border: 1px solid var(--postrec-primary-subtle);
+  border-radius: var(--postrec-radius-pill);
+  color: var(--postrec-text);
+  display: inline-flex;
+  font-size: var(--postrec-text-sm);
+  gap: 0.125rem;
+  line-height: 1.25;
+  max-width: 100%;
+  padding: 0.25rem 0.375rem 0.25rem 0.625rem;
+}
+
+.seed-topics-input__chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seed-topics-input__chip-remove {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--postrec-radius-pill);
+  color: var(--postrec-muted);
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 1.125rem;
+  height: 1.25rem;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  transition:
+    background var(--postrec-duration),
+    color var(--postrec-duration);
+  width: 1.25rem;
+}
+
+.seed-topics-input__chip-remove:hover:not(:disabled) {
+  background: rgb(0 0 0 / 6%);
+  color: var(--postrec-text);
+}
+
+.seed-topics-input__chip-remove:disabled {
+  cursor: not-allowed;
+}
+
+.seed-topics-input__field {
+  background: transparent;
+  border: none;
+  color: var(--postrec-text);
+  flex: 1 1 8rem;
+  font-family: var(--postrec-font);
+  font-size: var(--postrec-text-base);
+  min-width: 8rem;
+  outline: none;
+  padding: 0.25rem 0.375rem;
+}
+
+.seed-topics-input__field::placeholder {
+  color: var(--postrec-muted-light);
+}
+
+.seed-topics-input__field:disabled {
+  cursor: not-allowed;
+}

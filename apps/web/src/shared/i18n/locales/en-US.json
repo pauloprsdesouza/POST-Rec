@@ -254,12 +254,14 @@
     "academicLevel": "Academic level",
     "experience": "Experience",
     "experienceAi": "AI",
-    "experienceRecsys": "Recommender systems",
     "experienceWriting": "Scientific writing",
     "goalLabel": "What do you want from POST-Rec?",
     "goalPlaceholder": "Find actionable research ideas I could turn into a paper.",
     "saveResearchProfile": "Save research profile",
+    "saveAndContinue": "Save and continue",
     "startRun": "Start a run",
+    "accountIntro": "Contact details and language. Used for sign-in and notifications.",
+    "researchIntro": "Your field and experience shape how ideas are framed and which papers we retrieve.",
     "researchProfileSaved": "Research profile saved.",
     "researchAreaRequired": "Research area is required.",
     "researchSetupHint": "Tell us about your research area so recommendations match your field. You only need to do this once.",
@@ -276,9 +278,14 @@
   "preferences": {
     "researchArea": "Research area",
     "researchAreaPlaceholder": "e.g. Recommender Systems and LLMs",
+    "researchAreaHint": "Shown on every run and used to scope literature search.",
+    "seedTopicsWhy": "These phrases drive paper search — be specific about methods or problems.",
+    "depthHint": "How detailed each idea's plan should be.",
+    "expectedOutputHint": "Optional — describe what a useful idea looks like for you.",
     "seedTopics": "Default seed topics",
-    "seedTopicsPlaceholder": "One topic per line (spaces allowed within a line)",
-    "seedTopicsHint": "Pre-filled when you start a new run. Press Enter for a new topic; phrases can include spaces.",
+    "seedTopicsPlaceholder": "Type a topic and press Enter",
+    "seedTopicsHint": "Each topic appears as a tag. Press Enter to add; phrases can include spaces.",
+    "seedTopicsRemove": "Remove {{topic}}",
     "expectedOutput": "Expected output",
     "defaultExpectedOutput": "Ideas that can become a real paper using public datasets.",
     "defaultDepth": "Default depth",
@@ -309,6 +316,7 @@
     "experimentBlindNotice": "You are enrolled in a blind evaluation study. The system will assign a recommendation method automatically — you will not see which one was used.",
     "gettingStarted": {
       "title": "How it works",
+      "intro": "Three steps from topics to reviewable ideas — expand if this is your first run.",
       "step1": "Add seed topics that describe what you want to explore.",
       "step2": "We search real papers and analyze gaps in the literature.",
       "step3": "Review evidence-backed research ideas and rate what helps."
@@ -345,6 +353,7 @@
   },
   "runs": {
     "title": "Runs",
+    "subtitle": "Open a ready run to review ideas, or start a new one.",
     "subtitleEmpty": "Start a run to generate research ideas backed by real papers.",
     "subtitleStats": "{{total}} total · {{active}} in progress · {{completed}} ready to review",
     "emptyHeroEyebrow": "Get started",
@@ -435,6 +444,16 @@
     "rateIdea": "Rate this idea",
     "quickRatingLabel": "How useful is this idea?",
     "quickFeedbackPrompt": "Was this idea useful?",
+    "quickFeedbackHint": "One tap is enough — we move you to the next idea automatically.",
+    "orPickScore": "Or pick a score",
+    "readGuide": "Browse the tabs above, then rate with one tap.",
+    "sectionAboutIntro": "The research gap, question, and expected contribution.",
+    "sectionSummaryIntro": "Background and framing for this research direction.",
+    "sectionMethodIntro": "How you could turn this into a study.",
+    "sectionEvidenceIntro": "Papers cited to support this idea, with relevance notes.",
+    "scoreHint": "Overall quality estimate for this idea",
+    "confidenceHint": "How confident the system is in this recommendation",
+    "sourcesHint": "Number of papers used as evidence",
     "useful": "Useful",
     "notUseful": "Not useful",
     "skipIdea": "Skip",
@@ -457,7 +476,11 @@
     "feedbackHint": "Ratings improve your next run.",
     "feedbackSaved": "Saved · alignment {{score}}",
     "feedbackError": "Could not save feedback.",
+    "about": "About",
     "summary": "Summary",
+    "paperRefTitleWithYear": "{{title}} ({{year}})",
+    "paperRefOpen": "Open source: {{citation}}",
+    "paperRefViewEvidence": "View evidence for: {{citation}}",
     "methodPlan": "Method & plan",
     "evidence": "Evidence ({{count}})",
     "researchGap": "Research gap",
@@ -822,6 +845,7 @@
     "quickUseAgain": "Would you use POST-Rec again?",
     "quickSubmit": "Done",
     "autoSaveHint": "Saves automatically when you answer both questions.",
+    "sessionFeedbackIntro": "Your answers improve future runs and help us measure POST-Rec's usefulness.",
     "backToRuns": "Back to runs",
     "thankYouShort": "Thanks for your feedback!",
     "expectationsMet": "Did results meet your expectations? ({{score}})",
@@ -912,16 +936,29 @@
     "tocLabel": "On this page",
     "sections": {
       "overview": "Overview",
+      "contributions": "Methodological contributions",
       "pipeline": "End-to-end pipeline",
+      "notation": "Notation",
       "inputs": "User inputs & profile",
       "retrieval": "Literature retrieval",
+      "sotaTiers": "SOTA tier definition",
       "relevance": "Paper relevance score",
       "embeddings": "Document embeddings",
+      "landscape": "Landscape & gap matrix",
       "generation": "Idea generation (LLM)",
       "ideaScores": "Per-idea dimensions",
       "finalScore": "Final ranking score",
+      "fggv": "FGGV extension",
       "feedback": "Your feedback loop",
+      "evaluation": "Evaluation design",
       "limitations": "Limitations & transparency"
+    },
+    "contributions": {
+      "intro": "POST-Rec contributes four explicit methodological components:",
+      "c1": "SOTA-grounded ideation pipeline — landscape summary and gap matrix artifacts before proposal generation",
+      "c2": "Hybrid retrieval model — dual-pass OpenAlex fetching, lexical relevance, BM25 + dense + pgvector ranking, and tier quotas",
+      "c3": "Facet-Grounded Gap Verification (FGGV) — literature facet maps, gap–facet alignment, contrastive facet novelty, and diversity selection",
+      "c4": "Transparent online evaluation — live blind A/B between SOTA and FGGV with volunteer feedback (EAS, originality, approval); offline harnesses for development regression"
     },
     "overview": {
       "p1": "POST-Rec is a literature-grounded research recommender. Each run combines open bibliographic sources, deterministic relevance filtering, and a large language model (LLM) constrained to cite only retrieved papers.",
@@ -930,6 +967,25 @@
       "bullet2": "SOTA-grounded multi-stage generation with deterministic verification",
       "bullet3": "Verified ranking (SOTA fit + novelty_verified) with feedback calibration",
       "bullet4": "Closed-loop learning from your ratings (Expectation Alignment Score)"
+    },
+    "notation": {
+      "intro": "Symbols used throughout the proposal (see also papers/POST-Rec_Literature-Grounded_Research_Ideation.md):",
+      "colSymbol": "Symbol",
+      "colMeaning": "Meaning",
+      "expansionCaption": "Expanded topic set and retained paper set",
+      "symbols": {
+        "queryTokens": "Query token set built from seed topics, research area, and learned topics",
+        "paper": "A retrieved paper",
+        "overlap": "Token overlap ratio |A ∩ Q| / |Q| (stopwords removed)",
+        "relevance": "Deterministic paper relevance score in [0, 1]",
+        "embedding": "Embedding vector for document d (title ∥ abstract)",
+        "sotaSet": "SOTA-recent tier subset for the run",
+        "foundationSet": "Foundation (seminal) tier subset",
+        "gapMatrix": "Gap matrix from landscape analysis",
+        "fni": "Facet Novelty Index for facet f",
+        "gfa": "Gap–facet alignment score",
+        "verifiedScore": "Verified final ranking score"
+      }
     },
     "pipeline": {
       "intro": "Every recommendation run follows the same ordered pipeline. Progress events you see in the UI map to these stages.",
@@ -992,6 +1048,13 @@
       "dualPass": "Each query runs two retrieval passes: a SOTA pass (recent papers, recency-sorted) and a foundation pass (highly cited classics). Results are merged with a configurable SOTA quota.",
       "hybridNote": "After embedding, papers are re-ranked with BM25 + dense cosine similarity + pgvector search, then tier quotas enforce ~{{quota}} recent SOTA papers in the final context."
     },
+    "sotaTiers": {
+      "intro": "POST-Rec defines state of the art explicitly as a configurable tier—not a single community benchmark. For each run:",
+      "recent": "SOTA-recent tier: papers published within the last {{years}} years (sota_recent_years)",
+      "seminal": "Foundation tier: highly cited classics with ≥ {{citations}} citations (sota_seminal_citation_threshold)",
+      "quota": "Hybrid ranking enforces ~{{quota}} of final context slots from SOTA-recent tier (sota_tier_quota)",
+      "audit": "Tier assignments, retrieval logs, and stored source records let reviewers reconstruct which papers counted as SOTA evidence."
+    },
     "relevance": {
       "intro": "Before any LLM call, each paper p is scored by lexical overlap between your query tokens Q and the paper text.",
       "overlapCaption": "Token overlap ratio (stopwords removed, tokens length > 2)",
@@ -1005,6 +1068,14 @@
       "p1": "Each retained document d is embedded from its title and abstract:",
       "formulaCaption": "Embedding vector for document d",
       "p2": "Embeddings are persisted and used for hybrid re-ranking (BM25 + dense + pgvector). Generation uses the top-ranked papers as structured context; SOTA/exploratory modes run a multi-stage landscape → gap → proposal → critic pipeline."
+    },
+    "landscape": {
+      "intro": "In SOTA and FGGV modes, the system builds inspectable artifacts before generating ideas:",
+      "step1": "Cluster retrieved papers into thematic groups from embeddings",
+      "step2": "Summarize problems, methods, datasets, and evaluation protocols per cluster",
+      "step3": "Construct gap matrix G — rows are sub-problems, columns are method/data/eval families",
+      "step4": "Mark cells as well-covered, partial, or underserved; sample underserved cells for proposals",
+      "gapNote": "Each idea must cite SOTA anchor papers from the retrieved set and declare which gap cells it targets. The critic rejects proposals that cannot be grounded in evidence."
     },
     "generation": {
       "p1": "The LLM receives your expectation fields and up to 30 retrieved papers. System rules enforce:",
@@ -1043,6 +1114,22 @@
       "formulaCaption": "Final ranking score (weights sum to 1)",
       "display": "If the LLM omits final_score, the backend recomputes it from dimensions using the same weights (e.g. relevance at {{weight}}).",
       "sort": "Recommendations are sorted by verified final_score descending in the UI and API."
+    },
+    "fggv": {
+      "intro": "Facet-Grounded Gap Verification (FGGV) extends the SOTA pipeline with four components:",
+      "lfm": "Literature Facet Map (LFM) — decompose each paper into problem, method, data, and evaluation facets with saturation scores",
+      "gfa": "Gap–Facet Alignment (GFA) — score how idea facet_deltas and aligned_gaps match the pre-computed gap matrix",
+      "cfn": "Contrastive Facet Novelty (CFN) — Facet Novelty Index per facet, weighted toward method and problem novelty",
+      "fds": "Facet Diversity Selection (FDS) — MMR re-ranking on facet tokens for diverse top-k lists",
+      "formulaCaption": "FGGV composite score (v2 defaults)",
+      "modeNote": "Select FGGV mode explicitly, or use Auto for blind sticky assignment between SOTA (control) and FGGV (treatment)."
+    },
+    "evaluation": {
+      "intro": "In the deployed system, evaluation is primarily online: real researchers use POST-Rec, rate ideas, and contribute feedback aggregated by experimental variant.",
+      "online": "Online blind A/B — Auto mode assigns sticky SOTA (control) vs FGGV (treatment) buckets; method labels are hidden; EAS, originality, and approval are tracked on the validation dashboard",
+      "offline": "Offline harness (supplementary) — golden-topic regression tests for Quick (B1), SOTA (B2), and FGGV (M); supports development, not primary validation",
+      "expert": "Extended expert protocol (planned) — complements online volunteer ratings with blind PhD+ originality judgments (see docs/fggv-evaluation.md)",
+      "docNote": "Full methodology article: papers/elsarticle/post-rec-ideation.tex (Elsevier elsarticle template)"
     },
     "feedback": {
       "intro": "When you rate an idea, POST-Rec computes an Expectation Alignment Score (EAS) on a 1–5 scale:",

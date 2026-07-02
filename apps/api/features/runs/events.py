@@ -71,6 +71,8 @@ def retry_user_message(exc: Exception) -> str:
         return "A source returned unexpected data — retrying automatically…"
     if "429" in text or "rate limit" in text.lower():
         return "Sources are rate-limited — retrying in a moment…"
+    if "503" in text or "high demand" in text.lower() or "unavailable" in text.lower():
+        return "The AI service is busy — retrying automatically…"
     if "timeout" in text.lower() or "timed out" in text.lower():
         return "A source timed out — retrying automatically…"
     return "A temporary error occurred — retrying automatically…"

@@ -3,7 +3,11 @@
 import uuid
 from unittest.mock import MagicMock
 
-from apps.api.features.recommendations.sources import enrich_evidence_papers, serialize_source_documents
+from apps.api.features.recommendations.sources import (
+    enrich_evidence_papers,
+    get_ranked_paper_id_by_document_id,
+    serialize_source_documents,
+)
 
 
 def _mock_doc(*, doi=None, title="Sample Paper", source="openalex", citations=42, metadata=None):
@@ -18,6 +22,38 @@ def _mock_doc(*, doi=None, title="Sample Paper", source="openalex", citations=42
     doc.url = "https://example.org/paper"
     doc.metadata_ = metadata
     return doc
+
+
+def test_enrich_evidence_preserves_paper_id():
+    doc = _mock_doc(doi="10.1234/test")
+    evidence = [{"paper_id": "P3", "title": "Cited title", "doi": "10.1234/test"}]
+
+    enriched = enrich_evidence_papers(evidence, [doc])
+
+    assert enriched[0]["paper_id"] == "P3"
+
+
+def test_enrich_evidence_infers_paper_id_from_ranked_catalog():
+    doc = _mock_doc(doi="10.1234/test")
+    evidence = [{"title": "Cited title", "doi": "10.1234/test"}]
+
+    enriched = enrich_evidence_papers(
+        evidence,
+        [doc],
+        paper_id_by_doc_id={str(doc.id): "P2"},
+    )
+
+    assert enriched[0]["paper_id"] == "P2"
+
+
+def test_enrich_evidence_includes_authors_from_catalog():
+    doc = _mock_doc(doi="10.1234/test", title="Attention Is All You Need")
+    doc.authors = ["Ashish Vaswani", "Noam Shazeer"]
+    evidence = [{"title": "Attention Is All You Need", "doi": "10.1234/test", "paper_id": "P1"}]
+
+    enriched = enrich_evidence_papers(evidence, [doc])
+
+    assert enriched[0]["authors"] == ["Ashish Vaswani", "Noam Shazeer"]
 
 
 def test_enrich_evidence_matches_by_doi():
@@ -94,3 +130,24 @@ def test_enrich_evidence_omits_qualis_when_unmatched():
 
     assert "qualis_estrato" not in enriched[0]
     assert "qualis_boost" not in enriched[0]
+
+
+def test_get_ranked_paper_id_fallback_uses_retrieved_order_when_ranked_papers_empty():
+    doc_a = _mock_doc(title="Paper A")
+    doc_b = _mock_doc(title="Paper B")
+    ranked_event = MagicMock()
+    ranked_event.payload = {"papers": [], "count": 2}
+    retrieved_event = MagicMock()
+    retrieved_event.payload = {"document_ids": [str(doc_a.id), str(doc_b.id)]}
+
+    db = MagicMock()
+    db.query.return_value.filter_by.return_value.order_by.return_value.first.side_effect = [
+        ranked_event,
+        retrieved_event,
+    ]
+    db.query.return_value.filter.return_value.all.return_value = [doc_a, doc_b]
+
+    mapping = get_ranked_paper_id_by_document_id(db, uuid.uuid4())
+
+    assert mapping[str(doc_a.id)] == "P1"
+    assert mapping[str(doc_b.id)] == "P2"

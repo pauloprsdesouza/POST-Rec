@@ -146,11 +146,7 @@ export function RunsPage() {
         <header className="page-stack__block runs-page__header">
           <PageHeader
             title={t("runs.title")}
-            subtitle={t("runs.subtitleStats", {
-              total: runs.length,
-              active: groups.active.length,
-              completed: groups.completed.length,
-            })}
+            subtitle={t("runs.subtitle")}
             action={
               <Link to="/runs/new" className="btn btn-primary d-none d-md-inline-flex" data-coach="coach-runs-new-run">
                 {t("common.newRun")}
@@ -213,6 +209,13 @@ export function RunsPage() {
                 <RunsEmptyFilter message={t("runs.filterEmptyActive")} />
               ) : null}
 
+              {filter !== "all" ? (
+                <ul className="runs-list">
+                  {(filter === "ready" ? completed : active).map((run) => (
+                    <RunListCard key={run.id} run={run} recommendationCount={run.recommendation_count} />
+                  ))}
+                </ul>
+              ) : (
               <div className="runs-page__sections">
                 <RunSection
                   title={t("runs.sectionReady")}
@@ -220,6 +223,7 @@ export function RunsPage() {
                     filter === "all" && completed.length > 0 ? undefined : t("runs.sectionReadyDesc")
                   }
                   count={completed.length}
+                  showCount={!(filter === "all" && completed.length > 0)}
                   dataCoach="coach-runs-ready"
                 >
                   {completed.map((run) => (
@@ -249,6 +253,7 @@ export function RunsPage() {
                   ))}
                 </RunSection>
               </div>
+              )}
             </>
           )}
         </main>

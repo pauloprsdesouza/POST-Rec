@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import type { Recommendation, SotaAnchor, SourceDocument } from "@/shared/types/api";
 
+import { PaperRefText } from "./PaperRefText";
 import { ScoreBar } from "./ScoreBar";
 
 interface SotaVerificationPanelProps {
@@ -112,7 +113,9 @@ function VerificationBlock({ label, value }: { label: string; value: string }) {
   return (
     <div className="idea-verification__block">
       <p className="idea-verification__block-label">{label}</p>
-      <p className="idea-verification__block-text">{value}</p>
+      <p className="idea-verification__block-text">
+        <PaperRefText text={value} />
+      </p>
     </div>
   );
 }

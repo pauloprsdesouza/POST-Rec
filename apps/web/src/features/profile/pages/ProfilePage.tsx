@@ -13,8 +13,8 @@ import { PageHeader } from "@/shared/ui/PageHeader";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { LanguageSwitcher } from "@/shared/ui/LanguageSwitcher";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
-import { OnboardingProgress } from "@/shared/ui/OnboardingProgress";
 import { NextStepBanner } from "@/shared/ui/NextStepBanner";
+import { SectionGroup } from "@/shared/ui/SectionGroup";
 import { ACADEMIC_LEVELS, DEFAULT_SEED_TOPICS, EXPERIENCE_LEVELS } from "@/shared/constants";
 import { useEnumLabel } from "@/shared/i18n/useEnumLabel";
 import i18n from "@/shared/i18n";
@@ -139,7 +139,6 @@ export function ProfilePage() {
       research_area: profile.research_area.trim(),
       academic_level: profile.academic_level,
       experience_with_ai: profile.experience_with_ai,
-      experience_with_recommender_systems: profile.experience_with_recommender_systems,
       experience_with_scientific_writing: profile.experience_with_scientific_writing,
       goal_with_postrec: profile.goal_with_postrec?.trim(),
     };
@@ -213,13 +212,8 @@ export function ProfilePage() {
       <div className="page-stack page-stack--tight">
         <PageHeader title={t("profile.title")} subtitle={t("profile.subtitle")} />
 
-        {setupIncomplete ? (
-          <div className="profile-setup panel">
-            <OnboardingProgress />
-            {!profileDone && activeTab === "research" ? (
-              <p className="profile-setup__hint mb-0">{t("profile.researchSetupHint")}</p>
-            ) : null}
-          </div>
+        {setupIncomplete && activeTab === "research" ? (
+          <p className="profile-setup__hint panel">{t("profile.researchSetupHint")}</p>
         ) : null}
 
         {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
@@ -258,6 +252,7 @@ export function ProfilePage() {
               <Tab.Content>
               <Tab.Pane eventKey="account">
                 {accountSuccess ? <InlineAlert variant="success">{accountSuccess}</InlineAlert> : null}
+                <SectionGroup title={t("profile.tabAccount")} intro={t("profile.accountIntro")}>
                 <div className="mb-4">
                   <LanguageSwitcher variant="inline" />
                 </div>
@@ -310,6 +305,7 @@ export function ProfilePage() {
                     {savingAccount ? t("common.saving") : t("profile.saveAccount")}
                   </Button>
                 </Form>
+                </SectionGroup>
               </Tab.Pane>
 
               <Tab.Pane eventKey="research">
@@ -320,6 +316,7 @@ export function ProfilePage() {
                 ) : null}
                 {profileSuccess && !profileDone ? <InlineAlert variant="success">{profileSuccess}</InlineAlert> : null}
 
+                <SectionGroup title={t("profile.tabResearch")} intro={t("profile.researchIntro")}>
                 <Form onSubmit={handleProfileSubmit} className="form-stack">
                   <Form.Group className="field-group">
                     <Form.Label>{t("profile.researchArea")}</Form.Label>
@@ -347,7 +344,7 @@ export function ProfilePage() {
 
                   <p className="profile-experience-heading">{t("profile.experience")}</p>
                   <Row className="g-3">
-                    <Col md={4}>
+                    <Col md={6}>
                       <Form.Group className="field-group">
                         <Form.Label>{t("profile.experienceAi")}</Form.Label>
                       <Form.Select
@@ -362,24 +359,7 @@ export function ProfilePage() {
                       </Form.Select>
                       </Form.Group>
                     </Col>
-                    <Col md={4}>
-                      <Form.Group className="field-group">
-                        <Form.Label>{t("profile.experienceRecsys")}</Form.Label>
-                      <Form.Select
-                        value={profile.experience_with_recommender_systems ?? "Basic"}
-                        onChange={(e) =>
-                          setProfile({ ...profile, experience_with_recommender_systems: e.target.value })
-                        }
-                      >
-                        {EXPERIENCE_LEVELS.map((level) => (
-                          <option key={level} value={level}>
-                            {experienceLabel(level)}
-                          </option>
-                        ))}
-                      </Form.Select>
-                      </Form.Group>
-                    </Col>
-                    <Col md={4}>
+                    <Col md={6}>
                       <Form.Group className="field-group">
                         <Form.Label>{t("profile.experienceWriting")}</Form.Label>
                       <Form.Select
@@ -409,20 +389,26 @@ export function ProfilePage() {
                     />
                   </Form.Group>
 
-                  <div className="d-flex gap-2 flex-wrap">
+                  <div className="d-flex gap-2 flex-wrap align-items-center">
                     <Button type="submit" variant="primary" disabled={savingProfile}>
-                      {savingProfile ? t("common.saving") : t("profile.saveResearchProfile")}
+                      {savingProfile
+                        ? t("common.saving")
+                        : profileDone
+                          ? t("profile.saveResearchProfile")
+                          : t("profile.saveAndContinue")}
                     </Button>
-                    <Button type="button" variant="outline-secondary" onClick={() => navigate("/runs/new")}>
-                      {t("profile.startRun")}
-                    </Button>
+                    {profileDone ? (
+                      <Button type="button" variant="link" className="px-0" onClick={() => navigate("/runs/new")}>
+                        {t("profile.startRun")}
+                      </Button>
+                    ) : null}
                   </div>
                 </Form>
+                </SectionGroup>
               </Tab.Pane>
 
               <Tab.Pane eventKey="preferences">
-                <div className="form-stack">
-                <p className="profile-form-intro">{t("profile.preferencesIntro")}</p>
+                <SectionGroup title={t("profile.tabPreferences")} intro={t("profile.preferencesIntro")}>
                 {preferencesSuccess ? <InlineAlert variant="success">{preferencesSuccess}</InlineAlert> : null}
 
                 <RecommendationPreferencesForm
@@ -456,7 +442,7 @@ export function ProfilePage() {
                     ) : null}
                   </div>
                 ) : null}
-                </div>
+                </SectionGroup>
               </Tab.Pane>
 
               <Tab.Pane eventKey="consent">

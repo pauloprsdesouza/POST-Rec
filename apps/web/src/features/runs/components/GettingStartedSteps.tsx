@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const STORAGE_KEY = "postrec:getting-started-seen";
@@ -7,19 +7,20 @@ export function GettingStartedSteps() {
   const { t } = useTranslation();
   const [open, setOpen] = useState(() => localStorage.getItem(STORAGE_KEY) !== "1");
 
-  useEffect(() => {
-    if (open) {
-      localStorage.setItem(STORAGE_KEY, "1");
-    }
-  }, [open]);
-
   return (
     <details
       className="getting-started"
       open={open}
-      onToggle={(event) => setOpen((event.currentTarget as HTMLDetailsElement).open)}
+      onToggle={(event) => {
+        const details = event.currentTarget as HTMLDetailsElement;
+        setOpen(details.open);
+        if (!details.open) {
+          localStorage.setItem(STORAGE_KEY, "1");
+        }
+      }}
     >
       <summary className="getting-started__title">{t("newRun.gettingStarted.title")}</summary>
+      <p className="getting-started__intro">{t("newRun.gettingStarted.intro")}</p>
       <ol className="getting-started__steps">
         {[1, 2, 3].map((num) => (
           <li key={num} className="getting-started__step">

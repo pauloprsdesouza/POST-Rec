@@ -56,7 +56,7 @@ class Settings(BaseSettings):
 
     gemini_api_key: str = ""
     gemini_embedding_model: str = DEFAULT_GEMINI_EMBEDDING_MODEL
-    gemini_generation_model: str = "gemini-2.5-flash-lite"
+    gemini_generation_model: str = "gemini-2.5-flash"
     gemini_embedding_dimensions: int = DEFAULT_GEMINI_EMBEDDING_DIMENSIONS
 
     openalex_email: str = ""

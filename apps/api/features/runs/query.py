@@ -16,6 +16,7 @@ from apps.api.features.experiments.presentation import (
 )
 from apps.api.features.recommendations.sources import (
     enrich_evidence_papers,
+    get_ranked_paper_id_by_document_id,
     get_run_source_documents,
     serialize_source_documents,
 )
@@ -82,6 +83,7 @@ def _candidate_to_response(
     candidate: RecommendationCandidate,
     source_docs,
     *,
+    paper_id_by_doc_id: dict[str, str] | None = None,
     feedback: RecommendationFeedback | None = None,
 ) -> dict:
     scores = candidate.scores or {}
@@ -117,7 +119,11 @@ def _candidate_to_response(
         critic_accepted=scores.get("critic_accepted"),
         validation_issues=validation_issues,
         status=candidate.status,
-        evidence_papers=enrich_evidence_papers(candidate.evidence_papers, source_docs),
+        evidence_papers=enrich_evidence_papers(
+            candidate.evidence_papers,
+            source_docs,
+            paper_id_by_doc_id=paper_id_by_doc_id,
+        ),
         datasets=candidate.datasets,
         evaluation_metrics=candidate.evaluation_metrics,
         experimental_plan=candidate.experimental_plan,
@@ -185,7 +191,11 @@ def run_stream_payload(db: Session, run: RecommendationRun) -> dict:
 
 
 def run_sources_payload(db: Session, run_id: uuid.UUID) -> list[dict]:
-    return serialize_source_documents(get_run_source_documents(db, run_id))
+    paper_ids = get_ranked_paper_id_by_document_id(db, run_id)
+    return serialize_source_documents(
+        get_run_source_documents(db, run_id),
+        paper_id_by_doc_id=paper_ids,
+    )
 
 
 def run_recommendations_payload(
@@ -207,9 +217,15 @@ def run_recommendations_payload(
         reverse=True,
     )
     source_docs = get_run_source_documents(db, run_id)
+    paper_ids = get_ranked_paper_id_by_document_id(db, run_id)
     feedback_map = user_feedback_map_for_run(db, user_id, run_id) if user_id else {}
     payloads = [
-        _candidate_to_response(candidate, source_docs, feedback=feedback_map.get(candidate.id))
+        _candidate_to_response(
+            candidate,
+            source_docs,
+            paper_id_by_doc_id=paper_ids,
+            feedback=feedback_map.get(candidate.id),
+        )
         for candidate in candidates
     ]
     if run and is_blind_run(run):

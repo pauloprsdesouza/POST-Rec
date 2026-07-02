@@ -174,7 +174,7 @@ Retrieval uses circuit breakers, full-jitter backoff, and Redis caching for 429 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `GEMINI_API_KEY` | — | Required for production LLM calls |
-| `GEMINI_GENERATION_MODEL` | `gemini-2.5-flash-lite` | Recommendation generation |
+| `GEMINI_GENERATION_MODEL` | `gemini-2.5-flash` | Recommendation generation |
 | `GEMINI_EMBEDDING_MODEL` | `gemini-embedding-001` | Paper embeddings (768 dims) |
 | `DATABASE_URL` | — | PostgreSQL connection string |
 

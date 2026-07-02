@@ -7,7 +7,11 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from apps.api.features.experiments.service import experiment_service
-from apps.api.features.recommendations.sources import get_run_source_documents, serialize_source_documents
+from apps.api.features.recommendations.sources import (
+    get_ranked_paper_id_by_document_id,
+    get_run_source_documents,
+    serialize_source_documents,
+)
 from apps.api.features.runs.access import ensure_run_access, get_run_or_404, user_id_optional
 from apps.api.features.runs.cleanup import learned_topics_for_run_cleanup
 from apps.api.features.runs.query import (
@@ -151,7 +155,11 @@ def get_run_source_documents_endpoint(run_id: uuid.UUID, db: Session = Depends(g
     run = get_run_or_404(db, run_id)
     run_key = str(run_id)
     if not is_terminal_run(run.status):
-        return serialize_source_documents(get_run_source_documents(db, run_id))
+        paper_ids = get_ranked_paper_id_by_document_id(db, run_id)
+        return serialize_source_documents(
+            get_run_source_documents(db, run_id),
+            paper_id_by_doc_id=paper_ids,
+        )
 
     data = load_cached_json(
         CacheKeys.run_sources(run_key),

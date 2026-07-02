@@ -1,14 +1,18 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { runService } from "@/shared/api";
 import { getErrorMessage } from "@/shared/api/errors";
 import type { Recommendation, SourceDocument } from "@/shared/types/api";
+import { PaperRefProvider } from "./PaperRefContext";
+import { PaperRefText } from "./PaperRefText";
 import { EvidenceList } from "./EvidenceList";
 import { QuickFeedbackPanel, type WouldUse } from "./QuickFeedbackPanel";
 import { ScoreBar } from "./ScoreBar";
 import { SotaVerificationPanel } from "./SotaVerificationPanel";
-type IdeaSection = "summary" | "method" | "sources";
+import { buildPaperRefIndex, normalizePaperId } from "@/features/runs/utils/paperRefs";
+
+type IdeaTab = "about" | "summary" | "method" | "evidence";
 
 interface RecommendationDetailProps {
   recommendation: Recommendation;
@@ -25,8 +29,6 @@ interface RecommendationDetailProps {
 
 export function RecommendationDetail({
   recommendation,
-  index,
-  total,
   runId,
   sessionId,
   token,
@@ -36,8 +38,13 @@ export function RecommendationDetail({
   onSkip,
 }: RecommendationDetailProps) {
   const { t } = useTranslation();
-  const [activeSection, setActiveSection] = useState<IdeaSection>("summary");
+  const [activeTab, setActiveTab] = useState<IdeaTab>("about");
   const [savedRating, setSavedRating] = useState<number | null>(initialRating);
+
+  useEffect(() => {
+    setActiveTab("about");
+    setSavedRating(initialRating);
+  }, [recommendation.id, initialRating]);
   const [wouldUse, setWouldUse] = useState<WouldUse>("maybe");
   const [comment, setComment] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -51,6 +58,26 @@ export function RecommendationDetail({
     defaultValue: confidenceKey.replace(/\b\w/g, (c) => c.toUpperCase()),
   });
   const sourceCount = recommendation.evidence_papers?.length ?? 0;
+  const paperRefIndex = useMemo(
+    () => buildPaperRefIndex(recommendation, sources),
+    [recommendation, sources],
+  );
+
+  const navigateToPaper = useCallback((paperId: string) => {
+    const normalized = normalizePaperId(paperId);
+    setActiveTab("evidence");
+    window.requestAnimationFrame(() => {
+      document.getElementById(`paper-ref-${normalized}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    });
+  }, []);
+  const qualityScores = recommendation.scores
+    ? Object.entries(recommendation.scores).filter(([name]) =>
+        ["relevance", "novelty", "evidence", "feasibility"].includes(name),
+      )
+    : [];
 
   const decisionFromRating = (rating: number) => {
     if (rating >= 4) return "approved";
@@ -103,87 +130,70 @@ export function RecommendationDetail({
   };
 
   return (
-    <article className="idea-detail">
+    <PaperRefProvider index={paperRefIndex} onNavigateToPaper={navigateToPaper}>
+      <article className="idea-detail" aria-labelledby={`idea-title-${recommendation.id}`}>
       <div className="idea-detail__meta">
-        <span className="idea-detail__counter">
-          {t("ideas.countOfTotal", { current: index, total })}
-        </span>
         {scoreLabel != null ? (
-          <span className="idea-detail__score">{t("ideas.score", { value: scoreLabel })}</span>
+          <span className="idea-detail__score" title={t("ideas.scoreHint")}>
+            {t("ideas.score", { value: scoreLabel })}
+          </span>
         ) : null}
-        <span className="idea-detail__chip">{confidence}</span>
-        <span className="idea-detail__chip">{t("ideas.sourcesCount", { count: sourceCount })}</span>
+        <span className="idea-detail__chip" title={t("ideas.confidenceHint")}>
+          {confidence}
+        </span>
+        <span className="idea-detail__chip" title={t("ideas.sourcesHint")}>
+          {t("ideas.sourcesCount", { count: sourceCount })}
+        </span>
       </div>
 
-      <h2 className="idea-detail__title">{recommendation.title}</h2>
+      <h2 className="idea-detail__title" id={`idea-title-${recommendation.id}`}>
+        {recommendation.title}
+      </h2>
       {recommendation.technique_name ? (
         <p className="idea-detail__technique">{recommendation.technique_name}</p>
       ) : null}
 
-      <div data-coach="coach-run-rating">
-      <QuickFeedbackPanel
-        rating={savedRating}
-        wouldUse={wouldUse}
-        submitting={submitting}
-        message={message}
-        error={error}
-        onThumbUp={() => applyRating(4)}
-        onThumbDown={() => applyRating(2)}
-        onSkip={onSkip}
-        onStarClick={applyRating}
-        onWouldUseChange={(value) => {
-          setWouldUse(value);
-          if (savedRating != null) {
-            void submitRating(savedRating, value);
-          }
-        }}
-        comment={comment}
-        onCommentChange={setComment}
-        onCommentBlur={() => {
-          if (savedRating != null && comment.trim()) {
-            void submitRating(savedRating, wouldUse);
-          }
-        }}
-      />
-      </div>
+      <div className="idea-detail__body">
+        <nav className="idea-tabs" role="tablist" aria-label={t("ideas.sectionNav")}>
+          {(
+            [
+              ["about", t("ideas.about")],
+              ["summary", t("ideas.summary")],
+              ["method", t("ideas.methodPlan")],
+              ["evidence", t("ideas.evidence", { count: sourceCount })],
+            ] as const
+          ).map(([tab, label]) => (
+            <button
+              key={tab}
+              type="button"
+              role="tab"
+              id={`idea-tab-${recommendation.id}-${tab}`}
+              aria-selected={activeTab === tab}
+              aria-controls={`idea-panel-${recommendation.id}-${tab}`}
+              className={`idea-tabs__btn${activeTab === tab ? " idea-tabs__btn--active" : ""}`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
 
-      <nav className="idea-tabs" aria-label={t("ideas.sectionNav")}>
-        {(
-          [
-            ["summary", t("ideas.summary")],
-            ["method", t("ideas.methodPlan")],
-            ["sources", t("ideas.evidence", { count: sourceCount })],
-          ] as const
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            className={`idea-tabs__btn ${activeSection === key ? "idea-tabs__btn--active" : ""}`}
-            aria-selected={activeSection === key}
-            onClick={() => setActiveSection(key)}
+        {activeTab === "about" ? (
+          <div
+            role="tabpanel"
+            id={`idea-panel-${recommendation.id}-about`}
+            aria-labelledby={`idea-tab-${recommendation.id}-about`}
+            className="idea-tab-panel"
           >
-            {label}
-          </button>
-        ))}
-      </nav>
-
-      <div className="idea-tab-panel">
-        {activeSection === "summary" ? (
-          <>
+            <p className="idea-tab-panel__intro">{t("ideas.sectionAboutIntro")}</p>
             <Section label={t("ideas.researchGap")} value={recommendation.research_gap} />
             <Section label={t("ideas.researchQuestion")} value={recommendation.research_question} />
-            <Section label={t("ideas.hypothesis")} value={recommendation.hypothesis} />
             <Section label={t("ideas.contribution")} value={recommendation.expected_contribution} />
-            <Section label={t("ideas.relatedWork")} value={recommendation.related_work_summary} />
-            <SotaVerificationPanel recommendation={recommendation} sources={sources} />
-            {recommendation.scores ? (
-              <div className="idea-scores">
-                <p className="idea-scores__heading">{t("ideas.qualityScores")}</p>
-                {Object.entries(recommendation.scores)
-                  .filter(([name]) =>
-                    ["relevance", "novelty", "evidence", "feasibility"].includes(name),
-                  )
-                  .map(([name, value]) => (
+            {qualityScores.length > 0 ? (
+              <details className="idea-detail__scores">
+                <summary>{t("ideas.qualityScores")}</summary>
+                <div className="idea-scores">
+                  {qualityScores.map(([name, value]) => (
                     <ScoreBar
                       key={name}
                       label={t(`ideas.scoreNames.${name}`, {
@@ -192,26 +202,84 @@ export function RecommendationDetail({
                       value={value}
                     />
                   ))}
-              </div>
+                </div>
+              </details>
             ) : null}
-          </>
+          </div>
         ) : null}
 
-        {activeSection === "method" ? (
-          <>
+        {activeTab === "summary" ? (
+          <div
+            role="tabpanel"
+            id={`idea-panel-${recommendation.id}-summary`}
+            aria-labelledby={`idea-tab-${recommendation.id}-summary`}
+            className="idea-tab-panel"
+          >
+            <p className="idea-tab-panel__intro">{t("ideas.sectionSummaryIntro")}</p>
+            <Section label={t("ideas.hypothesis")} value={recommendation.hypothesis} />
+            <Section label={t("ideas.relatedWork")} value={recommendation.related_work_summary} />
+          </div>
+        ) : null}
+
+        {activeTab === "method" ? (
+          <div
+            role="tabpanel"
+            id={`idea-panel-${recommendation.id}-method`}
+            aria-labelledby={`idea-tab-${recommendation.id}-method`}
+            className="idea-tab-panel"
+          >
+            <p className="idea-tab-panel__intro">{t("ideas.sectionMethodIntro")}</p>
             <Section label={t("ideas.proposedMethod")} value={recommendation.proposed_method} />
             <Section label={t("ideas.experimentalPlan")} value={recommendation.experimental_plan} />
             <ListSection label={t("ideas.datasets")} items={recommendation.datasets} />
             <ListSection label={t("ideas.metrics")} items={recommendation.evaluation_metrics} />
             <ListSection label={t("ideas.risks")} items={recommendation.risks} />
-          </>
+            <SotaVerificationPanel recommendation={recommendation} sources={sources} />
+          </div>
         ) : null}
 
-        {activeSection === "sources" ? (
-          <EvidenceList papers={recommendation.evidence_papers} />
+        {activeTab === "evidence" ? (
+          <div
+            role="tabpanel"
+            id={`idea-panel-${recommendation.id}-evidence`}
+            aria-labelledby={`idea-tab-${recommendation.id}-evidence`}
+            className="idea-tab-panel"
+          >
+            <p className="idea-tab-panel__intro">{t("ideas.sectionEvidenceIntro")}</p>
+            <EvidenceList papers={recommendation.evidence_papers} />
+          </div>
         ) : null}
       </div>
-    </article>
+
+      <div data-coach="coach-run-rating">
+        <p className="idea-detail__guide">{t("ideas.readGuide")}</p>
+        <QuickFeedbackPanel
+          rating={savedRating}
+          wouldUse={wouldUse}
+          submitting={submitting}
+          message={message}
+          error={error}
+          onThumbUp={() => applyRating(4)}
+          onThumbDown={() => applyRating(2)}
+          onSkip={onSkip}
+          onStarClick={applyRating}
+          onWouldUseChange={(value) => {
+            setWouldUse(value);
+            if (savedRating != null) {
+              void submitRating(savedRating, value);
+            }
+          }}
+          comment={comment}
+          onCommentChange={setComment}
+          onCommentBlur={() => {
+            if (savedRating != null && comment.trim()) {
+              void submitRating(savedRating, wouldUse);
+            }
+          }}
+        />
+      </div>
+      </article>
+    </PaperRefProvider>
   );
 }
 
@@ -220,7 +288,9 @@ function Section({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="idea-block">
       <div className="idea-block__label">{label}</div>
-      <p className="idea-block__text">{value}</p>
+      <p className="idea-block__text">
+        <PaperRefText text={value} />
+      </p>
     </div>
   );
 }
@@ -232,7 +302,9 @@ function ListSection({ label, items }: { label: string; items?: string[] }) {
       <div className="idea-block__label">{label}</div>
       <ul className="idea-block__list">
         {items.map((item) => (
-          <li key={item}>{item}</li>
+          <li key={item}>
+            <PaperRefText text={item} />
+          </li>
         ))}
       </ul>
     </div>

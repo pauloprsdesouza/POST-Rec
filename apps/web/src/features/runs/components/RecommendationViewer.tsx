@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import type { Recommendation, RecommendationRun, SourceDocument } from "@/shared/types/api";
 import { isBlindRun } from "@/features/experiments/utils/blindRun";
 
-import { FeedbackProgress } from "./FeedbackProgress";
 import { IdeaCarousel } from "./IdeaCarousel";
 import { RatingCelebration } from "./RatingCelebration";
 import { RecommendationDetail } from "./RecommendationDetail";
@@ -171,17 +170,6 @@ export function RecommendationViewer({
         onDismiss={() => setCelebration(null)}
       />
 
-      {recommendations.length > 1 ? (
-        <FeedbackProgress
-          ratedCount={ratedCount}
-          total={recommendations.length}
-          onSkip={handleSkip}
-          onJumpToUnrated={ratedCount < recommendations.length ? jumpToUnrated : undefined}
-        />
-      ) : null}
-
-      {!blind ? <RunUsagePanel run={run} /> : null}
-
       {recommendations.length ? (
         <div data-coach="coach-run-carousel">
           <IdeaCarousel
@@ -189,10 +177,14 @@ export function RecommendationViewer({
             activeIndex={activeIndex}
             ratedIds={ratedIds}
             skippedIds={skippedIds}
+            ratedCount={ratedCount}
             onSelect={onActiveIndexChange}
+            onJumpToUnrated={ratedCount < recommendations.length ? jumpToUnrated : undefined}
           />
         </div>
       ) : null}
+
+      {!blind ? <RunUsagePanel run={run} /> : null}
 
       {active ? (
         <RecommendationDetail

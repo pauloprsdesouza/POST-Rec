@@ -154,6 +154,7 @@ export function NewRunPage() {
                 submitDataCoach="coach-newrun-submit"
                 runMode={runMode}
                 onRunModeChange={setRunMode}
+                hideRunModeOnMobile
               />
             </div>
           </div>

@@ -76,6 +76,10 @@
   padding: 0.35rem 0.75rem;
 }
 
+.consent-time-badge--solo {
+  margin-bottom: var(--postrec-space-4);
+}
+
 .next-step-banner {
   align-items: flex-start;
   background: var(--postrec-surface-muted);

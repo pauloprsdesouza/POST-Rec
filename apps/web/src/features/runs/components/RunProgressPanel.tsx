@@ -16,7 +16,6 @@ import { formatEstimatedCost } from "@/features/runs/utils/formatCost";
 
 import { filterUserFacingEvents } from "@/features/runs/utils/runLog";
 
-import { RunPipelineStepper } from "./RunPipelineStepper";
 import { RunProgressBar } from "./RunProgressBar";
 interface RunProgressPanelProps {
   run: RecommendationRun;
@@ -85,10 +84,11 @@ export function RunProgressPanel({ run, events, live = true }: RunProgressPanelP
           ) : null}
         </div>
       ) : null}
-      <p className="run-progress__step">{stepDescription}</p>
-      <p className="run-progress__step-label">{stepLabel}</p>
-
-      {isActive ? <RunPipelineStepper status={run.current_step ?? run.status} /> : null}
+      <p className="run-progress__step">
+        <strong className="run-progress__step-name">{stepLabel}</strong>
+        {" — "}
+        {stepDescription}
+      </p>
 
       <RunProgressBar
         value={displayProgress}
@@ -117,7 +117,7 @@ export function RunProgressPanel({ run, events, live = true }: RunProgressPanelP
       ) : null}
 
       {visibleEvents.length > 0 ? (
-        <details className="run-progress__log mt-3" open={!isTerminal}>
+        <details className="run-progress__log mt-3" open={false}>
           <summary>
             {t("progress.activityLog")}
             {warningCount > 0 && !isTerminal ? (

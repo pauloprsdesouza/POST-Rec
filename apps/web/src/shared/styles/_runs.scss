@@ -378,11 +378,16 @@
 }
 
 .run-progress__step {
+  color: var(--postrec-muted);
+  font-size: var(--postrec-text-sm);
+  font-weight: 400;
+  line-height: 1.5;
+  margin-bottom: var(--postrec-space-3);
+}
+
+.run-progress__step-name {
   color: var(--postrec-text);
-  font-size: 0.9375rem;
   font-weight: 600;
-  line-height: 1.45;
-  margin-bottom: 0.5rem;
 }
 
 .run-progress.panel {

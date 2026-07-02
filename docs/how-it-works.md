@@ -1,5 +1,9 @@
 # POST-Rec: System Overview and Methodology
 
+> **Elsevier article (elsarticle):** [`papers/elsarticle/post-rec-ideation.tex`](../papers/elsarticle/post-rec-ideation.tex) — compile with `make` in that folder  
+> **Markdown draft:** [`papers/POST-Rec_Literature-Grounded_Research_Ideation.md`](../papers/POST-Rec_Literature-Grounded_Research_Ideation.md)  
+> **Interactive summary:** How it works page in the web UI (`/how-it-works`)
+
 ## 1. Abstract
 
 POST-Rec is a research ideation system that generates literature-grounded research ideas from user-provided topics. It combines hybrid retrieval over scholarly articles, a multi-stage state-of-the-art (SOTA) analysis pipeline, and an experimental Facet-Grounded Gap Verification (FGGV) method for facet-level novelty and gap alignment. This document describes how POST-Rec works end-to-end, what “SOTA-grounded” means in practice, which articles are considered part of the SOTA set, how FGGV extends the baseline pipeline, and how the system is evaluated. The goal is to provide reviewers and collaborators with a transparent, citable description aligned with common Elsevier-style journal templates.

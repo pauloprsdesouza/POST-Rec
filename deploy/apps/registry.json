@@ -1,0 +1,29 @@
+{
+  "domain": "paulorobertosouza.com.br",
+  "apps": {
+    "postrec": {
+      "title": "POST-Rec",
+      "description": "Paper-Oriented Scientific Topic Recommender",
+      "service_host": "postrec-web",
+      "service_port": 80,
+      "base_path": "/postrec"
+    },
+    "evolution": {
+      "title": "Evolution API",
+      "description": "WhatsApp manager — open /evolution/manager/ to pair devices",
+      "service_host": "postrec-evolution-api",
+      "service_port": 8080,
+      "base_path": "/evolution",
+      "strip_prefix": true,
+      "root_paths": ["/manager", "/assets"]
+    },
+    "portainer": {
+      "title": "Portainer",
+      "description": "Docker container management",
+      "service_host": "postrec-portainer-proxy",
+      "service_port": 80,
+      "base_path": "/portainer",
+      "root_paths": ["/locales", "/api"]
+    }
+  }
+}

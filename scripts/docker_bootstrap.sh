@@ -24,7 +24,7 @@ if [[ ! -f .env ]]; then
 fi
 
 echo "Starting POST-Rec Docker infrastructure..."
-docker compose up -d postgres redis rabbitmq minio minio-init evolution-postgres evolution-redis evolution-api evolution-manager
+docker compose up -d postgres redis rabbitmq minio minio-init evolution-api evolution-manager
 
 echo "Waiting for PostgreSQL..."
 for _ in $(seq 1 30); do

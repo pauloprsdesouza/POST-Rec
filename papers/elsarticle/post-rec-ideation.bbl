@@ -1,0 +1,71 @@
+\begin{thebibliography}{10}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \def\href#1#2{#2} \def\path#1{#1}\fi
+
+\bibitem{ricci2015handbook}
+F.~Ricci, L.~Rokach, B.~Shapira, Recommender systems handbook (2015).
+
+\bibitem{si2025llmideas}
+C.~Si, Y.~Yang, T.~Hashimoto, Can {LLM}s generate novel research ideas? {A}
+  large-scale human study with 100+ {NLP} researchers, in: International
+  Conference on Learning Representations, 2025.
+
+\bibitem{lu2024aiscientist}
+C.~Lu, C.~Lu, R.~Lange, et~al., The {AI} scientist: Towards fully automated
+  open-ended scientific discovery, arXiv preprint arXiv:2408.06292 (2024).
+
+\bibitem{adomavicius2005toward}
+G.~Adomavicius, A.~Tuzhilin, Toward the next generation of recommender systems:
+  A survey of the state-of-the-art and possible extensions, IEEE Transactions
+  on Knowledge and Data Engineering 17~(6) (2005) 734--749.
+
+\bibitem{lewis2020rag}
+P.~Lewis, E.~Perez, A.~Piktus, F.~Petroni, V.~Karpukhin, N.~Goyal,
+  H.~K{\"u}ttler, M.~Lewis, W.-t. Yih, T.~Rockt{\"a}schel, S.~Riedel, D.~Kiela,
+  Retrieval-augmented generation for knowledge-intensive {NLP} tasks, Advances
+  in Neural Information Processing Systems 33 (2020) 9459--9474.
+
+\bibitem{baek2025researchagent}
+J.~Baek, A.~F. Aji, A.~Saffari, Researchagent: Iterative research idea
+  generation over scientific literature with large language models, in: North
+  American Chapter of the Association for Computational Linguistics, 2025.
+
+\bibitem{hu2025nova}
+Z.~Hu, Y.~Lu, W.~Chen, H.~Yu, Y.~Zhang, W.~Chen, Improving language models via
+  plug-and-play retrieval feedback, in: Findings of the Association for
+  Computational Linguistics, 2025.
+
+\bibitem{wang2024scimon}
+Y.~Wang, Y.~Li, Z.~Jiang, Z.~Zhang, et~al., Scimon: Scientific inspiration
+  machines optimized for novelty, in: Association for Computational
+  Linguistics, 2024.
+
+\bibitem{roy2024scideator}
+S.~Roy, et~al., Scideator: Human-in-the-loop scientific idea generation, arXiv
+  preprint arXiv:2404.00000Accessed 2026 (2024).
+
+\bibitem{ramesh2025inc}
+K.~Ramesh, et~al., Idea novelty checker: Expert-labeled facet comparisons for
+  scientific novelty assessment, in: SDP Workshop, ACL, 2025.
+
+\bibitem{li2025coi}
+Y.~Li, et~al., Chain of ideas: Literature evolution chains for research
+  ideation, Findings of EMNLP (2025).
+
+\bibitem{zuccon2015integrating}
+G.~Zuccon, B.~Koopman, A.~Deacon, et~al., Integrating and evaluating neural and
+  lexical retrieval models for health search, Information Processing \&
+  Management 51~(4) (2015) 475--488.
+
+\bibitem{sun2023rankgpt}
+W.~Sun, et~al., Is chatgpt good at search? investigating large language models
+  as re-ranking agents, arXiv preprint arXiv:2304.09542 (2023).
+
+\bibitem{priem2022openalex}
+J.~Priem, H.~Piwowar, R.~Orr, Openalex: A fully open index of scholarly works,
+  authors, venues, and institutions, arXiv preprint arXiv:2205.01833 (2022).
+
+\end{thebibliography}

@@ -132,11 +132,14 @@ def extract_openalex_numeric_id(entity_url: str | None) -> str | None:
 
 
 def _openalex_get(path: str, *, params: dict[str, str | int]) -> dict:
+    import os
+
     import httpx
 
+    auth = openalex_auth_params(api_key=os.environ.get("OPENALEX_API_KEY"))
     response = httpx.get(
         f"{OPENALEX_API_BASE}{path}",
-        params=params,
+        params={**params, **auth},
         timeout=12.0,
         headers={"Accept": "application/json"},
     )

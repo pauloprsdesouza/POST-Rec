@@ -53,10 +53,27 @@ class HybridRankingService:
                     "relevance_score": item.get("relevance_score"),
                     "retrieval_pass": item.get("retrieval_pass"),
                 }
-                for item in selected[:20]
+                for item in selected
             ],
             "count": len(selected),
         }
+
+    def _documents_to_ranking_items(self, documents: list[SourceDocument]) -> list[dict[str, Any]]:
+        items: list[dict[str, Any]] = []
+        for doc in documents:
+            metadata = doc.metadata_ or {}
+            items.append(
+                {
+                    "id": str(doc.id),
+                    "title": doc.title,
+                    "tier": metadata.get("tier"),
+                    "hybrid_score": metadata.get("hybrid_score"),
+                    "dense_score": metadata.get("dense_score"),
+                    "relevance_score": metadata.get("relevance_score"),
+                    "retrieval_pass": metadata.get("retrieval_pass"),
+                }
+            )
+        return items
 
     def rerank_papers(
         self,
@@ -75,7 +92,8 @@ class HybridRankingService:
 
         settings = self._settings
         if not settings.hybrid_retrieval_enabled or len(papers) != len(paper_embeddings):
-            return papers[:max_papers], {"papers": [], "count": len(papers[:max_papers])}
+            selected = papers[:max_papers]
+            return selected, self.build_ranking_event_payload(self._documents_to_ranking_items(selected))
 
         query_text = self.build_query_text(
             topics=topics,

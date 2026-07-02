@@ -130,7 +130,7 @@ export function RunModeSelector({
         </div>
       ) : null}
 
-      {!compact ? <p className="run-mode-picker__hint">{modeHint}</p> : null}
+      <p className={`run-mode-picker__hint ${compact ? "run-mode-picker__hint--compact" : ""}`}>{modeHint}</p>
     </div>
   );
 }

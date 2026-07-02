@@ -23,8 +23,8 @@ RETRIEVAL_CIRCUIT_FAILURE_THRESHOLD=4
 RETRIEVAL_CIRCUIT_COOLDOWN_SECONDS=120
 RETRIEVAL_MIN_PAPERS_BEFORE_SKIP=12
 RETRIEVAL_OPENALEX_MIN_INTERVAL=0.35
-OPENALEX_API_KEY=            # optional — enables cost/rate-limit telemetry
-OPENALEX_EMAIL=              # polite pool identity
+OPENALEX_API_KEY=            # required for search (free at openalex.org/settings/api)
+OPENALEX_EMAIL=              # optional contact string in User-Agent
 ```
 
 ## Tips

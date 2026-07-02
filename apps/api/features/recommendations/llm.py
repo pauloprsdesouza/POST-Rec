@@ -1,11 +1,14 @@
 """Google Gemini LLM and embedding service."""
 
 import json
+import random
 import re
+import time
 import uuid
 from typing import Any
 
 from google import genai
+from google.genai import errors as genai_errors
 from google.genai import types
 from sqlalchemy.orm import Session
 
@@ -38,6 +41,7 @@ logger = get_logger("postrec-llm")
 # Approximate Gemini pricing (USD per 1M tokens) for cost tracking
 GEMINI_PRICING = {
     "gemini-2.0-flash": {"input": 0.10, "output": 0.40},
+    "gemini-2.5-flash": {"input": 0.30, "output": 2.50},
     "gemini-2.5-flash-lite": {"input": 0.075, "output": 0.30},
 }
 DEFAULT_EMBEDDING_PRICING = {"input": 0.01, "output": 0.0}
@@ -144,6 +148,16 @@ class GeminiService:
             )
         return "\n".join(lines)
 
+    def _is_transient_gemini_error(self, exc: Exception) -> bool:
+        if isinstance(exc, genai_errors.ServerError):
+            status = str(getattr(exc, "status", "") or "").upper()
+            if status in {"UNAVAILABLE", "RESOURCE_EXHAUSTED", "INTERNAL", "DEADLINE_EXCEEDED"}:
+                return True
+        text = str(exc).lower()
+        return any(
+            token in text for token in ("503", "429", "high demand", "overloaded", "unavailable", "try again later")
+        )
+
     def _generate_json(
         self,
         db: Session,
@@ -159,19 +173,43 @@ class GeminiService:
             return {}
 
         model = self.settings.gemini_generation_model
-        response = self.client.models.generate_content(
-            model=model,
-            contents=user_prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=system_prompt,
-                response_mime_type="application/json",
-                temperature=temperature,
-            ),
-        )
-        input_tokens = response.usage_metadata.prompt_token_count if response.usage_metadata else 0
-        output_tokens = response.usage_metadata.candidates_token_count if response.usage_metadata else 0
-        self._record_usage(db, run_id, operation, model, input_tokens, output_tokens)
-        return self._parse_json(response.text or "{}")
+        max_attempts = 5
+        last_exc: Exception | None = None
+
+        for attempt in range(max_attempts):
+            try:
+                response = self.client.models.generate_content(
+                    model=model,
+                    contents=user_prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system_prompt,
+                        response_mime_type="application/json",
+                        temperature=temperature,
+                    ),
+                )
+                input_tokens = response.usage_metadata.prompt_token_count if response.usage_metadata else 0
+                output_tokens = response.usage_metadata.candidates_token_count if response.usage_metadata else 0
+                self._record_usage(db, run_id, operation, model, input_tokens, output_tokens)
+                return self._parse_json(response.text or "{}")
+            except Exception as exc:
+                last_exc = exc
+                if not self._is_transient_gemini_error(exc) or attempt >= max_attempts - 1:
+                    raise
+                delay = min(90.0, 8.0 * (2**attempt)) + random.uniform(0.0, 4.0)
+                logger.warning(
+                    "gemini_request_retry",
+                    operation=operation,
+                    model=model,
+                    attempt=attempt + 1,
+                    max_attempts=max_attempts,
+                    delay_seconds=round(delay, 2),
+                    error=str(exc)[:240],
+                )
+                time.sleep(delay)
+
+        if last_exc is not None:
+            raise last_exc
+        return {}
 
     def validate_retrieved_papers(
         self,

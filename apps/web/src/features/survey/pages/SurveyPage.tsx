@@ -72,7 +72,7 @@ export function SurveyPage() {
               <Link to="/runs/new" className="btn btn-primary">
                 {t("runs.completeBanner.newRun")}
               </Link>
-              <Link to="/runs" className="btn btn-outline-secondary">
+              <Link to="/runs" className="btn btn-link session-quick-feedback__secondary">
                 {t("survey.backToRuns")}
               </Link>
             </div>
@@ -89,6 +89,7 @@ export function SurveyPage() {
         {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
 
         <div className="panel">
+          <p className="session-quick-feedback__intro mb-3">{t("survey.sessionFeedbackIntro")}</p>
           <div className="session-quick-feedback session-quick-feedback--standalone">
             <p className="session-quick-feedback__hint">{t("survey.autoSaveHint")}</p>
 

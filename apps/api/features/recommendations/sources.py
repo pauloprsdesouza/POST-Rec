@@ -4,7 +4,37 @@ from apps.api.shared.models import RecommendationRunEvent, SourceDocument
 from apps.api.shared.schemas.common import SourceDocumentResponse
 
 
-def _serialize_source_document(doc: SourceDocument) -> dict:
+def get_ranked_paper_id_by_document_id(db, run_id) -> dict[str, str]:
+    """Map source document IDs to P1..Pn labels from the ranked paper list."""
+    event = (
+        db.query(RecommendationRunEvent)
+        .filter_by(run_id=run_id, event_type="papers_ranked")
+        .order_by(RecommendationRunEvent.created_at.desc())
+        .first()
+    )
+    if not event or not isinstance(event.payload, dict):
+        return {}
+
+    mapping: dict[str, str] = {}
+    for index, item in enumerate(event.payload.get("papers") or []):
+        if not isinstance(item, dict):
+            continue
+        doc_id = item.get("id")
+        if doc_id:
+            mapping[str(doc_id)] = f"P{index + 1}"
+    if mapping:
+        return mapping
+
+    # Legacy runs stored count only when hybrid ranking was disabled.
+    count = event.payload.get("count")
+    if isinstance(count, int) and count > 0:
+        documents = get_run_source_documents(db, run_id)
+        for index, doc in enumerate(documents[:count]):
+            mapping[str(doc.id)] = f"P{index + 1}"
+    return mapping
+
+
+def _serialize_source_document(doc: SourceDocument, *, paper_id: str | None = None) -> dict:
     qualis = _qualis_fields_from_metadata(doc.metadata_)
     return SourceDocumentResponse(
         id=doc.id,
@@ -18,11 +48,21 @@ def _serialize_source_document(doc: SourceDocument) -> dict:
         url=doc.url,
         citation_count=doc.citation_count or 0,
         qualis_estrato=qualis.get("qualis_estrato"),
-    ).model_dump(mode="json")
+    ).model_dump(mode="json") | ({"paper_id": paper_id} if paper_id else {})
 
 
-def serialize_source_documents(documents: list[SourceDocument]) -> list[dict]:
-    return [_serialize_source_document(d) for d in documents]
+def serialize_source_documents(
+    documents: list[SourceDocument],
+    *,
+    paper_id_by_doc_id: dict[str, str] | None = None,
+) -> list[dict]:
+    return [
+        _serialize_source_document(
+            doc,
+            paper_id=(paper_id_by_doc_id or {}).get(str(doc.id)),
+        )
+        for doc in documents
+    ]
 
 
 def get_run_source_documents(db, run_id) -> list[SourceDocument]:
@@ -86,7 +126,12 @@ def _relevance_score_from_metadata(metadata: dict | None) -> float | None:
     return None
 
 
-def enrich_evidence_papers(evidence_papers: list | None, documents: list[SourceDocument]) -> list[dict]:
+def enrich_evidence_papers(
+    evidence_papers: list | None,
+    documents: list[SourceDocument],
+    *,
+    paper_id_by_doc_id: dict[str, str] | None = None,
+) -> list[dict]:
     if not evidence_papers:
         return []
 
@@ -101,12 +146,18 @@ def enrich_evidence_papers(evidence_papers: list | None, documents: list[SourceD
         title_key = (item.get("title") or "").lower().strip()
         matched = by_doi.get(doi) if doi else by_title.get(title_key)
 
+        paper_id = str(item.get("paper_id") or "").strip() or None
+        if not paper_id and matched and paper_id_by_doc_id:
+            paper_id = paper_id_by_doc_id.get(str(matched.id))
+
         entry = {
             "title": item.get("title"),
             "year": item.get("year"),
             "doi": item.get("doi"),
             "url": item.get("url"),
             "why_relevant": item.get("why_relevant"),
+            "paper_id": paper_id,
+            "authors": item.get("authors") or (matched.authors if matched else None),
             "retrieval_source": matched.source if matched else None,
             "citation_count": matched.citation_count if matched else None,
             "venue": matched.venue if matched else None,

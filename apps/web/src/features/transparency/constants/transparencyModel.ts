@@ -86,3 +86,30 @@ export const WOULD_USE_SCORES = {
   maybe: 3,
   no: 1,
 } as const;
+
+export const NOTATION_SYMBOLS = [
+  { key: "queryTokens", symbol: "Q" },
+  { key: "paper", symbol: "p" },
+  { key: "overlap", symbol: "O(A, Q)" },
+  { key: "relevance", symbol: "s_rel(p)" },
+  { key: "embedding", symbol: "e_d" },
+  { key: "sotaSet", symbol: "S_SOTA" },
+  { key: "foundationSet", symbol: "S_found" },
+  { key: "gapMatrix", symbol: "G" },
+  { key: "fni", symbol: "FNI_f" },
+  { key: "gfa", symbol: "GFA" },
+  { key: "verifiedScore", symbol: "S_verified" },
+] as const;
+
+export const SOTA_TIER_DEFAULTS = {
+  recentYears: 3,
+  seminalCitations: 50,
+  tierQuota: 0.6,
+} as const;
+
+export const FGGV_WEIGHTS = {
+  verifiedBase: 0.3,
+  fni: 0.32,
+  gfa: 0.23,
+  documentNovelty: 0.15,
+} as const;
