@@ -23,23 +23,49 @@ APP_URL = f"https://{DOMAIN}/researchly"
 
 SKIP_DIRS = frozenset({".git", ".venv", "node_modules", "__pycache__", ".pytest_cache", "dist", "build"})
 
-# Keys synced from local .env when set (never printed).
+# Keys synced from local .env when non-empty (secrets never printed).
 SYNC_KEYS = (
+    "APP_NAME",
+    "AUTH_ENABLED",
+    "ADMIN_BOOTSTRAP_EMAILS",
     "GEMINI_API_KEY",
     "GEMINI_GENERATION_MODEL",
     "GEMINI_EMBEDDING_MODEL",
     "GEMINI_EMBEDDING_DIMENSIONS",
     "OPENALEX_API_KEY",
     "OPENALEX_EMAIL",
-    "ADMIN_BOOTSTRAP_EMAILS",
     "CROSSREF_EMAIL",
     "SEMANTIC_SCHOLAR_API_KEY",
+    "EVOLUTION_API_URL",
+    "EVOLUTION_API_KEY",
+    "EVOLUTION_INSTANCE_NAME",
+    "WHATSAPP_NOTIFICATIONS_ENABLED",
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_USER",
+    "SMTP_PASSWORD",
+    "SMTP_USE_TLS",
+    "EMAIL_FROM",
+    "EMAIL_FROM_NAME",
+    "OTP_LENGTH",
+    "OTP_TTL_MINUTES",
+    "OTP_RESEND_SECONDS",
+    "OTP_MAX_ATTEMPTS",
+    "PHONE_DEFAULT_COUNTRY_CODE",
+    "LOG_LEVEL",
+    "LOG_FORMAT",
+    "OTEL_ENABLED",
     "QUALIS_ENABLED",
     "QUALIS_CSV_PATH",
     "QUALIS_BOOST_WEIGHT",
     "QUALIS_USE_REDIS_CACHE",
     "QUALIS_CACHE_TTL",
+    "EXPERIMENT_FGGV_VS_SOTA_ID",
+    "EXPERIMENT_TREATMENT_FRACTION",
 )
+
+# Never overwrite server-generated secrets from a developer .env.
+SKIP_SYNC_KEYS = frozenset({"JWT_SECRET"})
 
 
 def load_env_file(path: Path) -> dict[str, str]:
@@ -68,17 +94,55 @@ def upsert_env_line(text: str, key: str, value: str) -> str:
 def merge_remote_env(remote: str, local: dict[str, str]) -> str:
     env = remote
     for key in SYNC_KEYS:
+        if key in SKIP_SYNC_KEYS:
+            continue
         value = local.get(key, "").strip()
         if value:
             env = upsert_env_line(env, key, value)
+    env = upsert_env_line(env, "APP_ENV", "production")
+    env = upsert_env_line(env, "APP_NAME", "researchly")
     env = upsert_env_line(env, "API_BASE_URL", APP_URL)
     env = upsert_env_line(env, "FRONTEND_APP_URL", APP_URL)
-    env = upsert_env_line(env, "APP_ENV", "production")
     if "GEMINI_GENERATION_MODEL=" not in env:
         env = upsert_env_line(env, "GEMINI_GENERATION_MODEL", "gemini-2.5-flash")
     if "QUALIS_ENABLED=" not in env:
         env = upsert_env_line(env, "QUALIS_ENABLED", "true")
+    if "AUTH_ENABLED=" not in env:
+        env = upsert_env_line(env, "AUTH_ENABLED", "true")
     return env
+
+
+def verify_production_runtime(client: paramiko.SSHClient) -> tuple[bool, str]:
+    """Ensure api container runs in production with SMTP configured (no OTP dev fallback)."""
+    cmd = (
+        "docker exec post-rec-api-1 python -c "
+        "\"from apps.api.shared.settings import get_settings; "
+        "from apps.api.features.auth.email import email_service; "
+        "s=get_settings(); "
+        "print('app_env', s.app_env); "
+        "print('smtp_host', s.smtp_host or ''); "
+        "print('email_configured', email_service.is_configured())\""
+    )
+    code, out = ssh_run(client, cmd, timeout=60)
+    if code != 0:
+        return False, out.strip() or "runtime check failed"
+
+    lines = dict(line.split(" ", 1) for line in out.strip().splitlines() if " " in line)
+    app_env = lines.get("app_env", "")
+    smtp_host = lines.get("smtp_host", "")
+    email_configured = lines.get("email_configured", "")
+
+    issues: list[str] = []
+    if app_env != "production":
+        issues.append(f"APP_ENV is {app_env!r}, expected 'production'")
+    if not smtp_host:
+        issues.append("SMTP_HOST is empty in running api container")
+    if email_configured.lower() != "true":
+        issues.append("email_service.is_configured() is false")
+
+    if issues:
+        return False, "; ".join(issues)
+    return True, f"production OK (SMTP: {smtp_host})"
 
 
 def ssh_run(client: paramiko.SSHClient, cmd: str, timeout: int = 1800) -> tuple[int, str]:
@@ -126,6 +190,8 @@ def main() -> int:
         local_env["OPENALEX_EMAIL"] = local_env["ADMIN_BOOTSTRAP_EMAILS"].split(",")[0].strip()
     if not local_env.get("GEMINI_API_KEY"):
         print("Warning: GEMINI_API_KEY missing in local .env — LLM runs may fail.", file=sys.stderr)
+    if not local_env.get("SMTP_HOST"):
+        print("Warning: SMTP_HOST missing in local .env — OTP emails will fall back to dev code.", file=sys.stderr)
 
     print("Generating Traefik assets...")
     generate_assets()
@@ -150,7 +216,8 @@ def main() -> int:
     merged = merge_remote_env(remote_env, local_env)
     with sftp.open(f"{REMOTE_DIR}/.env", "w") as f:
         f.write(merged)
-    print("Merged .env (preserved remote secrets, synced API keys)")
+    synced = [k for k in SYNC_KEYS if k not in SKIP_SYNC_KEYS and local_env.get(k, "").strip()]
+    print(f"Merged .env (synced {len(synced)} keys from local .env, APP_ENV=production)")
 
     with sftp.open("/data/coolify/proxy/dynamic/apps.yaml", "w") as f:
         f.write(traefik_yaml.replace("\r\n", "\n"))
@@ -197,6 +264,10 @@ def main() -> int:
     print(out)
     stack_ok = code == 0
 
+    print("Verifying production runtime (APP_ENV + SMTP)...")
+    prod_ok, prod_detail = verify_production_runtime(client)
+    print(prod_detail)
+
     print("Container status:")
     _, ps_out = ssh_run(
         client,
@@ -231,19 +302,16 @@ def main() -> int:
         print(f"  [{mark}] {name}: HTTP {status} — {url}")
 
     gemini_status, gemini_body = public_get(f"{APP_URL}/api/v1/health")
-    worker_code_check = 0
     try:
         c2 = paramiko.SSHClient()
         c2.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         c2.connect(HOST, username="root", password=PASSWORD, timeout=30, look_for_keys=False, allow_agent=False)
         worker_code_check, worker_out = ssh_run(
             c2,
-            "docker exec post-rec-worker-1 sh -c '"
-            "echo GEMINI_GENERATION_MODEL=$GEMINI_GENERATION_MODEL; "
-            "echo OPENALEX_EMAIL=$OPENALEX_EMAIL; "
+            "docker exec post-rec-worker-1 sh -c "
+            "'echo APP_ENV=$APP_ENV; echo SMTP_HOST=$SMTP_HOST; "
             "test -n \"$OPENALEX_API_KEY\" && echo OPENALEX_API_KEY=set || echo OPENALEX_API_KEY=missing; "
-            "test -n \"$GEMINI_API_KEY\" && echo GEMINI_API_KEY=set || echo GEMINI_API_KEY=missing'"
-            "'",
+            "test -n \"$GEMINI_API_KEY\" && echo GEMINI_API_KEY=set || echo GEMINI_API_KEY=missing'",
             timeout=30,
         )
         print("\nWorker env:")
@@ -257,8 +325,9 @@ def main() -> int:
     print("=" * 60)
     print(f"Researchly:  {APP_URL}")
     print(f"Stack verify: {'PASS' if stack_ok else 'FAIL'}")
+    print(f"Production config: {'PASS' if prod_ok else 'FAIL'}")
     print(f"Public tests: {len(tests) - failed}/{len(tests)} passed")
-    if not stack_ok or failed:
+    if not stack_ok or failed or not prod_ok:
         return 1
     return 0
 
