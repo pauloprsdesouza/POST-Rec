@@ -34,7 +34,7 @@ class NotificationService:
             topic_line += f" (+{len(topics) - 3} more)"
 
         text = (
-            "POST-Rec: Your recommendations are ready!\n\n"
+            f"{settings.app_display_name}: Your recommendations are ready!\n\n"
             f"{recommendation_count} research ideas generated.\n"
             f"Topics: {topic_line}\n\n"
             f"Open the app to review: {settings.frontend_app_url}"
@@ -60,7 +60,7 @@ class NotificationService:
 
         short_error = error_message[:120].strip()
         text = (
-            "POST-Rec: Your recommendation run could not be completed.\n\n"
+            f"{settings.app_display_name}: Your recommendation run could not be completed.\n\n"
             f"Reason: {short_error}\n\n"
             f"Open the app to try again: {settings.frontend_app_url}"
         )

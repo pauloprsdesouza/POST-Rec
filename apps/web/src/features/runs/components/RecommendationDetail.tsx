@@ -151,6 +151,31 @@ export function RecommendationDetail({
         <p className="idea-detail__technique">{recommendation.technique_name}</p>
       ) : null}
 
+      <div className="idea-detail__feedback-dock" data-coach="coach-run-rating">
+        <p className="idea-detail__guide">{t("ideas.readGuide")}</p>
+        <QuickFeedbackPanel
+          rating={savedRating}
+          wouldUse={wouldUse}
+          submitting={submitting}
+          message={message}
+          error={error}
+          onStarClick={applyRating}
+          onWouldUseChange={(value) => {
+            setWouldUse(value);
+            if (savedRating != null) {
+              void submitRating(savedRating, value);
+            }
+          }}
+          comment={comment}
+          onCommentChange={setComment}
+          onCommentBlur={() => {
+            if (savedRating != null && comment.trim()) {
+              void submitRating(savedRating, wouldUse);
+            }
+          }}
+        />
+      </div>
+
       <div className="idea-detail__body">
         <nav className="idea-tabs" role="tablist" aria-label={t("ideas.sectionNav")}>
           {(
@@ -247,31 +272,6 @@ export function RecommendationDetail({
             <EvidenceList papers={recommendation.evidence_papers} />
           </div>
         ) : null}
-      </div>
-
-      <div data-coach="coach-run-rating">
-        <p className="idea-detail__guide">{t("ideas.readGuide")}</p>
-        <QuickFeedbackPanel
-          rating={savedRating}
-          wouldUse={wouldUse}
-          submitting={submitting}
-          message={message}
-          error={error}
-          onStarClick={applyRating}
-          onWouldUseChange={(value) => {
-            setWouldUse(value);
-            if (savedRating != null) {
-              void submitRating(savedRating, value);
-            }
-          }}
-          comment={comment}
-          onCommentChange={setComment}
-          onCommentBlur={() => {
-            if (savedRating != null && comment.trim()) {
-              void submitRating(savedRating, wouldUse);
-            }
-          }}
-        />
       </div>
       </article>
     </PaperRefProvider>

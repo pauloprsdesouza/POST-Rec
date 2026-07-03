@@ -66,7 +66,7 @@ export function AppLayout() {
               )}
             </Nav>
 
-            <div className="d-flex align-items-center gap-2 py-2 py-lg-0">
+            <div className="d-flex align-items-center gap-2 py-2 py-lg-0 app-navbar__tools">
               <ThemeToggle variant="navbar" />
               <LanguageSwitcher variant="navbar" />
 

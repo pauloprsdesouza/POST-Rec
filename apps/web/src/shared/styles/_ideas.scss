@@ -1,4 +1,5 @@
 @use "./mixins" as *;
+@use "./breakpoints" as *;
 
 // Idea carousel, detail view, scores, feedback, sources.
 
@@ -357,7 +358,41 @@
   font-size: var(--researchly-text-sm);
   font-weight: 500;
   line-height: var(--researchly-leading);
-  margin: 0 0 var(--researchly-space-4);
+  margin: 0 0 var(--researchly-space-3);
+}
+
+.idea-detail__feedback-dock {
+  background: var(--researchly-surface-muted);
+  border: 1px solid var(--researchly-border-subtle);
+  border-radius: var(--researchly-radius-lg);
+  margin-bottom: var(--researchly-space-5);
+  padding: var(--researchly-space-4);
+}
+
+.idea-detail__feedback-dock .quick-feedback {
+  margin-top: 0;
+}
+
+.idea-detail__feedback-dock .quick-feedback__card {
+  background: transparent;
+  padding: 0;
+}
+
+@include down(lg) {
+  .idea-detail__feedback-dock {
+    margin-bottom: var(--researchly-space-4);
+  }
+
+  .idea-detail__guide {
+    font-size: var(--researchly-text-xs);
+    margin-bottom: var(--researchly-space-2);
+  }
+}
+
+@include up(lg) {
+  .idea-detail__feedback-dock {
+    margin-top: var(--researchly-space-4);
+  }
 }
 
 .idea-detail__body {

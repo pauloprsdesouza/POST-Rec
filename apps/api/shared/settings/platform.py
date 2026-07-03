@@ -10,6 +10,7 @@ class PlatformSettings(BaseSettings):
 
     app_env: str = "development"
     app_name: str = "post-rec"
+    app_display_name: str = "Researchly"
 
     log_level: str = "INFO"
     log_format: str = "json"

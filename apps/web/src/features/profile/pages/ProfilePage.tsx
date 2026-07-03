@@ -389,8 +389,8 @@ export function ProfilePage() {
                     />
                   </Form.Group>
 
-                  <div className="d-flex gap-2 flex-wrap align-items-center">
-                    <Button type="submit" variant="primary" disabled={savingProfile}>
+                  <div className="profile-form-sticky">
+                    <Button type="submit" variant="primary" disabled={savingProfile} className="w-100 w-md-auto">
                       {savingProfile
                         ? t("common.saving")
                         : profileDone

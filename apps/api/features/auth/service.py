@@ -136,7 +136,10 @@ class AuthService:
         db.add(challenge)
         db.commit()
 
-        message = f"POST-Rec sign-in code: {code}. Valid for {otp_ttl_minutes} minutes. Do not share this code."
+        message = (
+            f"{settings.app_display_name} sign-in code: {code}. "
+            f"Valid for {otp_ttl_minutes} minutes. Do not share this code."
+        )
         dev_code: str | None = None
         try:
             evolution_service.send_text(phone, message)

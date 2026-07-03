@@ -1180,27 +1180,6 @@
   max-width: 20rem;
 }
 
-.runs-page__mobile-cta {
-  bottom: calc(var(--researchly-bottom-nav-height) + var(--researchly-safe-bottom) + 0.5rem);
-  left: 0;
-  padding: 0 1rem;
-  position: fixed;
-  right: 0;
-  z-index: 1020;
-}
-
-@media (min-width: 992px) {
-  .runs-page__mobile-cta {
-    display: none !important;
-  }
-}
-
-@media (max-width: 575px) {
-  .runs-page {
-    padding-bottom: 5rem;
-  }
-}
-
 .run-manage {
   display: flex;
   flex-direction: column;

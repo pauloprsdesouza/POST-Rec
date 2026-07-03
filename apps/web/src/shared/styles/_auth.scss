@@ -1,3 +1,5 @@
+@use "./breakpoints" as *;
+
 // Sign-in — top bar + split layout: brand story + focused form.
 
 .auth-shell {
@@ -66,9 +68,25 @@
   flex: 1;
 }
 
-@media (min-width: 992px) {
+.auth-shell__panel--form {
+  order: -1;
+}
+
+.auth-shell__panel--brand {
+  display: none;
+}
+
+@include up(lg) {
   .auth-shell__body {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .auth-shell__panel--form {
+    order: 0;
+  }
+
+  .auth-shell__panel--brand {
+    display: flex;
   }
 }
 
@@ -89,13 +107,11 @@
 .auth-shell__panel--brand {
   background: var(--researchly-auth-brand-bg);
   color: var(--researchly-auth-brand-text);
-  order: -1;
 }
 
-@media (min-width: 992px) {
+@include up(lg) {
   .auth-shell__panel--brand {
     border-right: 1px solid color-mix(in srgb, var(--researchly-auth-brand-text) 12%, transparent);
-    order: 0;
   }
 }
 

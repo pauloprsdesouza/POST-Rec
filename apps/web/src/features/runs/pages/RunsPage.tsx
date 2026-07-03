@@ -258,12 +258,6 @@ export function RunsPage() {
           )}
         </main>
       </div>
-
-      <div className="runs-page__mobile-cta d-lg-none">
-        <Link to="/runs/new" className="btn btn-primary btn-lg w-100">
-          {t("common.newRun")}
-        </Link>
-      </div>
     </div>
   );
 }

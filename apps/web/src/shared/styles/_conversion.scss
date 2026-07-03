@@ -1,3 +1,5 @@
+@use "./breakpoints" as *;
+
 // Conversion-focused UI: setup funnel, sticky CTAs, auth polish, next-step nudges.
 
 .setup-banner-v2 {
@@ -300,10 +302,10 @@
 }
 
 .page-shell--with-sticky-cta {
-  padding-bottom: 5.5rem;
+  padding-bottom: calc(var(--researchly-mobile-chrome-bottom) + var(--researchly-sticky-cta-height) + var(--researchly-space-3));
 }
 
-@media (min-width: 992px) {
+@include up(lg) {
   .page-shell--with-sticky-cta {
     padding-bottom: 0;
   }

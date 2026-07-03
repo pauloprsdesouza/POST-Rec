@@ -81,8 +81,17 @@
   --researchly-page-narrow: 560px;
   --researchly-page-wide: 1120px;
   --researchly-nav-height: 3.5rem;
-  --researchly-bottom-nav-height: 4rem;
+  --researchly-nav-height-compact: 3.25rem;
+  --researchly-bottom-nav-height: 4.25rem;
+  --researchly-sticky-cta-height: 4.25rem;
   --researchly-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --researchly-safe-top: env(safe-area-inset-top, 0px);
+  --researchly-page-gutter: var(--researchly-space-4);
+  --researchly-page-gutter-md: var(--researchly-space-5);
+  --researchly-mobile-chrome-bottom: calc(var(--researchly-bottom-nav-height) + var(--researchly-safe-bottom));
+  --researchly-touch-min: 2.75rem;
+  --researchly-text-body-mobile: 1rem;
+  --researchly-text-caption-mobile: 0.8125rem;
 
   // Shape — crisp corners, border-led depth
   --researchly-radius: 0.5rem;

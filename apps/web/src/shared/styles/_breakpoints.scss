@@ -1,0 +1,54 @@
+// Mobile-first breakpoints — align with Bootstrap 5 (sm/md/lg).
+
+$bp-sm: 576px;
+$bp-md: 768px;
+$bp-lg: 992px;
+$bp-xl: 1200px;
+
+@mixin up($breakpoint) {
+  @if $breakpoint == sm {
+    @media (min-width: $bp-sm) {
+      @content;
+    }
+  } @else if $breakpoint == md {
+    @media (min-width: $bp-md) {
+      @content;
+    }
+  } @else if $breakpoint == lg {
+    @media (min-width: $bp-lg) {
+      @content;
+    }
+  } @else if $breakpoint == xl {
+    @media (min-width: $bp-xl) {
+      @content;
+    }
+  } @else {
+    @media (min-width: $breakpoint) {
+      @content;
+    }
+  }
+}
+
+@mixin down($breakpoint) {
+  @if $breakpoint == sm {
+    @media (max-width: ($bp-sm - 0.02px)) {
+      @content;
+    }
+  } @else if $breakpoint == md {
+    @media (max-width: ($bp-md - 0.02px)) {
+      @content;
+    }
+  } @else if $breakpoint == lg {
+    @media (max-width: ($bp-lg - 0.02px)) {
+      @content;
+    }
+  } @else if $breakpoint == xl {
+    @media (max-width: ($bp-xl - 0.02px)) {
+      @content;
+    }
+  } @else {
+    @media (max-width: ($breakpoint - 0.02px)) {
+      @content;
+    }
+  }
+}
