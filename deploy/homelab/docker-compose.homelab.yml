@@ -1,0 +1,36 @@
+# POST-Rec on homelab — joins the existing home-lab observability network.
+# Prerequisites: shared infra (postgres, redis, rabbitmq, minio) on 192.168.10.13
+#   epilogik-otel-collector on home-lab_backend (port 4317)
+#
+# Usage (on homelab):
+#   cd /home/paulo/post-rec
+#   docker compose -f docker-compose.yml -f deploy/homelab/docker-compose.homelab.yml up -d --build api worker
+
+services:
+  api:
+    container_name: postrec-api
+    ports:
+      - "8000:8000"
+    environment:
+      OTEL_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://epilogik-otel-collector:4317
+      OTEL_SERVICE_NAME: postrec-api
+      LOG_FORMAT: json
+    networks:
+      - default
+      - home-lab_backend
+
+  worker:
+    container_name: postrec-worker
+    environment:
+      OTEL_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://epilogik-otel-collector:4317
+      OTEL_SERVICE_NAME: postrec-worker
+      LOG_FORMAT: json
+    networks:
+      - default
+      - home-lab_backend
+
+networks:
+  home-lab_backend:
+    external: true

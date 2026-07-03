@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: POST-Rec
+    orgId: 1
+    folder: POST-Rec
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/provisioning/dashboards/json

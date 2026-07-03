@@ -26,9 +26,6 @@ const RunDetailPage = lazy(() =>
 const RunsPage = lazy(() =>
   import("@/features/runs/pages/RunsPage").then((module) => ({ default: module.RunsPage })),
 );
-const SurveyPage = lazy(() =>
-  import("@/features/survey/pages/SurveyPage").then((module) => ({ default: module.SurveyPage })),
-);
 const TransparencyPage = lazy(() =>
   import("@/features/transparency/pages/TransparencyPage").then((module) => ({
     default: module.TransparencyPage,
@@ -152,14 +149,7 @@ export function AppRoutes() {
           />
           <Route path="/recommendations" element={<RecommendationsRedirect />} />
           <Route path="/my-runs" element={<Navigate to="/runs" replace />} />
-          <Route
-            path="/survey"
-            element={
-              <ProtectedRoute requireConsent requireProfile>
-                <SurveyPage />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/survey" element={<Navigate to="/runs" replace />} />
           <Route
             path="/how-it-works"
             element={

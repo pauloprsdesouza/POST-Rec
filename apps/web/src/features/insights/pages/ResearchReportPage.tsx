@@ -6,7 +6,7 @@ import { PageHeader } from "@/shared/ui/PageHeader";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
 import { useAuth } from "@/features/auth/context/AuthContext";
-import { validationService } from "@/shared/api";
+import { adminService } from "@/shared/api";
 import type { GroupComparison, HypothesisTestResult, ResearchReport } from "@/shared/types/api";
 import { formatDecimal, formatPercent } from "@/features/runs/utils/runs";
 import {
@@ -99,7 +99,7 @@ function HypothesisTestBlock({
   );
 }
 
-export function ResearchReportPage({ adminMode = false }: { adminMode?: boolean }) {
+export function ResearchReportPage() {
   const { t, i18n } = useTranslation();
   const { accessToken } = useAuth();
   const locale = i18n.language;
@@ -111,7 +111,7 @@ export function ResearchReportPage({ adminMode = false }: { adminMode?: boolean 
     if (!accessToken) {
       return;
     }
-    validationService
+    adminService
       .getResearchReport(accessToken)
       .then(setReport)
       .catch((err) => setError(err instanceof Error ? err.message : t("researchReport.loadError")))
@@ -223,7 +223,7 @@ export function ResearchReportPage({ adminMode = false }: { adminMode?: boolean 
           <PageHeader title={t("researchReport.title")} subtitle={t("researchReport.subtitle")} />
           <div className="research-report__meta">
             <span>{t("researchReport.generatedAt", { date: generatedLabel })}</span>
-            <Link to={adminMode ? "/admin/evaluation" : "/insights"} className="research-report__back-link">
+            <Link to="/admin/evaluation" className="research-report__back-link">
               {t("researchReport.backToInsights")}
             </Link>
           </div>

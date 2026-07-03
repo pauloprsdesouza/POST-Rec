@@ -1,0 +1,872 @@
+[
+  {
+    "id": 100,
+    "type": "row",
+    "title": "Business — Overview",
+    "gridPos": { "h": 1, "w": 24, "x": 0, "y": 30 },
+    "collapsed": false
+  },
+  {
+    "id": 101,
+    "type": "stat",
+    "title": "Total Users",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 0, "y": 31 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM app_user" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 102,
+    "type": "stat",
+    "title": "Active Users (30d)",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 4, "y": 31 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(DISTINCT u.id)::bigint AS value FROM app_user u WHERE EXISTS (SELECT 1 FROM study_session ss WHERE ss.user_id = u.id AND ss.started_at >= NOW() - INTERVAL '30 days') OR EXISTS (SELECT 1 FROM recommendation_run rr WHERE rr.user_id = u.id AND rr.created_at >= NOW() - INTERVAL '30 days')" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 103,
+    "type": "stat",
+    "title": "Researchers",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 8, "y": 31 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM app_user WHERE role = 'researcher'" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 104,
+    "type": "stat",
+    "title": "Study Sessions",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 12, "y": 31 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM study_session" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 105,
+    "type": "stat",
+    "title": "Recommendations",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 16, "y": 31 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM recommendation_candidate" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 106,
+    "type": "stat",
+    "title": "Total Runs",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 20, "y": 31 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM recommendation_run" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 107,
+    "type": "stat",
+    "title": "Completed Runs",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 0, "y": 34 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM recommendation_run WHERE status = 'completed'" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0, "color": { "mode": "fixed", "fixedColor": "green" } } }
+  },
+  {
+    "id": 108,
+    "type": "stat",
+    "title": "Failed Runs",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 4, "y": 34 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM recommendation_run WHERE status IN ('failed', 'failed_schema_validation', 'cost_limit_exceeded')" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0, "color": { "mode": "fixed", "fixedColor": "red" } } }
+  },
+  {
+    "id": 109,
+    "type": "stat",
+    "title": "Completion Rate",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 8, "y": 34 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(100.0 * COUNT(*) FILTER (WHERE status = 'completed') / NULLIF(COUNT(*), 0), 1) AS value FROM recommendation_run" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "unit": "percent", "decimals": 1 } }
+  },
+  {
+    "id": 110,
+    "type": "stat",
+    "title": "Evaluations",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 12, "y": 34 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM recommendation_feedback" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 111,
+    "type": "stat",
+    "title": "Approval Rate",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 16, "y": 34 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(100.0 * COUNT(*) FILTER (WHERE decision = 'approved') / NULLIF(COUNT(*), 0), 1) AS value FROM recommendation_feedback" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "unit": "percent", "decimals": 1 } }
+  },
+  {
+    "id": 112,
+    "type": "stat",
+    "title": "Feedback Rate",
+    "description": "Share of completed runs with at least one evaluation",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 20, "y": 34 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(100.0 * COUNT(DISTINCT rf.run_id) / NULLIF(COUNT(DISTINCT rr.id), 0), 1) AS value FROM recommendation_run rr LEFT JOIN recommendation_feedback rf ON rf.run_id = rr.id WHERE rr.status = 'completed'" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "unit": "percent", "decimals": 1 } }
+  },
+  {
+    "id": 113,
+    "type": "stat",
+    "title": "Useful Evaluations",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 0, "y": 37 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM recommendation_feedback WHERE decision IN ('approved', 'save') OR usefulness_score >= 4" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0, "color": { "mode": "fixed", "fixedColor": "green" } } }
+  },
+  {
+    "id": 114,
+    "type": "stat",
+    "title": "Not Useful",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 4, "y": 37 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM recommendation_feedback WHERE decision IN ('rejected', 'needs_revision') OR usefulness_score <= 2" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0, "color": { "mode": "fixed", "fixedColor": "red" } } }
+  },
+  {
+    "id": 115,
+    "type": "stat",
+    "title": "Would Use in Paper",
+    "description": "% answering yes to would_use_in_real_paper",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 8, "y": 37 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(100.0 * COUNT(*) FILTER (WHERE would_use_in_real_paper = 'yes') / NULLIF(COUNT(*) FILTER (WHERE would_use_in_real_paper IS NOT NULL), 0), 1) AS value FROM recommendation_feedback" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "unit": "percent", "decimals": 1 } }
+  },
+  {
+    "id": 116,
+    "type": "stat",
+    "title": "Extracted Articles",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 12, "y": 37 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM source_document" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 117,
+    "type": "stat",
+    "title": "Embeddings",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 16, "y": 37 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM document_embedding" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 118,
+    "type": "stat",
+    "title": "LLM Cost (USD)",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 20, "y": 37 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(COALESCE(SUM(estimated_cost_usd), 0)::numeric, 4) AS value FROM llm_usage" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "unit": "currencyUSD", "decimals": 4 } }
+  },
+  {
+    "id": 119,
+    "type": "stat",
+    "title": "Avg Recs / Run",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 0, "y": 40 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(AVG(rec_count)::numeric, 1) AS value FROM (SELECT rr.id, COUNT(rc.id) AS rec_count FROM recommendation_run rr LEFT JOIN recommendation_candidate rc ON rc.run_id = rr.id WHERE rr.status = 'completed' GROUP BY rr.id) sub" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 1 } }
+  },
+  {
+    "id": 120,
+    "type": "stat",
+    "title": "Avg Papers / Run",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 4, "y": 40 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(AVG(jsonb_array_length(payload->'document_ids'))::numeric, 1) AS value FROM recommendation_run_event WHERE event_type = 'papers_retrieved' AND payload->'document_ids' IS NOT NULL" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 1 } }
+  },
+  {
+    "id": 121,
+    "type": "stat",
+    "title": "Avg Run Duration",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 8, "y": 40 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(AVG(EXTRACT(EPOCH FROM (finished_at - started_at)))::numeric, 0) AS value FROM recommendation_run WHERE finished_at IS NOT NULL AND started_at IS NOT NULL" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "unit": "s", "decimals": 0 } }
+  },
+  {
+    "id": 122,
+    "type": "stat",
+    "title": "Consents Accepted",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 12, "y": 40 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM session_consent WHERE accepted = true" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 123,
+    "type": "stat",
+    "title": "Final Surveys",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 16, "y": 40 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM session_final_survey" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 124,
+    "type": "stat",
+    "title": "Would Use Again",
+    "description": "From session final survey",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 20, "y": 40 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(100.0 * AVG(CASE WHEN would_use_again THEN 1.0 ELSE 0.0 END), 1) AS value FROM session_final_survey WHERE would_use_again IS NOT NULL" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "unit": "percent", "decimals": 1 } }
+  },
+
+  {
+    "id": 130,
+    "type": "row",
+    "title": "Business — Users & Sessions",
+    "gridPos": { "h": 1, "w": 24, "x": 0, "y": 43 },
+    "collapsed": false
+  },
+  {
+    "id": 131,
+    "type": "table",
+    "title": "Users (name, activity, runs, evaluations)",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 10, "w": 14, "x": 0, "y": 44 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT u.full_name AS \"Name\", u.email AS \"Email\", u.role AS \"Role\", CASE WHEN u.is_active THEN 'yes' ELSE 'no' END AS \"Active\", COUNT(DISTINCT ss.id)::bigint AS \"Sessions\", COUNT(DISTINCT rr.id)::bigint AS \"Runs\", COUNT(DISTINCT rf.id)::bigint AS \"Evaluations\", TO_CHAR(GREATEST(last_login.last_login_at, last_run.last_run_at, last_session.last_session_at), 'YYYY-MM-DD HH24:MI') AS \"Last Activity\", TO_CHAR(last_login.last_login_at, 'YYYY-MM-DD HH24:MI') AS \"Last Login\" FROM app_user u LEFT JOIN study_session ss ON ss.user_id = u.id LEFT JOIN recommendation_run rr ON rr.user_id = u.id LEFT JOIN recommendation_feedback rf ON rf.user_id = u.id LEFT JOIN LATERAL (SELECT MAX(a.consumed_at) AS last_login_at FROM auth_otp_challenge a WHERE a.phone_number = u.phone_number AND a.purpose = 'login' AND a.consumed_at IS NOT NULL) last_login ON TRUE LEFT JOIN LATERAL (SELECT MAX(rr2.created_at) AS last_run_at FROM recommendation_run rr2 WHERE rr2.user_id = u.id) last_run ON TRUE LEFT JOIN LATERAL (SELECT MAX(ss2.started_at) AS last_session_at FROM study_session ss2 WHERE ss2.user_id = u.id) last_session ON TRUE GROUP BY u.id, u.full_name, u.email, u.role, u.is_active, last_login.last_login_at, last_run.last_run_at, last_session.last_session_at ORDER BY GREATEST(last_login.last_login_at, last_run.last_run_at, last_session.last_session_at) DESC NULLS LAST"
+    }],
+    "options": { "showHeader": true, "sortBy": [{ "displayName": "Last Activity", "desc": true }] }
+  },
+  {
+    "id": 132,
+    "type": "table",
+    "title": "Users by Research Area",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 10, "w": 10, "x": 14, "y": 44 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT COALESCE(urp.research_area, 'Unknown') AS \"Research Area\", COUNT(DISTINCT urp.user_id)::bigint AS \"Users\", COUNT(DISTINCT rr.id)::bigint AS \"Runs\" FROM user_research_profile urp LEFT JOIN recommendation_run rr ON rr.user_id = urp.user_id GROUP BY 1 ORDER BY \"Users\" DESC"
+    }],
+    "options": { "showHeader": true }
+  },
+  {
+    "id": 133,
+    "type": "timeseries",
+    "title": "New Users per Week",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 12, "x": 0, "y": 54 },
+    "targets": [{
+      "refId": "A",
+      "format": "time_series",
+      "rawQuery": true,
+      "rawSql": "SELECT $__timeGroup(created_at, '1w') AS time, COUNT(*)::double precision AS new_users FROM app_user WHERE $__timeFilter(created_at) GROUP BY 1 ORDER BY 1"
+    }],
+    "fieldConfig": { "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 80 } } }
+  },
+  {
+    "id": 134,
+    "type": "timeseries",
+    "title": "Study Sessions per Day",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 12, "x": 12, "y": 54 },
+    "targets": [{
+      "refId": "A",
+      "format": "time_series",
+      "rawQuery": true,
+      "rawSql": "SELECT $__timeGroup(started_at, '1d') AS time, COUNT(*)::double precision AS sessions FROM study_session WHERE $__timeFilter(started_at) GROUP BY 1 ORDER BY 1"
+    }],
+    "fieldConfig": { "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 80 } } }
+  },
+
+  {
+    "id": 140,
+    "type": "row",
+    "title": "Business — Runs & Recommendations",
+    "gridPos": { "h": 1, "w": 24, "x": 0, "y": 62 },
+    "collapsed": false
+  },
+  {
+    "id": 141,
+    "type": "timeseries",
+    "title": "Recommendations per Day",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 8, "x": 0, "y": 63 },
+    "targets": [{
+      "refId": "A",
+      "format": "time_series",
+      "rawQuery": true,
+      "rawSql": "SELECT $__timeGroup(created_at, '1d') AS time, COUNT(*)::double precision AS recommendations FROM recommendation_candidate WHERE $__timeFilter(created_at) GROUP BY 1 ORDER BY 1"
+    }],
+    "fieldConfig": { "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 80 } } }
+  },
+  {
+    "id": 142,
+    "type": "timeseries",
+    "title": "Runs per Day by Status",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 8, "x": 8, "y": 63 },
+    "targets": [{
+      "refId": "A",
+      "format": "time_series",
+      "rawQuery": true,
+      "rawSql": "SELECT $__timeGroup(created_at, '1d') AS time, status AS metric, COUNT(*)::double precision AS value FROM recommendation_run WHERE $__timeFilter(created_at) GROUP BY 1, 2 ORDER BY 1, 2"
+    }],
+    "options": { "legend": { "displayMode": "list", "placement": "bottom" } }
+  },
+  {
+    "id": 143,
+    "type": "piechart",
+    "title": "Runs by Mode",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 8, "x": 16, "y": 63 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT mode, COUNT(*)::bigint AS count FROM recommendation_run GROUP BY mode ORDER BY count DESC"
+    }],
+    "options": { "legend": { "displayMode": "table", "placement": "right" }, "pieType": "donut" }
+  },
+  {
+    "id": 144,
+    "type": "piechart",
+    "title": "Experiment Variants",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 8, "x": 0, "y": 71 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT COALESCE(experiment_variant, 'none') AS variant, COUNT(*)::bigint AS count FROM recommendation_run GROUP BY 1 ORDER BY count DESC"
+    }],
+    "options": { "legend": { "displayMode": "table", "placement": "right" }, "pieType": "donut" }
+  },
+  {
+    "id": 145,
+    "type": "piechart",
+    "title": "Recommendation Status",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 8, "x": 8, "y": 71 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT status, COUNT(*)::bigint AS count FROM recommendation_candidate GROUP BY status ORDER BY count DESC"
+    }],
+    "options": { "legend": { "displayMode": "table", "placement": "right" }, "pieType": "donut" }
+  },
+  {
+    "id": 146,
+    "type": "timeseries",
+    "title": "Run Duration Trend (avg seconds)",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 8, "x": 16, "y": 71 },
+    "targets": [{
+      "refId": "A",
+      "format": "time_series",
+      "rawQuery": true,
+      "rawSql": "SELECT $__timeGroup(finished_at, '1d') AS time, ROUND(AVG(EXTRACT(EPOCH FROM (finished_at - started_at)))::numeric, 0)::double precision AS avg_duration_sec FROM recommendation_run WHERE finished_at IS NOT NULL AND started_at IS NOT NULL AND $__timeFilter(finished_at) GROUP BY 1 ORDER BY 1"
+    }],
+    "fieldConfig": { "defaults": { "unit": "s" } }
+  },
+  {
+    "id": 147,
+    "type": "table",
+    "title": "Top Users by Runs",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 10, "w": 12, "x": 0, "y": 79 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT u.full_name AS \"Name\", u.email AS \"Email\", COUNT(rr.id)::bigint AS \"Runs\", COUNT(*) FILTER (WHERE rr.status = 'completed')::bigint AS \"Completed\", COUNT(DISTINCT rc.id)::bigint AS \"Recommendations\", ROUND(COALESCE(SUM(lu.estimated_cost_usd), 0)::numeric, 4) AS \"LLM Cost USD\" FROM app_user u JOIN recommendation_run rr ON rr.user_id = u.id LEFT JOIN recommendation_candidate rc ON rc.run_id = rr.id LEFT JOIN llm_usage lu ON lu.run_id = rr.id GROUP BY u.id, u.full_name, u.email ORDER BY \"Runs\" DESC LIMIT 20"
+    }],
+    "options": { "showHeader": true }
+  },
+  {
+    "id": 148,
+    "type": "table",
+    "title": "Recent Runs",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 10, "w": 12, "x": 12, "y": 79 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT TO_CHAR(rr.created_at, 'YYYY-MM-DD HH24:MI') AS \"Created\", COALESCE(u.full_name, 'anonymous') AS \"User\", rr.mode AS \"Mode\", rr.status AS \"Status\", COUNT(DISTINCT rc.id)::bigint AS \"Recs\", ROUND(COALESCE(SUM(lu.estimated_cost_usd), 0)::numeric, 4) AS \"Cost USD\" FROM recommendation_run rr LEFT JOIN app_user u ON u.id = rr.user_id LEFT JOIN recommendation_candidate rc ON rc.run_id = rr.id LEFT JOIN llm_usage lu ON lu.run_id = rr.id GROUP BY rr.id, rr.created_at, u.full_name, rr.mode, rr.status ORDER BY rr.created_at DESC LIMIT 25"
+    }],
+    "options": { "showHeader": true }
+  },
+
+  {
+    "id": 150,
+    "type": "row",
+    "title": "Business — Quality & Evaluations",
+    "gridPos": { "h": 1, "w": 24, "x": 0, "y": 89 },
+    "collapsed": false
+  },
+  {
+    "id": 151,
+    "type": "stat",
+    "title": "Avg Relevance",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 0, "y": 90 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(AVG(relevance_score)::numeric, 2) AS value FROM recommendation_feedback WHERE relevance_score IS NOT NULL" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 2, "max": 5, "min": 1 } }
+  },
+  {
+    "id": 152,
+    "type": "stat",
+    "title": "Avg Originality",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 4, "y": 90 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(AVG(originality_score)::numeric, 2) AS value FROM recommendation_feedback WHERE originality_score IS NOT NULL" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 2, "max": 5, "min": 1 } }
+  },
+  {
+    "id": 153,
+    "type": "stat",
+    "title": "Avg Clarity",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 8, "y": 90 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(AVG(clarity_score)::numeric, 2) AS value FROM recommendation_feedback WHERE clarity_score IS NOT NULL" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 2, "max": 5, "min": 1 } }
+  },
+  {
+    "id": 154,
+    "type": "stat",
+    "title": "Avg Feasibility",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 12, "y": 90 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(AVG(feasibility_score)::numeric, 2) AS value FROM recommendation_feedback WHERE feasibility_score IS NOT NULL" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 2, "max": 5, "min": 1 } }
+  },
+  {
+    "id": 155,
+    "type": "stat",
+    "title": "Avg Trust",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 16, "y": 90 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(AVG(trust_score)::numeric, 2) AS value FROM recommendation_feedback WHERE trust_score IS NOT NULL" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 2, "max": 5, "min": 1 } }
+  },
+  {
+    "id": 156,
+    "type": "stat",
+    "title": "Avg EAS",
+    "description": "Expectation Alignment Score",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 20, "y": 90 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(AVG(expectation_alignment_score)::numeric, 3) AS value FROM recommendation_feedback WHERE expectation_alignment_score IS NOT NULL" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 3 } }
+  },
+  {
+    "id": 157,
+    "type": "stat",
+    "title": "Avg Usefulness",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 0, "y": 93 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(AVG(usefulness_score)::numeric, 2) AS value FROM recommendation_feedback WHERE usefulness_score IS NOT NULL" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 2, "max": 5, "min": 1 } }
+  },
+  {
+    "id": 158,
+    "type": "stat",
+    "title": "Expectation Met",
+    "description": "Session final survey average",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 4, "y": 93 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(AVG(expectation_met_score)::numeric, 2) AS value FROM session_final_survey WHERE expectation_met_score IS NOT NULL" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 2, "max": 5, "min": 1 } }
+  },
+  {
+    "id": 159,
+    "type": "stat",
+    "title": "Would Recommend",
+    "description": "Session final survey",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 8, "y": 93 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(100.0 * AVG(CASE WHEN would_recommend THEN 1.0 ELSE 0.0 END), 1) AS value FROM session_final_survey WHERE would_recommend IS NOT NULL" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "unit": "percent", "decimals": 1 } }
+  },
+  {
+    "id": 160,
+    "type": "piechart",
+    "title": "Evaluations by Decision",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 8, "x": 12, "y": 93 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT COALESCE(decision, 'unknown') AS decision, COUNT(*)::bigint AS count FROM recommendation_feedback GROUP BY 1 ORDER BY count DESC"
+    }],
+    "options": { "legend": { "displayMode": "table", "placement": "right" }, "pieType": "donut" }
+  },
+  {
+    "id": 161,
+    "type": "piechart",
+    "title": "Would Use in Real Paper?",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 8, "x": 20, "y": 93 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT COALESCE(would_use_in_real_paper, 'unknown') AS answer, COUNT(*)::bigint AS count FROM recommendation_feedback GROUP BY 1 ORDER BY count DESC"
+    }],
+    "options": { "legend": { "displayMode": "table", "placement": "right" }, "pieType": "donut" }
+  },
+  {
+    "id": 162,
+    "type": "barchart",
+    "title": "Usefulness Score Distribution",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 12, "x": 0, "y": 96 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT usefulness_score::text AS score, COUNT(*)::bigint AS count FROM recommendation_feedback WHERE usefulness_score IS NOT NULL GROUP BY usefulness_score ORDER BY usefulness_score"
+    }],
+    "options": { "orientation": "horizontal", "legend": { "displayMode": "hidden" } }
+  },
+  {
+    "id": 163,
+    "type": "timeseries",
+    "title": "Evaluations & Avg Usefulness per Week",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 12, "x": 12, "y": 101 },
+    "targets": [{
+      "refId": "A",
+      "format": "time_series",
+      "rawQuery": true,
+      "rawSql": "SELECT $__timeGroup(created_at, '1w') AS time, COUNT(*)::double precision AS evaluations, ROUND(AVG(usefulness_score)::numeric, 2)::double precision AS avg_usefulness FROM recommendation_feedback WHERE $__timeFilter(created_at) GROUP BY 1 ORDER BY 1"
+    }],
+    "options": { "legend": { "displayMode": "list", "placement": "bottom" } }
+  },
+  {
+    "id": 164,
+    "type": "table",
+    "title": "Top Recommendations by Evaluations",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 12, "x": 0, "y": 104 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT LEFT(rc.title, 70) AS \"Title\", COUNT(rf.id)::bigint AS \"Evaluations\", ROUND(AVG(rf.usefulness_score)::numeric, 2) AS \"Avg Usefulness\", COUNT(*) FILTER (WHERE rf.decision = 'approved')::bigint AS \"Approved\", COUNT(*) FILTER (WHERE rf.decision = 'rejected')::bigint AS \"Rejected\" FROM recommendation_candidate rc JOIN recommendation_feedback rf ON rf.recommendation_id = rc.id GROUP BY rc.id, rc.title ORDER BY \"Evaluations\" DESC, \"Avg Usefulness\" DESC LIMIT 20"
+    }],
+    "options": { "showHeader": true }
+  },
+  {
+    "id": 165,
+    "type": "table",
+    "title": "Evaluation Scores by Decision",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 12, "x": 12, "y": 104 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT COALESCE(decision, 'unknown') AS \"Decision\", COUNT(*)::bigint AS \"Count\", ROUND(AVG(relevance_score)::numeric, 2) AS \"Relevance\", ROUND(AVG(originality_score)::numeric, 2) AS \"Originality\", ROUND(AVG(clarity_score)::numeric, 2) AS \"Clarity\", ROUND(AVG(feasibility_score)::numeric, 2) AS \"Feasibility\", ROUND(AVG(trust_score)::numeric, 2) AS \"Trust\", ROUND(AVG(usefulness_score)::numeric, 2) AS \"Usefulness\", ROUND(AVG(expectation_alignment_score)::numeric, 3) AS \"EAS\" FROM recommendation_feedback GROUP BY 1 ORDER BY \"Count\" DESC"
+    }],
+    "options": { "showHeader": true }
+  },
+  {
+    "id": 166,
+    "type": "table",
+    "title": "Approval Rate by Experiment Variant",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 24, "x": 0, "y": 112 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT COALESCE(rr.experiment_variant, 'none') AS \"Variant\", COUNT(rf.id)::bigint AS \"Evaluations\", ROUND(100.0 * COUNT(*) FILTER (WHERE rf.decision = 'approved') / NULLIF(COUNT(rf.id), 0), 1) AS \"Approval %\", ROUND(AVG(rf.usefulness_score)::numeric, 2) AS \"Avg Usefulness\", ROUND(AVG(rf.expectation_alignment_score)::numeric, 3) AS \"Avg EAS\" FROM recommendation_feedback rf JOIN recommendation_run rr ON rr.id = rf.run_id GROUP BY 1 ORDER BY \"Evaluations\" DESC"
+    }],
+    "options": { "showHeader": true }
+  },
+
+  {
+    "id": 170,
+    "type": "row",
+    "title": "Business — Research Corpus & Citations",
+    "gridPos": { "h": 1, "w": 24, "x": 0, "y": 120 },
+    "collapsed": false
+  },
+  {
+    "id": 171,
+    "type": "stat",
+    "title": "Unique Papers in Runs",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 0, "y": 121 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(DISTINCT doc_id)::bigint AS value FROM recommendation_run_event e, LATERAL jsonb_array_elements_text(e.payload->'document_ids') AS doc_id WHERE e.event_type = 'papers_retrieved'" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 172,
+    "type": "stat",
+    "title": "Missing Embeddings",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 4, "y": 121 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM source_document sd WHERE NOT EXISTS (SELECT 1 FROM document_embedding de WHERE de.document_id = sd.id)" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 173,
+    "type": "stat",
+    "title": "Avg Citations",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 8, "y": 121 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(AVG(citation_count)::numeric, 0) AS value FROM source_document WHERE citation_count > 0" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 174,
+    "type": "stat",
+    "title": "Avg Evidence Papers / Rec",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 12, "y": 121 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(AVG(COALESCE(jsonb_array_length(evidence_papers), 0))::numeric, 1) AS value FROM recommendation_candidate" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 1 } }
+  },
+  {
+    "id": 175,
+    "type": "stat",
+    "title": "Embedding Model",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 8, "x": 16, "y": 121 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT STRING_AGG(DISTINCT embedding_model, ', ') AS value FROM document_embedding" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 176,
+    "type": "piechart",
+    "title": "Articles by Source",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 8, "x": 0, "y": 124 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT source, COUNT(*)::bigint AS count FROM source_document GROUP BY source ORDER BY count DESC"
+    }],
+    "options": { "legend": { "displayMode": "table", "placement": "right" }, "pieType": "donut" }
+  },
+  {
+    "id": 177,
+    "type": "barchart",
+    "title": "Articles by Publication Year",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 8, "x": 8, "y": 124 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT year::text AS year, COUNT(*)::bigint AS count FROM source_document WHERE year IS NOT NULL GROUP BY year ORDER BY year DESC LIMIT 20"
+    }],
+    "options": { "orientation": "horizontal", "legend": { "displayMode": "hidden" } }
+  },
+  {
+    "id": 178,
+    "type": "timeseries",
+    "title": "Papers Retrieved per Day",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 8, "x": 16, "y": 124 },
+    "targets": [{
+      "refId": "A",
+      "format": "time_series",
+      "rawQuery": true,
+      "rawSql": "SELECT $__timeGroup(created_at, '1d') AS time, SUM(jsonb_array_length(payload->'document_ids'))::double precision AS papers FROM recommendation_run_event WHERE event_type = 'papers_retrieved' AND payload->'document_ids' IS NOT NULL AND $__timeFilter(created_at) GROUP BY 1 ORDER BY 1"
+    }],
+    "fieldConfig": { "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 80 } } }
+  },
+  {
+    "id": 179,
+    "type": "timeseries",
+    "title": "Embeddings Created per Day",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 12, "x": 0, "y": 132 },
+    "targets": [{
+      "refId": "A",
+      "format": "time_series",
+      "rawQuery": true,
+      "rawSql": "SELECT $__timeGroup(created_at, '1d') AS time, COUNT(*)::double precision AS embeddings FROM document_embedding WHERE $__timeFilter(created_at) GROUP BY 1 ORDER BY 1"
+    }],
+    "fieldConfig": { "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 80 } } }
+  },
+  {
+    "id": 180,
+    "type": "timeseries",
+    "title": "New Articles Indexed per Day",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 12, "x": 12, "y": 132 },
+    "targets": [{
+      "refId": "A",
+      "format": "time_series",
+      "rawQuery": true,
+      "rawSql": "SELECT $__timeGroup(created_at, '1d') AS time, COUNT(*)::double precision AS articles FROM source_document WHERE $__timeFilter(created_at) GROUP BY 1 ORDER BY 1"
+    }],
+    "fieldConfig": { "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 80 } } }
+  },
+  {
+    "id": 181,
+    "type": "table",
+    "title": "Most Cited Articles",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 10, "w": 14, "x": 0, "y": 140 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT LEFT(title, 90) AS \"Title\", year AS \"Year\", citation_count AS \"Citations\", source AS \"Source\", LEFT(COALESCE(venue, ''), 40) AS \"Venue\", LEFT(COALESCE(doi, ''), 36) AS \"DOI\" FROM source_document ORDER BY citation_count DESC NULLS LAST LIMIT 30"
+    }],
+    "options": { "showHeader": true, "sortBy": [{ "displayName": "Citations", "desc": true }] }
+  },
+  {
+    "id": 182,
+    "type": "table",
+    "title": "Most Retrieved Papers in Runs",
+    "description": "Articles fetched most often across recommendation runs",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 10, "w": 10, "x": 14, "y": 140 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT LEFT(sd.title, 60) AS \"Title\", sd.year AS \"Year\", sd.citation_count AS \"Citations\", COUNT(*)::bigint AS \"Retrievals\" FROM recommendation_run_event e CROSS JOIN LATERAL jsonb_array_elements_text(e.payload->'document_ids') AS doc_id JOIN source_document sd ON sd.id::text = doc_id WHERE e.event_type = 'papers_retrieved' GROUP BY sd.id, sd.title, sd.year, sd.citation_count ORDER BY \"Retrievals\" DESC LIMIT 20"
+    }],
+    "options": { "showHeader": true }
+  },
+
+  {
+    "id": 190,
+    "type": "row",
+    "title": "Business — LLM Cost & Usage",
+    "gridPos": { "h": 1, "w": 24, "x": 0, "y": 150 },
+    "collapsed": false
+  },
+  {
+    "id": 191,
+    "type": "stat",
+    "title": "Total Tokens",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 0, "y": 151 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COALESCE(SUM(total_tokens), 0)::bigint AS value FROM llm_usage" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 192,
+    "type": "stat",
+    "title": "LLM Calls",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 4, "y": 151 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT COUNT(*)::bigint AS value FROM llm_usage" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "decimals": 0 } }
+  },
+  {
+    "id": 193,
+    "type": "stat",
+    "title": "Avg Cost / Run",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 3, "w": 4, "x": 8, "y": 151 },
+    "targets": [{ "refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT ROUND(AVG(run_cost)::numeric, 4) AS value FROM (SELECT run_id, SUM(estimated_cost_usd) AS run_cost FROM llm_usage WHERE run_id IS NOT NULL GROUP BY run_id) sub" }],
+    "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+    "fieldConfig": { "defaults": { "unit": "currencyUSD", "decimals": 4 } }
+  },
+  {
+    "id": 194,
+    "type": "timeseries",
+    "title": "LLM Cost per Day (USD)",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 12, "x": 12, "y": 151 },
+    "targets": [{
+      "refId": "A",
+      "format": "time_series",
+      "rawQuery": true,
+      "rawSql": "SELECT $__timeGroup(created_at, '1d') AS time, SUM(estimated_cost_usd)::double precision AS cost_usd FROM llm_usage WHERE $__timeFilter(created_at) GROUP BY 1 ORDER BY 1"
+    }],
+    "fieldConfig": { "defaults": { "unit": "currencyUSD", "custom": { "drawStyle": "bars", "fillOpacity": 80 } } }
+  },
+  {
+    "id": 195,
+    "type": "timeseries",
+    "title": "Tokens Used per Day",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 8, "w": 12, "x": 0, "y": 154 },
+    "targets": [{
+      "refId": "A",
+      "format": "time_series",
+      "rawQuery": true,
+      "rawSql": "SELECT $__timeGroup(created_at, '1d') AS time, SUM(total_tokens)::double precision AS tokens FROM llm_usage WHERE $__timeFilter(created_at) GROUP BY 1 ORDER BY 1"
+    }],
+    "fieldConfig": { "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 80 } } }
+  },
+  {
+    "id": 196,
+    "type": "table",
+    "title": "LLM Usage by Model & Operation",
+    "datasource": { "type": "grafana-postgresql-datasource", "uid": "POSTREC_POSTGRES" },
+    "gridPos": { "h": 10, "w": 24, "x": 0, "y": 162 },
+    "targets": [{
+      "refId": "A",
+      "format": "table",
+      "rawQuery": true,
+      "rawSql": "SELECT provider AS \"Provider\", model AS \"Model\", operation AS \"Operation\", COUNT(*)::bigint AS \"Calls\", SUM(input_tokens)::bigint AS \"Input Tokens\", SUM(output_tokens)::bigint AS \"Output Tokens\", SUM(total_tokens)::bigint AS \"Total Tokens\", ROUND(SUM(estimated_cost_usd)::numeric, 4) AS \"Cost USD\" FROM llm_usage GROUP BY provider, model, operation ORDER BY \"Cost USD\" DESC, \"Calls\" DESC"
+    }],
+    "options": { "showHeader": true }
+  }
+]

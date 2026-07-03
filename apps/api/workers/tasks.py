@@ -38,7 +38,7 @@ def _invalidate_run_caches(run: RecommendationRun) -> None:
 
 def _report_substep(db: Session, run: RecommendationRun, message: str, progress: int | None = None) -> None:
     """Publish a user-facing pipeline update without changing run status."""
-    run_service._add_event(db, run, "pipeline_progress", message)
+    run_service.add_event(db, run, "pipeline_progress", message)
     db.commit()
     _invalidate_run_caches(run)
     run_stream_service.publish(db, run)
@@ -199,7 +199,7 @@ def process_recommendation_run(self, run_id: str) -> dict:
                 on_milestone=_retrieval_milestone,
             )
         )
-        run_service._add_event(
+        run_service.add_event(
             db,
             run,
             "papers_retrieved",
@@ -235,7 +235,7 @@ def process_recommendation_run(self, run_id: str) -> dict:
             expected_output=expectation.expected_output if expectation else None,
             max_papers=run.max_papers,
         )
-        run_service._add_event(
+        run_service.add_event(
             db,
             run,
             "papers_ranked",
@@ -307,7 +307,7 @@ def process_recommendation_run(self, run_id: str) -> dict:
 
         run.error_message = None
         run_service.save_recommendations(db, run, recommendations)
-        run_service._add_event(
+        run_service.add_event(
             db,
             run,
             "recommendations_validated",
@@ -357,7 +357,7 @@ def process_recommendation_run(self, run_id: str) -> dict:
             run.finished_at = None
             if run.status in (RunStatus.FAILED, RunStatus.FAILED_SCHEMA_VALIDATION):
                 run.status = run.current_step or RunStatus.SEARCHING_PAPERS
-            run_service._add_event(
+            run_service.add_event(
                 db,
                 run,
                 "retry_scheduled",

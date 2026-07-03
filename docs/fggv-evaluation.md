@@ -131,7 +131,7 @@ Live runs: use **Auto** mode (default) for blind assignment, or pick a specific 
 | `EXPERIMENT_FGGV_VS_SOTA_ID` | `fggv_vs_sota_v1` | Study identifier stored on runs |
 | `EXPERIMENT_TREATMENT_FRACTION` | `0.5` | Share of Auto runs assigned to FGGV |
 
-**Analysis:** `GET /api/v1/validation/dashboard` includes an `experiment` section with EAS/originality/approval by variant. Admin export: `python scripts/export_anonymized_validation_data.py`.
+**Analysis:** `GET /api/v1/admin/evaluation/dashboard` includes an `experiment` section with EAS/originality/approval by variant. Admin export: `python scripts/export_anonymized_validation_data.py`.
 
 **Migration:** `alembic upgrade head` (revision `008_experiment_assignment`).
 

@@ -23,13 +23,21 @@ def run(client: paramiko.SSHClient, cmd: str, timeout: int = 600) -> tuple[int, 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Deploy Portainer on VPS")
-    parser.add_argument("--host", default="187.127.39.214")
+    parser.add_argument("--host", default=os.environ.get("HOSTINGER_HOST"))
     parser.add_argument("--user", default="root")
     parser.add_argument("--password", default=os.environ.get("HOSTINGER_SSH_PASSWORD"))
     parser.add_argument("--remote-dir", default="/opt/post-rec")
     args = parser.parse_args()
 
-    password = args.password or "LMYTYvPWQJaQbcd2AMkLuAj-QFbQkh3WzrAhTTcv2ruBPNvwLx"
+    if not args.password:
+        print("Error: set --password or HOSTINGER_SSH_PASSWORD", file=sys.stderr)
+        return 1
+
+    if not args.host:
+        print("Error: set --host or HOSTINGER_HOST", file=sys.stderr)
+        return 1
+
+    password = args.password
 
     subprocess.run(
         [sys.executable, str(PROJECT_ROOT / "scripts" / "generate_traefik_apps.py"), "--write"],

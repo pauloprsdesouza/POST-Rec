@@ -1,5 +1,7 @@
 """Gemini settings and embedding model normalization tests."""
 
+import pytest
+
 from apps.api.shared.settings import (
     DEFAULT_GEMINI_EMBEDDING_DIMENSIONS,
     DEFAULT_GEMINI_EMBEDDING_MODEL,
@@ -28,6 +30,11 @@ def test_settings_normalize_legacy_env_value():
     assert settings.gemini_embedding_model == DEFAULT_GEMINI_EMBEDDING_MODEL
 
 
+def test_settings_reject_default_jwt_in_production():
+    with pytest.raises(ValueError, match="JWT_SECRET"):
+        Settings(app_env="production", jwt_secret="dev-jwt-secret-change-in-production")
+
+
 def test_settings_read_embedding_model_from_env(monkeypatch):
     monkeypatch.setenv("GEMINI_EMBEDDING_MODEL", "gemini-embedding-001")
     monkeypatch.setenv("GEMINI_EMBEDDING_DIMENSIONS", "768")
@@ -38,3 +45,9 @@ def test_settings_read_embedding_model_from_env(monkeypatch):
     get_settings.cache_clear()
     monkeypatch.delenv("GEMINI_EMBEDDING_MODEL", raising=False)
     monkeypatch.delenv("GEMINI_EMBEDDING_DIMENSIONS", raising=False)
+
+
+def test_settings_defaults_are_localhost_not_homelab():
+    assert Settings.model_fields["rabbitmq_host"].default == "localhost"
+    assert Settings.model_fields["admin_bootstrap_emails"].default == ""
+    assert "localhost" in Settings.model_fields["database_url"].default

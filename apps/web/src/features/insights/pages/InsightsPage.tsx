@@ -7,7 +7,7 @@ import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { useAuth } from "@/features/auth/context/AuthContext";
-import { validationService } from "@/shared/api";
+import { adminService } from "@/shared/api";
 import type { ValidationDashboard } from "@/shared/types/api";
 import { formatDecimal, formatPercent } from "@/features/runs/utils/runs";
 import { GroupedBarChart, TrendLineChart } from "@/features/insights/components/InsightCharts";
@@ -40,7 +40,7 @@ function InsightSection({ title, children }: { title: string; children: ReactNod
   );
 }
 
-export function InsightsPage({ adminMode = false }: { adminMode?: boolean }) {
+export function InsightsPage() {
   const { t, i18n } = useTranslation();
   const { accessToken } = useAuth();
   const [dashboard, setDashboard] = useState<ValidationDashboard | null>(null);
@@ -52,8 +52,8 @@ export function InsightsPage({ adminMode = false }: { adminMode?: boolean }) {
     if (!accessToken) {
       return;
     }
-    validationService
-      .getDashboard(accessToken)
+    adminService
+      .getEvaluationDashboard(accessToken)
       .then(setDashboard)
       .catch((err) => setError(err instanceof Error ? err.message : t("common.couldNotLoadMetrics")))
       .finally(() => setLoading(false));
@@ -95,14 +95,11 @@ export function InsightsPage({ adminMode = false }: { adminMode?: boolean }) {
       <div className="page-stack">
         <div data-coach="coach-insights-overview" className="insights-coach-target">
           <PageHeader
-            title={adminMode ? t("admin.evaluation.title") : t("insights.title")}
-            subtitle={adminMode ? t("admin.evaluation.subtitle") : t("insights.subtitle")}
+            title={t("admin.evaluation.title")}
+            subtitle={t("admin.evaluation.subtitle")}
           />
           <div className="insights-page__actions">
-            <Link
-              to={adminMode ? "/admin/research-report" : "/insights/research-report"}
-              className="btn btn-primary"
-            >
+            <Link to="/admin/research-report" className="btn btn-primary">
               {t("insights.viewFullReport")}
             </Link>
           </div>

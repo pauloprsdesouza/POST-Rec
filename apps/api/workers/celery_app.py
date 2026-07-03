@@ -3,7 +3,7 @@
 import sys
 
 from celery import Celery
-from celery.signals import worker_process_init
+from celery.signals import celeryd_init, worker_process_init, worker_ready
 from kombu import Exchange, Queue
 
 from apps.api.shared.infra.embedding_config import validate_embedding_configuration
@@ -16,12 +16,31 @@ logger = get_logger("postrec-celery")
 settings = get_settings()
 
 
+@celeryd_init.connect
+def init_prometheus_multiprocess(**_kwargs) -> None:
+    from apps.api.shared.observability.worker_metrics import prepare_multiprocess_dir
+
+    prepare_multiprocess_dir()
+
+
+@worker_ready.connect
+def launch_worker_metrics_server(**_kwargs) -> None:
+    from apps.api.shared.observability.worker_metrics import start_worker_metrics_server
+
+    start_worker_metrics_server(port=9101)
+
+
 @worker_process_init.connect
 def validate_worker_embedding_configuration(**_kwargs) -> None:
     current = get_settings()
     validate_embedding_configuration(current.gemini_embedding_model)
-    logger.info("worker_embedding_model_validated", model=current.gemini_embedding_model)
+    from apps.api.shared.observability.telemetry import setup_observability
 
+    setup_observability(service_name=f"{current.otel_service_name}-worker")
+    # Import after fork so prometheus_client counters are created in worker children.
+    import apps.api.shared.observability.celery_metrics  # noqa: E402, F401
+
+    logger.info("worker_embedding_model_validated", model=current.gemini_embedding_model)
 
 celery_app = Celery(
     "postrec",

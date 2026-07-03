@@ -90,7 +90,7 @@ def connect(host: str, user: str, password: str | None, key_file: str | None) ->
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Deploy POST-Rec to Hostinger VPS")
-    parser.add_argument("--host", default="187.127.39.214")
+    parser.add_argument("--host", default=os.environ.get("HOSTINGER_HOST"))
     parser.add_argument("--user", default="root")
     parser.add_argument("--password", default=os.environ.get("HOSTINGER_SSH_PASSWORD"))
     parser.add_argument("--key-file", default=os.environ.get("HOSTINGER_SSH_KEY"))
@@ -98,6 +98,12 @@ def main() -> int:
     parser.add_argument("--repo", default="https://github.com/pauloprsdesouza/POST-Rec.git")
     parser.add_argument("--branch", default="main")
     parser.add_argument("--gemini-api-key", default=os.environ.get("GEMINI_API_KEY", ""))
+    parser.add_argument("--base-url", default=os.environ.get("DEPLOY_BASE_URL", ""))
+    parser.add_argument(
+        "--admin-emails",
+        default=os.environ.get("ADMIN_BOOTSTRAP_EMAILS", ""),
+        help="Comma-separated admin bootstrap emails (ADMIN_BOOTSTRAP_EMAILS)",
+    )
     parser.add_argument("--skip-coolify", action="store_true", help="Only install Docker + compose stack")
     parser.add_argument("--skip-deploy", action="store_true", help="Install Coolify/Docker only")
     parser.add_argument(
@@ -120,12 +126,15 @@ def main() -> int:
         print("Error: set --password, HOSTINGER_SSH_PASSWORD, or --key-file", file=sys.stderr)
         return 1
 
+    if not args.host:
+        print("Error: set --host or HOSTINGER_HOST", file=sys.stderr)
+        return 1
+
     client = connect(args.host, args.user, args.password, args.key_file)
 
     jwt_secret = secrets.token_urlsafe(48)
-    api_internal = secrets.token_urlsafe(24)
     evolution_key = secrets.token_urlsafe(24)
-    base_url = f"https://postrec.{args.host}" if "." in args.host else f"https://postrec.paulorobertosouza.com.br"
+    base_url = args.base_url.rstrip("/") if args.base_url else f"https://{args.host}"
 
     steps: list[tuple[str, str]] = [
         ("system info", "uname -a && cat /etc/os-release | head -5 && free -h | head -2 && df -h /"),
@@ -184,13 +193,12 @@ APP_NAME=post-rec
 API_BASE_URL={base_url}
 FRONTEND_APP_URL={base_url}
 JWT_SECRET={jwt_secret}
-API_INTERNAL_KEY={api_internal}
 GEMINI_API_KEY={args.gemini_api_key}
 GEMINI_GENERATION_MODEL=gemini-2.5-flash
 GEMINI_EMBEDDING_MODEL=gemini-embedding-001
 GEMINI_EMBEDDING_DIMENSIONS=768
 AUTH_ENABLED=true
-ADMIN_BOOTSTRAP_EMAILS=paulo.prsdesouza@gmail.com
+ADMIN_BOOTSTRAP_EMAILS={args.admin_emails}
 DATABASE_URL=postgresql+psycopg://postrec:postrec@postgres:5432/postrec
 RABBITMQ_HOST=rabbitmq
 RABBITMQ_PORT=5672
@@ -228,6 +236,13 @@ OTEL_ENABLED=false
     )
     code, out, err = run(client, deploy_cmd, timeout=1800)
     log_step("docker compose up", code, out, err, tail=8000)
+
+    migrate_cmd = (
+        f"cd {args.remote_dir} && "
+        "docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm migrate"
+    )
+    code, out, err = run(client, migrate_cmd, timeout=600)
+    log_step("database migrate", code, out, err, tail=4000)
 
     print("\nWaiting for API health...")
     healthy = False

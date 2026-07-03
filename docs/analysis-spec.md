@@ -1,6 +1,6 @@
 # POST-Rec Analysis Specification
 
-This document defines metrics, data sources, and statistical methods used by the research report (`GET /api/v1/validation/research-report`) and offline export scripts.
+This document defines metrics, data sources, and statistical methods used by the research report (`GET /api/v1/admin/evaluation/research-report`) and offline export scripts.
 
 ## Layers
 

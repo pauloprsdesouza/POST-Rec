@@ -1,0 +1,75 @@
+# POST-Rec application only — uses shared homelab infra from .env (192.168.10.13).
+# Usage:
+#   docker compose -f deploy/homelab/docker-compose.app.yml up -d --build migrate api worker
+
+name: post-rec-app
+
+services:
+  migrate:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    command: python scripts/docker_migrate.py
+    env_file:
+      - ../../.env
+    restart: "no"
+    networks:
+      - homelab
+
+  api:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: postrec-api
+    command: uvicorn apps.api.main:app --host 0.0.0.0 --port 8000
+    env_file:
+      - ../../.env
+    environment:
+      OTEL_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://epilogik-otel-collector:4317
+      OTEL_SERVICE_NAME: postrec-api
+      LOG_FORMAT: json
+    ports:
+      - "8010:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 45s
+    restart: unless-stopped
+    networks:
+      - homelab
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: postrec-worker
+    command: >
+      celery -A apps.api.workers.celery_app worker --loglevel=INFO
+      -Q postrec.recommendation.default,postrec.recommendation.retrieval
+    env_file:
+      - ../../.env
+    environment:
+      OTEL_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://epilogik-otel-collector:4317
+      OTEL_SERVICE_NAME: postrec-worker
+      LOG_FORMAT: json
+      PROMETHEUS_MULTIPROC_DIR: /tmp/postrec-prom
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "9101:9101"
+    restart: unless-stopped
+    networks:
+      - homelab
+
+networks:
+  homelab:
+    name: home-lab_backend
+    external: true

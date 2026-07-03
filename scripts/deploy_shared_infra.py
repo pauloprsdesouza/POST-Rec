@@ -35,8 +35,14 @@ def upload_tree(client, sftp, local_root: Path, remote_root: str) -> None:
 
 
 def main() -> int:
-    password = os.environ.get("HOSTINGER_SSH_PASSWORD", "LMYTYvPWQJaQbcd2AMkLuAj-QFbQkh3WzrAhTTcv2ruBPNvwLx")
-    host = os.environ.get("HOSTINGER_HOST", "187.127.39.214")
+    password = os.environ.get("HOSTINGER_SSH_PASSWORD")
+    if not password:
+        print("Error: set HOSTINGER_SSH_PASSWORD", file=sys.stderr)
+        return 1
+    host = os.environ.get("HOSTINGER_HOST")
+    if not host:
+        print("Error: set HOSTINGER_HOST", file=sys.stderr)
+        return 1
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())

@@ -14,10 +14,11 @@ from apps.api.features.runs.router import router as runs_router
 from apps.api.features.sessions.router import router as sessions_router
 from apps.api.features.survey.router import router as survey_router
 from apps.api.features.users.router import router as users_router
-from apps.api.features.validation.router import router as validation_router
 
 api_router = APIRouter()
 for feature_router in (
+    auth_router,
+    users_router,
     sessions_router,
     consent_router,
     profile_router,
@@ -25,11 +26,10 @@ for feature_router in (
     recommendations_router,
     feedback_router,
     survey_router,
-    validation_router,
     experiments_router,
     health_router,
     admin_router,
 ):
     api_router.include_router(feature_router)
 
-__all__ = ["api_router", "auth_router", "users_router"]
+__all__ = ["api_router"]

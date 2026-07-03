@@ -119,8 +119,13 @@ def get_run(
 
 
 @router.get("/recommendation-runs/{run_id}/events", response_model=list[RunEventResponse])
-def get_run_events_endpoint(run_id: uuid.UUID, db: Session = Depends(get_db)):
+def get_run_events_endpoint(
+    run_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional),
+):
     run = get_run_or_404(db, run_id)
+    ensure_run_access(run, current_user)
     run_key = str(run_id)
     data = load_cached_json(
         CacheKeys.run_events(run_key),
@@ -151,8 +156,13 @@ async def stream_run(
     "/recommendation-runs/{run_id}/source-documents",
     response_model=list[SourceDocumentResponse],
 )
-def get_run_source_documents_endpoint(run_id: uuid.UUID, db: Session = Depends(get_db)):
+def get_run_source_documents_endpoint(
+    run_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional),
+):
     run = get_run_or_404(db, run_id)
+    ensure_run_access(run, current_user)
     run_key = str(run_id)
     if not is_terminal_run(run.status):
         paper_ids = get_ranked_paper_id_by_document_id(db, run_id)

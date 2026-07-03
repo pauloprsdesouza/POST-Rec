@@ -24,7 +24,6 @@ interface RecommendationDetailProps {
   sources?: SourceDocument[];
   initialRating?: number | null;
   onRated?: (recommendationId: string, rating: number, isFirstRating: boolean) => void;
-  onSkip?: () => void;
 }
 
 export function RecommendationDetail({
@@ -35,7 +34,6 @@ export function RecommendationDetail({
   sources = [],
   initialRating = null,
   onRated,
-  onSkip,
 }: RecommendationDetailProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<IdeaTab>("about");
@@ -259,9 +257,6 @@ export function RecommendationDetail({
           submitting={submitting}
           message={message}
           error={error}
-          onThumbUp={() => applyRating(4)}
-          onThumbDown={() => applyRating(2)}
-          onSkip={onSkip}
           onStarClick={applyRating}
           onWouldUseChange={(value) => {
             setWouldUse(value);

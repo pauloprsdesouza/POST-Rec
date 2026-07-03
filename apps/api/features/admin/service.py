@@ -9,7 +9,7 @@ from sqlalchemy import case, func
 from sqlalchemy.orm import Session
 
 from apps.api.features.auth.roles import is_admin
-from apps.api.features.health.router import ready as readiness_probe
+from apps.api.features.health.service import check_readiness, readiness_status
 from apps.api.features.validation.service import validation_metrics_service
 from apps.api.shared.models import LLMUsage, RecommendationFeedback, RecommendationRun, User
 from apps.api.shared.settings import Settings, get_settings
@@ -46,7 +46,8 @@ class AdminService:
         completed = int(run_stats.completed or 0)
         failed = int(run_stats.failed or 0)
 
-        readiness = readiness_probe(db)
+        checks = check_readiness(db)
+        readiness = {"status": readiness_status(checks), "checks": checks}
         settings = get_settings()
 
         return {
@@ -66,8 +67,8 @@ class AdminService:
             },
             "feedback_total": feedback_total,
             "llm_cost_usd_total": cost_total,
-            "system_status": readiness.status,
-            "health_checks": readiness.checks,
+            "system_status": readiness["status"],
+            "health_checks": readiness["checks"],
             "app_env": settings.app_env,
         }
 

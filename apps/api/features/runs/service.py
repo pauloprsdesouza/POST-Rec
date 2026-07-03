@@ -92,7 +92,7 @@ class RunService:
         event_message = "Recommendation run created"
         if experiment_id:
             event_message = "Recommendation run created for blind evaluation"
-        self._add_event(db, run, "run_created", event_message)
+        self.add_event(db, run, "run_created", event_message)
         db.commit()
         db.refresh(run)
         if user_id:
@@ -118,7 +118,7 @@ class RunService:
             run.started_at = datetime.now(UTC)
         if status in (RunStatus.COMPLETED, RunStatus.FAILED, RunStatus.CANCELLED):
             run.finished_at = datetime.now(UTC)
-        self._add_event(db, run, status, message)
+        self.add_event(db, run, status, message)
         db.commit()
 
         cache_service.invalidate_run(str(run.id))
@@ -170,7 +170,7 @@ class RunService:
         run.error_message = None
         run.started_at = None
         run.finished_at = None
-        self._add_event(db, run, "run_retried", "Recommendation run queued for retry")
+        self.add_event(db, run, "run_retried", "Recommendation run queued for retry")
         db.commit()
         db.refresh(run)
         self._invalidate_user_run_caches(run)
@@ -199,7 +199,7 @@ class RunService:
             cache_service.invalidate_user_profile(str(user_id))
 
         run.archived_at = datetime.now(UTC)
-        self._add_event(db, run, "run_archived", "Run archived by user")
+        self.add_event(db, run, "run_archived", "Run archived by user")
         db.commit()
         db.refresh(run)
         self._invalidate_user_run_caches(run)
@@ -278,7 +278,7 @@ class RunService:
         db.commit()
         return candidates
 
-    def _add_event(
+    def add_event(
         self,
         db: Session,
         run: RecommendationRun,

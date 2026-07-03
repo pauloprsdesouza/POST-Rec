@@ -74,7 +74,6 @@ export function RecommendationViewer({
 }: RecommendationViewerProps) {
   const { t } = useTranslation();
   const [ratings, setRatings] = useState<Record<string, number>>(() => buildInitialRatings(recommendations));
-  const [skippedIds, setSkippedIds] = useState<Set<string>>(() => new Set());
   const [celebration, setCelebration] = useState<"first" | "all" | null>(null);
 
   useEffect(() => {
@@ -87,10 +86,10 @@ export function RecommendationViewer({
   }, [onFeedbackChange, recommendations]);
 
   const scheduleAdvance = useCallback(
-    (currentId: string, rated: Record<string, number>, skipped: Set<string>) => {
+    (currentId: string, rated: Record<string, number>) => {
       const ratedIds = new Set(Object.keys(rated));
       const currentIdx = recommendations.findIndex((r) => r.id === currentId);
-      const nextIdx = findNextIndex(recommendations, skipped, ratedIds, currentIdx + 1);
+      const nextIdx = findNextIndex(recommendations, new Set(), ratedIds, currentIdx + 1);
       if (nextIdx >= 0 && nextIdx !== currentIdx) {
         window.setTimeout(() => onActiveIndexChange(nextIdx), 400);
       }
@@ -112,33 +111,22 @@ export function RecommendationViewer({
         }
 
         if (isFirstRating) {
-          scheduleAdvance(recommendationId, next, skippedIds);
+          scheduleAdvance(recommendationId, next);
         }
         onFeedbackChange?.(nextCount, recommendations.length);
         return next;
       });
     },
-    [onFeedbackChange, recommendations.length, scheduleAdvance, skippedIds],
+    [onFeedbackChange, recommendations.length, scheduleAdvance],
   );
-
-  const handleSkip = useCallback(() => {
-    const current = recommendations[activeIndex];
-    if (!current) {
-      return;
-    }
-    const nextSkipped = new Set(skippedIds);
-    nextSkipped.add(current.id);
-    setSkippedIds(nextSkipped);
-    scheduleAdvance(current.id, ratings, nextSkipped);
-  }, [activeIndex, ratings, recommendations, scheduleAdvance, skippedIds]);
 
   const jumpToUnrated = useCallback(() => {
     const ratedIds = new Set(Object.keys(ratings));
-    const nextIdx = findNextIndex(recommendations, skippedIds, ratedIds, 0);
+    const nextIdx = findNextIndex(recommendations, new Set(), ratedIds, 0);
     if (nextIdx >= 0) {
       onActiveIndexChange(nextIdx);
     }
-  }, [onActiveIndexChange, ratings, recommendations, skippedIds]);
+  }, [onActiveIndexChange, ratings, recommendations]);
 
   if (error) {
     return <InlineAlert variant="danger">{error}</InlineAlert>;
@@ -176,7 +164,7 @@ export function RecommendationViewer({
             items={recommendations}
             activeIndex={activeIndex}
             ratedIds={ratedIds}
-            skippedIds={skippedIds}
+            skippedIds={new Set()}
             ratedCount={ratedCount}
             onSelect={onActiveIndexChange}
             onJumpToUnrated={ratedCount < recommendations.length ? jumpToUnrated : undefined}
@@ -198,7 +186,6 @@ export function RecommendationViewer({
           sources={sources}
           initialRating={ratings[active.id] ?? null}
           onRated={handleRated}
-          onSkip={recommendations.length > 1 ? handleSkip : undefined}
         />
       ) : null}
 

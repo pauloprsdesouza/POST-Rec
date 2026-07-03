@@ -47,6 +47,18 @@ def main() -> int:
 
     command.upgrade(alembic_cfg, "head")
     print("[migrate] database ready")
+
+    from apps.api.shared.migration_status import get_alembic_head, get_db_revision
+    from sqlalchemy.orm import Session
+
+    with Session(engine) as session:
+        head = get_alembic_head()
+        current = get_db_revision(session)
+        print(f"[migrate] alembic_version={current} head={head}")
+        if current != head:
+            print(f"[migrate] WARNING: revision mismatch (db={current}, head={head})", file=sys.stderr)
+            return 1
+
     return 0
 
 

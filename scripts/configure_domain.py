@@ -74,7 +74,7 @@ def generate_assets(domain: str) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Deploy path-based app routing from registry")
-    parser.add_argument("--host", default="187.127.39.214")
+    parser.add_argument("--host", default=os.environ.get("HOSTINGER_HOST"))
     parser.add_argument("--user", default="root")
     parser.add_argument("--password", default=os.environ.get("HOSTINGER_SSH_PASSWORD"))
     parser.add_argument("--key-file", default=os.environ.get("HOSTINGER_SSH_KEY"))
@@ -86,6 +86,10 @@ def main() -> int:
 
     if not args.password and not args.key_file:
         print("Error: provide --password or --key-file", file=sys.stderr)
+        return 1
+
+    if not args.host:
+        print("Error: set --host or HOSTINGER_HOST", file=sys.stderr)
         return 1
 
     generate_assets(args.domain)

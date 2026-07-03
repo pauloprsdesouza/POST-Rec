@@ -18,7 +18,7 @@ def mock_run_services(monkeypatch):
     def fake_bump(db, run, progress):
         bumps.append(progress)
 
-    monkeypatch.setattr("apps.api.workers.tasks.run_service._add_event", fake_add_event)
+    monkeypatch.setattr("apps.api.workers.tasks.run_service.add_event", fake_add_event)
     monkeypatch.setattr("apps.api.workers.tasks.run_service.bump_progress", fake_bump)
     monkeypatch.setattr("apps.api.workers.tasks._invalidate_run_caches", lambda run: None)
     monkeypatch.setattr("apps.api.workers.tasks.run_stream_service.publish", lambda db, run: None)
