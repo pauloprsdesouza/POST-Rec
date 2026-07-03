@@ -5,7 +5,7 @@ export interface IAuthService {
   register(
     fullName: string,
     email: string,
-    phoneNumber: string,
+    phoneNumber: string | null,
     whatsappOptIn: boolean,
   ): Promise<OtpRequestResponse>;
   requestLoginOtp(email: string): Promise<OtpRequestResponse>;
@@ -24,13 +24,13 @@ export class AuthService implements IAuthService {
   register(
     fullName: string,
     email: string,
-    phoneNumber: string,
+    phoneNumber: string | null,
     whatsappOptIn: boolean,
   ): Promise<OtpRequestResponse> {
     return this.client.post("/api/v1/auth/register", {
       full_name: fullName,
       email,
-      phone_number: phoneNumber,
+      phone_number: phoneNumber || undefined,
       whatsapp_opt_in: whatsappOptIn,
     });
   }

@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthShell } from "@/shared/layout/AuthShell";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { OtpInput } from "@/shared/ui/OtpInput";
+import { PhoneInput } from "@/shared/ui/PhoneInput";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useApiHealth } from "@/shared/hooks/useApiHealth";
 import { authService } from "@/shared/api";
@@ -27,10 +28,9 @@ export function SignInPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [whatsappOptIn, setWhatsappOptIn] = useState(true);
+  const [whatsappOptIn, setWhatsappOptIn] = useState(false);
   const [code, setCode] = useState("");
 
-  const [phoneHint, setPhoneHint] = useState<string | null>(null);
   const [devCode, setDevCode] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +41,6 @@ export function SignInPage() {
     setStep("credentials");
     setCode("");
     setDevCode(null);
-    setPhoneHint(null);
     setInfoMessage(null);
     setError(null);
   };
@@ -60,11 +59,15 @@ export function SignInPage() {
     try {
       const response =
         mode === "register"
-          ? await authService.register(fullName.trim(), email.trim(), phone.trim(), whatsappOptIn)
+          ? await authService.register(
+              fullName.trim(),
+              email.trim(),
+              phone.trim() || null,
+              whatsappOptIn,
+            )
           : await authService.requestLoginOtp(email.trim());
 
       setDevCode(response.dev_code ?? null);
-      setPhoneHint(response.phone_hint ?? null);
       setInfoMessage(response.message);
       setStep("otp");
     } catch (err) {
@@ -104,12 +107,8 @@ export function SignInPage() {
     setError(null);
     setLoading(true);
     try {
-      const response =
-        mode === "register"
-          ? await authService.register(fullName.trim(), email.trim(), phone.trim(), whatsappOptIn)
-          : await authService.requestLoginOtp(email.trim());
+      const response = await authService.requestLoginOtp(email.trim());
       setDevCode(response.dev_code ?? null);
-      setPhoneHint(response.phone_hint ?? null);
       setInfoMessage(response.message);
     } catch (err) {
       setError(getErrorMessage(err, t("auth.errorResend")));
@@ -181,15 +180,19 @@ export function SignInPage() {
                 </Form.Group>
                 <Form.Group className="field-group">
                   <Form.Label>{t("auth.whatsappNumber")}</Form.Label>
-                  <Form.Control
-                    type="tel"
+                  <PhoneInput
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(nextPhone) => {
+                      setPhone(nextPhone);
+                      if (!nextPhone.trim()) {
+                        setWhatsappOptIn(false);
+                      }
+                    }}
                     placeholder={t("auth.whatsappPlaceholder")}
-                    required
+                    required={whatsappOptIn}
                     autoComplete="tel"
                   />
-                  <Form.Text>{t("auth.whatsappHintShort")}</Form.Text>
+                  <Form.Text>{t("auth.whatsappHintOptional")}</Form.Text>
                 </Form.Group>
                 <Form.Check
                   type="switch"
@@ -197,7 +200,15 @@ export function SignInPage() {
                   label={t("auth.whatsappOptInShort")}
                   checked={whatsappOptIn}
                   onChange={(e) => setWhatsappOptIn(e.target.checked)}
+                  disabled={!phone.trim()}
                 />
+                <Form.Text className="d-block">
+                  {phone.trim()
+                    ? whatsappOptIn
+                      ? t("auth.whatsappOptInEnabledHint")
+                      : t("auth.whatsappOptInDisabledHint")
+                    : t("auth.whatsappOptInRequiresPhone")}
+                </Form.Text>
               </>
             ) : (
               <Form.Group className="field-group">
@@ -240,11 +251,6 @@ export function SignInPage() {
           <div className="auth-otp-step__destination">
             <span className="auth-otp-step__destination-label">{t("auth.otpSentTo")}</span>
             <span className="auth-otp-step__destination-value">{email}</span>
-            {phoneHint ? (
-              <span className="auth-otp-step__destination-meta">
-                <Trans i18nKey="auth.otpWhatsappDelivery" values={{ phone: phoneHint }} />
-              </span>
-            ) : null}
           </div>
 
           {(error || infoMessage || devCode) && (

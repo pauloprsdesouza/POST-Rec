@@ -1,4 +1,4 @@
-"""Passwordless WhatsApp OTP authentication and JWT tokens."""
+"""Passwordless OTP authentication (email) and JWT tokens."""
 
 import hashlib
 import re
@@ -9,7 +9,8 @@ from datetime import UTC, datetime, timedelta
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from apps.api.features.auth.evolution import EvolutionError, evolution_service
+from apps.api.features.auth.email import EmailError, email_service
+from apps.api.features.auth.email_templates import render_otp_email
 from apps.api.features.auth.roles import apply_bootstrap_admin_role, resolve_role_for_email
 from apps.api.shared.models import AuthOtpChallenge, User, UserResearchProfile
 from apps.api.shared.observability.logging import get_logger
@@ -35,7 +36,6 @@ def normalize_phone(phone: str) -> str:
     if not digits:
         raise AuthError("Enter a valid phone number with country code (e.g. +557999733237)")
 
-    # Local numbers without country code (common BR: 10–11 digits).
     if len(digits) in (10, 11) and country and not digits.startswith(country):
         digits = country + digits
 
@@ -51,10 +51,12 @@ def normalize_email(email: str) -> str:
     return normalized
 
 
-def mask_phone(phone: str) -> str:
-    if len(phone) < 4:
-        return phone
-    return f"***{phone[-4:]}"
+def mask_email(email: str) -> str:
+    local, _, domain = email.partition("@")
+    if not domain:
+        return email
+    masked_local = local[0] + "***" if local else "***"
+    return f"{masked_local}@{domain}"
 
 
 class AuthService:
@@ -67,9 +69,9 @@ class AuthService:
             settings.otp_max_attempts,
         )
 
-    def _hash_otp(self, phone: str, code: str) -> str:
+    def _hash_otp(self, email: str, code: str) -> str:
         settings = get_settings()
-        material = f"{phone}:{code}:{settings.jwt_secret}".encode()
+        material = f"{email}:{code}:{settings.jwt_secret}".encode()
         return hashlib.sha256(material).hexdigest()
 
     def _generate_otp(self, length: int) -> str:
@@ -93,10 +95,10 @@ class AuthService:
         except (JWTError, ValueError) as exc:
             raise AuthError("Invalid or expired token") from exc
 
-    def _check_rate_limit(self, db: Session, phone: str, now: datetime, resend_seconds: int) -> None:
+    def _check_rate_limit(self, db: Session, email: str, now: datetime, resend_seconds: int) -> None:
         latest = (
             db.query(AuthOtpChallenge)
-            .filter_by(phone_number=phone)
+            .filter_by(email=email)
             .order_by(AuthOtpChallenge.created_at.desc())
             .first()
         )
@@ -107,28 +109,29 @@ class AuthService:
             if (now - created).total_seconds() < resend_seconds:
                 raise AuthError(f"Wait {resend_seconds} seconds before requesting another code")
 
-    def _send_otp_to_phone(
+    def _send_otp(
         self,
         db: Session,
         *,
-        phone: str,
+        email: str,
         purpose: str,
     ) -> tuple[int, str | None, str]:
         settings = get_settings()
         otp_length, otp_ttl_minutes, resend_seconds, max_attempts = self._otp_settings()
         now = datetime.now(UTC)
+        normalized_email = normalize_email(email)
 
-        self._check_rate_limit(db, phone, now, resend_seconds)
+        self._check_rate_limit(db, normalized_email, now, resend_seconds)
 
         db.query(AuthOtpChallenge).filter(
-            AuthOtpChallenge.phone_number == phone,
+            AuthOtpChallenge.email == normalized_email,
             AuthOtpChallenge.consumed_at.is_(None),
         ).update({"consumed_at": now}, synchronize_session=False)
 
         code = self._generate_otp(otp_length)
         challenge = AuthOtpChallenge(
-            phone_number=phone,
-            code_hash=self._hash_otp(phone, code),
+            email=normalized_email,
+            code_hash=self._hash_otp(normalized_email, code),
             purpose=purpose,
             expires_at=now + timedelta(minutes=otp_ttl_minutes),
             max_attempts=max_attempts,
@@ -136,22 +139,24 @@ class AuthService:
         db.add(challenge)
         db.commit()
 
-        message = (
-            f"{settings.app_display_name} sign-in code: {code}. "
-            f"Valid for {otp_ttl_minutes} minutes. Do not share this code."
+        subject = f"{settings.app_display_name} sign-in code"
+        plain_body, html_body = render_otp_email(
+            app_name=settings.app_display_name,
+            code=code,
+            ttl_minutes=otp_ttl_minutes,
+            purpose=purpose,
         )
-        dev_code: str | None = None
-        try:
-            evolution_service.send_text(phone, message)
-        except EvolutionError as exc:
-            if settings.app_env == "development" or not evolution_service.is_configured():
-                dev_code = code
-                logger.warning("otp_whatsapp_fallback", phone_number=phone, code=code, error=str(exc))
-            else:
-                message = str(exc).strip() or "Could not send WhatsApp message. Try again later."
-                raise AuthError(message) from exc
 
-        return otp_ttl_minutes * 60, dev_code, mask_phone(phone)
+        try:
+            email_service.send_text(normalized_email, subject, plain_body, html_body=html_body)
+        except EmailError as exc:
+            email_error = str(exc).strip() or "Could not send email. Try again later."
+            if settings.app_env == "development" or not email_service.is_configured():
+                logger.warning("otp_email_fallback", email=normalized_email, code=code, error=email_error)
+                return otp_ttl_minutes * 60, code, mask_email(normalized_email)
+            raise AuthError(email_error) from exc
+
+        return otp_ttl_minutes * 60, None, mask_email(normalized_email)
 
     def register_and_request_otp(
         self,
@@ -159,25 +164,31 @@ class AuthService:
         *,
         full_name: str,
         email: str,
-        phone_number: str,
-        whatsapp_opt_in: bool = True,
+        phone_number: str | None = None,
+        whatsapp_opt_in: bool = False,
     ) -> tuple[int, str | None, str]:
         normalized_email = normalize_email(email)
-        phone = normalize_phone(phone_number)
         name = full_name.strip()
+        phone: str | None = None
 
         if not name:
             raise AuthError("Full name is required.")
         if db.query(User).filter_by(email=normalized_email).first():
             raise AuthError("This email is already registered. Sign in instead.")
-        if db.query(User).filter_by(phone_number=phone).first():
-            raise AuthError("This WhatsApp number is already registered.")
+
+        if phone_number and phone_number.strip():
+            phone = normalize_phone(phone_number)
+            if db.query(User).filter_by(phone_number=phone).first():
+                raise AuthError("This WhatsApp number is already registered.")
+
+        if whatsapp_opt_in and not phone:
+            raise AuthError("Add a WhatsApp number to receive run notifications on WhatsApp.")
 
         user = User(
             full_name=name,
             email=normalized_email,
             phone_number=phone,
-            whatsapp_opt_in=whatsapp_opt_in,
+            whatsapp_opt_in=whatsapp_opt_in and bool(phone),
             role=resolve_role_for_email(normalized_email),
         )
         db.add(user)
@@ -185,11 +196,8 @@ class AuthService:
         db.add(UserResearchProfile(user_id=user.id))
         db.commit()
 
-        if not whatsapp_opt_in:
-            raise AuthError("WhatsApp is required to receive your verification code.")
-
-        expires_in, dev_code, phone_hint = self._send_otp_to_phone(db, phone=phone, purpose="register")
-        return expires_in, dev_code, phone_hint
+        expires_in, dev_code, email_hint = self._send_otp(db, email=normalized_email, purpose="register")
+        return expires_in, dev_code, email_hint
 
     def request_login_otp(self, db: Session, *, email: str) -> tuple[int, str | None, str]:
         normalized_email = normalize_email(email)
@@ -198,28 +206,23 @@ class AuthService:
             raise AuthError("No account found for this email. Create an account first.")
         if not user.is_active:
             raise AuthError("Account is disabled.")
-        if not user.phone_number:
-            raise AuthError("Add a WhatsApp number in your profile to receive sign-in codes.")
-        if not user.whatsapp_opt_in:
-            raise AuthError("WhatsApp notifications are disabled. Enable them in your profile to sign in.")
 
-        return self._send_otp_to_phone(db, phone=normalize_phone(user.phone_number), purpose="login")
+        return self._send_otp(db, email=normalized_email, purpose="login")
 
     def verify_otp(self, db: Session, *, email: str, code: str) -> tuple[User, str]:
         normalized_email = normalize_email(email)
         user = db.query(User).filter_by(email=normalized_email).first()
-        if not user or not user.phone_number:
+        if not user:
             raise AuthError("Account not found.")
         if not user.is_active:
             raise AuthError("Account is disabled.")
 
-        phone = normalize_phone(user.phone_number)
         normalized_code = code.strip()
         now = datetime.now(UTC)
 
         challenge = (
             db.query(AuthOtpChallenge)
-            .filter_by(phone_number=phone)
+            .filter_by(email=normalized_email)
             .filter(AuthOtpChallenge.consumed_at.is_(None))
             .order_by(AuthOtpChallenge.created_at.desc())
             .first()
@@ -236,7 +239,7 @@ class AuthService:
             raise AuthError("Too many attempts. Request a new code.")
 
         challenge.attempts += 1
-        if self._hash_otp(phone, normalized_code) != challenge.code_hash:
+        if self._hash_otp(normalized_email, normalized_code) != challenge.code_hash:
             db.commit()
             raise AuthError("Invalid code.")
 
@@ -270,14 +273,22 @@ class AuthService:
             user.email = normalized_email
 
         if phone_number is not None:
-            phone = normalize_phone(phone_number)
-            existing = db.query(User).filter(User.phone_number == phone, User.id != user.id).first()
-            if existing:
-                raise AuthError("This WhatsApp number is already used by another account.")
-            user.phone_number = phone
+            stripped = phone_number.strip()
+            if stripped:
+                phone = normalize_phone(stripped)
+                existing = db.query(User).filter(User.phone_number == phone, User.id != user.id).first()
+                if existing:
+                    raise AuthError("This WhatsApp number is already used by another account.")
+                user.phone_number = phone
+            else:
+                user.phone_number = None
+                user.whatsapp_opt_in = False
 
         if whatsapp_opt_in is not None:
             user.whatsapp_opt_in = whatsapp_opt_in
+
+        if user.whatsapp_opt_in and not user.phone_number:
+            raise AuthError("Add a WhatsApp number to receive run notifications on WhatsApp.")
 
         db.commit()
         db.refresh(user)

@@ -27,6 +27,7 @@ export interface OtpRequestResponse {
   message: string;
   expires_in_seconds: number;
   dev_code?: string | null;
+  email_hint?: string | null;
   phone_hint?: string | null;
 }
 

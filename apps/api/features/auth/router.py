@@ -35,28 +35,29 @@ def _auth_response(user: User, token: str) -> AuthResponse:
 def _otp_response(
     expires_in: int,
     dev_code: str | None,
-    phone_hint: str | None,
+    email_hint: str | None,
     *,
     action: str,
 ) -> OtpRequestResponse:
     if dev_code:
-        message = "WhatsApp is not configured; use the development code shown below."
-    elif phone_hint:
-        message = f"Verification code sent to WhatsApp {phone_hint}."
+        message = "Email is not configured; use the development code shown below."
+    elif email_hint:
+        message = f"Verification code sent to {email_hint}."
     else:
-        message = f"Verification code sent to your WhatsApp ({action})."
+        message = f"Verification code sent to your email ({action})."
     return OtpRequestResponse(
         message=message,
         expires_in_seconds=expires_in,
         dev_code=dev_code,
-        phone_hint=phone_hint,
+        email_hint=email_hint,
+        phone_hint=None,
     )
 
 
 @router.post("/register", response_model=OtpRequestResponse)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     try:
-        expires_in, dev_code, phone_hint = auth_service.register_and_request_otp(
+        expires_in, dev_code, email_hint = auth_service.register_and_request_otp(
             db,
             full_name=payload.full_name,
             email=payload.email,
@@ -66,20 +67,20 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     except AuthError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
-    return _otp_response(expires_in, dev_code, phone_hint, action="registration")
+    return _otp_response(expires_in, dev_code, email_hint, action="registration")
 
 
 @router.post("/login/otp/request", response_model=OtpRequestResponse)
 def request_login_otp(payload: LoginOtpRequest, db: Session = Depends(get_db)):
     try:
-        expires_in, dev_code, phone_hint = auth_service.request_login_otp(
+        expires_in, dev_code, email_hint = auth_service.request_login_otp(
             db,
             email=payload.email,
         )
     except AuthError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
-    return _otp_response(expires_in, dev_code, phone_hint, action="sign-in")
+    return _otp_response(expires_in, dev_code, email_hint, action="sign-in")
 
 
 @router.post("/otp/verify", response_model=AuthResponse)

@@ -52,7 +52,8 @@ class AuthOtpChallenge(Base):
     __tablename__ = "auth_otp_challenge"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    phone_number: Mapped[str] = mapped_column(Text, nullable=False)
+    email: Mapped[str | None] = mapped_column(Text, nullable=True)
+    phone_number: Mapped[str | None] = mapped_column(Text, nullable=True)
     code_hash: Mapped[str] = mapped_column(Text, nullable=False)
     purpose: Mapped[str] = mapped_column(Text, nullable=False, default="login")
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
@@ -387,6 +388,7 @@ class LLMUsage(Base):
 Index("idx_app_user_phone_number", User.phone_number, unique=True)
 Index("idx_app_user_email", User.email, unique=True)
 Index("idx_auth_otp_phone_created", AuthOtpChallenge.phone_number, AuthOtpChallenge.created_at)
+Index("idx_auth_otp_email_created", AuthOtpChallenge.email, AuthOtpChallenge.created_at)
 Index("idx_user_research_profile_user_id", UserResearchProfile.user_id, unique=True)
 Index("idx_study_session_user_id", StudySession.user_id)
 Index("idx_recommendation_run_user_id", RecommendationRun.user_id)

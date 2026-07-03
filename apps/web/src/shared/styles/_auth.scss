@@ -412,3 +412,135 @@
   margin-bottom: 0;
   text-align: center;
 }
+
+// Phone number — country flag dropdown + local number field.
+
+.phone-input {
+  display: flex;
+  gap: var(--researchly-space-2);
+  width: 100%;
+}
+
+.phone-input__picker {
+  flex: 0 0 auto;
+  position: relative;
+}
+
+.phone-input__country-trigger {
+  align-items: center;
+  background: var(--researchly-surface);
+  border: 1px solid var(--researchly-border);
+  border-radius: var(--researchly-radius-sm);
+  color: var(--researchly-text);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: var(--researchly-text-base);
+  gap: 0.375rem;
+  min-height: var(--researchly-touch-target, 2.75rem);
+  padding: 0 0.625rem;
+  transition:
+    border-color var(--researchly-duration) var(--researchly-ease),
+    box-shadow var(--researchly-duration) var(--researchly-ease);
+  white-space: nowrap;
+}
+
+.phone-input__country-trigger:hover:not(:disabled) {
+  border-color: var(--researchly-border-strong);
+}
+
+.phone-input__country-trigger:focus-visible {
+  border-color: var(--researchly-primary);
+  box-shadow: var(--researchly-shadow-focus);
+  outline: none;
+}
+
+.phone-input__country-trigger:disabled {
+  background: var(--researchly-surface-muted);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.country-flag {
+  border-radius: 2px;
+  display: block;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.country-flag--emoji {
+  line-height: 1;
+}
+
+.phone-input__flag {
+  flex-shrink: 0;
+}
+
+.phone-input__dial-code {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.phone-input__chevron {
+  color: var(--researchly-muted);
+  font-size: 0.625rem;
+  line-height: 1;
+  margin-left: 0.125rem;
+}
+
+.phone-input__menu {
+  background: var(--researchly-surface);
+  border: 1px solid var(--researchly-border);
+  border-radius: var(--researchly-radius-sm);
+  box-shadow: var(--researchly-shadow-md);
+  left: 0;
+  margin-top: 0.375rem;
+  max-height: 16rem;
+  min-width: min(18rem, calc(100vw - 2rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  position: absolute;
+  top: 100%;
+  z-index: 30;
+}
+
+.phone-input__option {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--researchly-text);
+  cursor: pointer;
+  display: flex;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  width: 100%;
+}
+
+.phone-input__option:hover,
+.phone-input__option--selected {
+  background: var(--researchly-surface-muted);
+}
+
+.phone-input__option-name {
+  flex: 1 1 auto;
+  font-size: var(--researchly-text-sm);
+  min-width: 0;
+}
+
+.phone-input__option-code {
+  color: var(--researchly-muted);
+  flex-shrink: 0;
+  font-size: var(--researchly-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-input__number {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@include up(sm) {
+  .phone-input__country-trigger {
+    min-width: 6.75rem;
+  }
+}

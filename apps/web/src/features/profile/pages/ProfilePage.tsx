@@ -14,6 +14,7 @@ import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { LanguageSwitcher } from "@/shared/ui/LanguageSwitcher";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
 import { NextStepBanner } from "@/shared/ui/NextStepBanner";
+import { PhoneInput } from "@/shared/ui/PhoneInput";
 import { SectionGroup } from "@/shared/ui/SectionGroup";
 import { ACADEMIC_LEVELS, DEFAULT_SEED_TOPICS, EXPERIENCE_LEVELS } from "@/shared/constants";
 import { useEnumLabel } from "@/shared/i18n/useEnumLabel";
@@ -283,12 +284,17 @@ export function ProfilePage() {
 
                   <Form.Group className="field-group">
                     <Form.Label>{t("profile.whatsappNumber")}</Form.Label>
-                    <Form.Control
-                      type="tel"
+                    <PhoneInput
                       value={account.phone_number ?? ""}
-                      onChange={(e) => setAccount({ ...account, phone_number: e.target.value })}
+                      onChange={(nextPhone) => {
+                        setAccount({
+                          ...account,
+                          phone_number: nextPhone,
+                          whatsapp_opt_in: nextPhone.trim() ? account.whatsapp_opt_in : false,
+                        });
+                      }}
                       placeholder={t("auth.whatsappPlaceholder")}
-                      required
+                      required={account.whatsapp_opt_in === true}
                     />
                     <Form.Text>{t("profile.whatsappHint")}</Form.Text>
                   </Form.Group>
@@ -298,8 +304,16 @@ export function ProfilePage() {
                     id="profile-whatsapp-opt-in"
                     label={t("profile.whatsappOptIn")}
                     checked={account.whatsapp_opt_in ?? false}
+                    disabled={!account.phone_number?.trim()}
                     onChange={(e) => setAccount({ ...account, whatsapp_opt_in: e.target.checked })}
                   />
+                  <Form.Text className="d-block">
+                    {account.phone_number?.trim()
+                      ? account.whatsapp_opt_in
+                        ? t("profile.whatsappOptInEnabledHint")
+                        : t("profile.whatsappOptInDisabledHint")
+                      : t("profile.whatsappOptInRequiresPhone")}
+                  </Form.Text>
 
                   <Button type="submit" variant="primary" disabled={savingAccount}>
                     {savingAccount ? t("common.saving") : t("profile.saveAccount")}

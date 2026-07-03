@@ -1,8 +1,8 @@
-"""Unit tests for phone normalization and OTP hashing."""
+"""Unit tests for email masking and OTP delivery helpers."""
 
 import pytest
 
-from apps.api.features.auth.service import AuthError, normalize_phone
+from apps.api.features.auth.service import AuthError, mask_email, normalize_phone
 
 
 def test_normalize_phone_strips_formatting():
@@ -27,3 +27,8 @@ def test_normalize_phone_rejects_short():
 def test_normalize_phone_rejects_empty():
     with pytest.raises(AuthError):
         normalize_phone("   ")
+
+
+def test_mask_email():
+    assert mask_email("paulo.prsdesouza@gmail.com") == "p***@gmail.com"
+    assert mask_email("a@example.com") == "a***@example.com"

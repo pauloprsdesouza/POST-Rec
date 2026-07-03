@@ -39,3 +39,11 @@ class PlatformSettings(BaseSettings):
     otp_resend_seconds: int = 60
     otp_max_attempts: int = 5
     whatsapp_notifications_enabled: bool = True
+
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_use_tls: bool = True
+    email_from: str = "noreply@paulorobertosouza.com.br"
+    email_from_name: str = ""

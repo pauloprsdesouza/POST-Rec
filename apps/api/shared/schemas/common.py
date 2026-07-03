@@ -350,8 +350,8 @@ class HealthResponse(BaseModel):
 class RegisterRequest(BaseModel):
     full_name: str = Field(min_length=2)
     email: str
-    phone_number: str
-    whatsapp_opt_in: bool = True
+    phone_number: str | None = None
+    whatsapp_opt_in: bool = False
 
 
 class LoginOtpRequest(BaseModel):
@@ -362,6 +362,7 @@ class OtpRequestResponse(BaseModel):
     message: str
     expires_in_seconds: int
     dev_code: str | None = None
+    email_hint: str | None = None
     phone_hint: str | None = None
 
 
