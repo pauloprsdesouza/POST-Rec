@@ -1,25 +1,25 @@
 .theme-toggle {
   align-items: center;
-  background: var(--postrec-surface-muted);
-  border: 1px solid var(--postrec-border);
-  border-radius: var(--postrec-radius-sm);
-  color: var(--postrec-muted);
+  background: var(--researchly-surface-muted);
+  border: 1px solid var(--researchly-border);
+  border-radius: var(--researchly-radius-sm);
+  color: var(--researchly-muted);
   cursor: pointer;
   display: inline-flex;
   height: 2rem;
   justify-content: center;
   padding: 0;
   transition:
-    background var(--postrec-duration) var(--postrec-ease),
-    border-color var(--postrec-duration) var(--postrec-ease),
-    color var(--postrec-duration) var(--postrec-ease);
+    background var(--researchly-duration) var(--researchly-ease),
+    border-color var(--researchly-duration) var(--researchly-ease),
+    color var(--researchly-duration) var(--researchly-ease);
   width: 2rem;
 }
 
 .theme-toggle:hover {
-  background: var(--postrec-surface-hover);
-  border-color: var(--postrec-primary-subtle);
-  color: var(--postrec-primary);
+  background: var(--researchly-surface-hover);
+  border-color: var(--researchly-primary-subtle);
+  color: var(--researchly-primary);
 }
 
 .theme-toggle__icon {

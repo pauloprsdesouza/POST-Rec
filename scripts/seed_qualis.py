@@ -38,7 +38,7 @@ from apps.api.shared.database import init_db
 
 from apps.api.shared.models import QualisEvaluationPeriod, QualisJournal
 
-from apps.api.shared.settings import PROJECT_ROOT, get_settings
+from apps.api.shared.settings import get_settings
 
 
 
@@ -52,7 +52,7 @@ def _resolve_csv_path(raw: str | None) -> Path:
 
     if not path.is_absolute():
 
-        path = PROJECT_ROOT / path
+        path = ROOT / path
 
     return path
 
@@ -64,11 +64,11 @@ def _default_csv_paths() -> list[Path]:
 
     candidates = [
 
-        PROJECT_ROOT / "qualis_avaliacoes-2021-2024.csv",
+        ROOT / "qualis_avaliacoes-2021-2024.csv",
 
-        PROJECT_ROOT / "qualis_avaliacoes-2017-2020.csv",
+        ROOT / "qualis_avaliacoes-2017-2020.csv",
 
-        PROJECT_ROOT / "qualis_avaliacoes.csv",
+        ROOT / "qualis_avaliacoes.csv",
 
     ]
 

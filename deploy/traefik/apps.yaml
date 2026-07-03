@@ -3,16 +3,16 @@
 
 http:
   routers:
-    postrec-http:
-      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/postrec`)
+    researchly-http:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/researchly`)
       entryPoints: [http]
-      service: app-postrec
+      service: app-researchly
       priority: 100
 
-    postrec-https:
-      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/postrec`)
+    researchly-https:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/researchly`)
       entryPoints: [https]
-      service: app-postrec
+      service: app-researchly
       tls:
         certResolver: letsencrypt
       priority: 100
@@ -103,6 +103,20 @@ http:
       tls:
         certResolver: letsencrypt
 
+    grafana-http:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/grafana`)
+      entryPoints: [http]
+      service: app-grafana
+      priority: 100
+
+    grafana-https:
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/grafana`)
+      entryPoints: [https]
+      service: app-grafana
+      tls:
+        certResolver: letsencrypt
+      priority: 100
+
     www-redirect-http:
       rule: Host(`www.paulorobertosouza.com.br`)
       entryPoints: [http]
@@ -134,13 +148,13 @@ http:
         certResolver: letsencrypt
 
     unknown-app-http:
-      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/`) && !Path(`/`) && !PathPrefix(`/postrec`) && !PathPrefix(`/evolution`) && !PathPrefix(`/portainer`) && !PathPrefix(`/manager`) && !PathPrefix(`/assets`) && !PathPrefix(`/locales`) && !PathPrefix(`/api`)
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/`) && !Path(`/`) && !PathPrefix(`/researchly`) && !PathPrefix(`/evolution`) && !PathPrefix(`/portainer`) && !PathPrefix(`/grafana`) && !PathPrefix(`/manager`) && !PathPrefix(`/assets`) && !PathPrefix(`/locales`) && !PathPrefix(`/api`)
       entryPoints: [http]
       service: unknown-app
       priority: 50
 
     unknown-app-https:
-      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/`) && !Path(`/`) && !PathPrefix(`/postrec`) && !PathPrefix(`/evolution`) && !PathPrefix(`/portainer`) && !PathPrefix(`/manager`) && !PathPrefix(`/assets`) && !PathPrefix(`/locales`) && !PathPrefix(`/api`)
+      rule: (Host(`paulorobertosouza.com.br`) || Host(`www.paulorobertosouza.com.br`)) && PathPrefix(`/`) && !Path(`/`) && !PathPrefix(`/researchly`) && !PathPrefix(`/evolution`) && !PathPrefix(`/portainer`) && !PathPrefix(`/grafana`) && !PathPrefix(`/manager`) && !PathPrefix(`/assets`) && !PathPrefix(`/locales`) && !PathPrefix(`/api`)
       entryPoints: [https]
       service: unknown-app
       priority: 50
@@ -160,7 +174,7 @@ http:
         permanent: true
 
   services:
-    app-postrec:
+    app-researchly:
       loadBalancer:
         servers:
           - url: http://postrec-web:80
@@ -174,6 +188,11 @@ http:
       loadBalancer:
         servers:
           - url: http://postrec-portainer-proxy:80
+
+    app-grafana:
+      loadBalancer:
+        servers:
+          - url: http://postrec-grafana-proxy:80
 
     landing:
       loadBalancer:

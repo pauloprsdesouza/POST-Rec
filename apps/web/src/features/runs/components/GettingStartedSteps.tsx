@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const STORAGE_KEY = "postrec:getting-started-seen";
+const STORAGE_KEY = "researchly:getting-started-seen";
 
 export function GettingStartedSteps() {
   const { t } = useTranslation();

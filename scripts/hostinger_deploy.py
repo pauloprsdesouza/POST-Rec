@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bootstrap Hostinger VPS: Docker, Coolify, and POST-Rec full stack."""
+"""Bootstrap Hostinger VPS: Docker, Coolify, and Researchly full stack."""
 
 from __future__ import annotations
 
@@ -89,13 +89,13 @@ def connect(host: str, user: str, password: str | None, key_file: str | None) ->
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Deploy POST-Rec to Hostinger VPS")
+    parser = argparse.ArgumentParser(description="Deploy Researchly to Hostinger VPS")
     parser.add_argument("--host", default=os.environ.get("HOSTINGER_HOST"))
     parser.add_argument("--user", default="root")
     parser.add_argument("--password", default=os.environ.get("HOSTINGER_SSH_PASSWORD"))
     parser.add_argument("--key-file", default=os.environ.get("HOSTINGER_SSH_KEY"))
     parser.add_argument("--remote-dir", default="/opt/post-rec")
-    parser.add_argument("--repo", default="https://github.com/pauloprsdesouza/POST-Rec.git")
+    parser.add_argument("--repo", default="https://github.com/pauloprsdesouza/Researchly.git")
     parser.add_argument("--branch", default="main")
     parser.add_argument("--gemini-api-key", default=os.environ.get("GEMINI_API_KEY", ""))
     parser.add_argument("--base-url", default=os.environ.get("DEPLOY_BASE_URL", ""))
@@ -184,12 +184,12 @@ def main() -> int:
 
     if args.skip_deploy:
         client.close()
-        print("\nCoolify/Docker installed. Skipping POST-Rec deploy (--skip-deploy).")
+        print("\nCoolify/Docker installed. Skipping Researchly deploy (--skip-deploy).")
         print(f"Coolify UI: http://{args.host}:8000")
         return 0
 
     env_content = f"""APP_ENV=production
-APP_NAME=post-rec
+APP_NAME=researchly
 API_BASE_URL={base_url}
 FRONTEND_APP_URL={base_url}
 JWT_SECRET={jwt_secret}
@@ -199,12 +199,12 @@ GEMINI_EMBEDDING_MODEL=gemini-embedding-001
 GEMINI_EMBEDDING_DIMENSIONS=768
 AUTH_ENABLED=true
 ADMIN_BOOTSTRAP_EMAILS={args.admin_emails}
-DATABASE_URL=postgresql+psycopg://postrec:postrec@postgres:5432/postrec
+DATABASE_URL=postgresql+psycopg://researchly:postrec@postgres:5432/researchly
 RABBITMQ_HOST=rabbitmq
 RABBITMQ_PORT=5672
 RABBITMQ_USER=postrec
 RABBITMQ_PASSWORD=postrec
-CELERY_BROKER_URL=pyamqp://postrec:postrec@rabbitmq:5672//
+CELERY_BROKER_URL=pyamqp://researchly:postrec@rabbitmq:5672//
 REDIS_URL=redis://redis:6379/0
 CELERY_RESULT_BACKEND=redis://redis:6379/1
 CACHE_ENABLED=true

@@ -7,3 +7,12 @@ scrape_configs:
     metrics_path: /metrics
     static_configs:
       - targets: ["api:8000"]
+        labels:
+          service_name: postrec-api
+
+  - job_name: postrec-worker
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["worker:9101"]
+        labels:
+          service_name: postrec-worker

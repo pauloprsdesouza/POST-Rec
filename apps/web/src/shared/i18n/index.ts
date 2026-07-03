@@ -8,7 +8,7 @@ import ptBR from "./locales/pt-BR.json";
 export const SUPPORTED_LOCALES = ["en-US", "es-ES", "pt-BR"] as const;
 export type AppLocale = (typeof SUPPORTED_LOCALES)[number];
 
-const STORAGE_KEY = "postrec.locale";
+const STORAGE_KEY = "researchly.locale";
 
 function normalizeLocale(raw: string | null | undefined): AppLocale {
   if (!raw) {

@@ -1,6 +1,6 @@
 {
   "uid": "postrec-ops",
-  "title": "POST-Rec Operations",
+  "title": "Researchly Operations",
   "tags": ["post-rec", "observability"],
   "timezone": "browser",
   "schemaVersion": 39,
@@ -111,7 +111,7 @@
     {
       "id": 5,
       "type": "logs",
-      "title": "POST-Rec Logs (Loki)",
+      "title": "Researchly Logs (Loki)",
       "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
       "gridPos": { "h": 10, "w": 24, "x": 0, "y": 20 },
       "targets": [

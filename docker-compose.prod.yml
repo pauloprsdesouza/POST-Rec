@@ -61,8 +61,8 @@ services:
       context: ./apps/web
       dockerfile: Dockerfile
       args:
-        VITE_API_BASE_URL: /postrec
-        VITE_BASE_PATH: /postrec
+        VITE_API_BASE_URL: /researchly
+        VITE_BASE_PATH: /researchly
     ports: !reset []
     networks:
       default:
@@ -111,6 +111,69 @@ services:
       coolify:
         aliases:
           - postrec-portainer-proxy
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: postrec-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./deploy/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - default
+
+  loki:
+    image: grafana/loki:3.4.2
+    container_name: postrec-loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - default
+
+  promtail:
+    image: grafana/promtail:3.4.2
+    container_name: postrec-promtail
+    restart: unless-stopped
+    volumes:
+      - ./deploy/observability/promtail-config.yaml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - default
+
+  grafana:
+    image: grafana/grafana:11.5.2
+    container_name: postrec-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: CmC3Hzi9Klu34V
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: https://paulorobertosouza.com.br/grafana/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      GF_SERVER_DOMAIN: paulorobertosouza.com.br
+    volumes:
+      - postrec_grafana_data:/var/lib/grafana
+      - ./deploy/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      default:
+
+  grafana-proxy:
+    build: ./deploy/grafana
+    container_name: postrec-grafana-proxy
+    restart: unless-stopped
+    depends_on:
+      - grafana
+    networks:
+      default:
+      coolify:
+        aliases:
+          - postrec-grafana-proxy
 
 networks:
   coolify:

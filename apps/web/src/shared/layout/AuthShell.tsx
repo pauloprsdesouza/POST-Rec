@@ -15,7 +15,10 @@ export function AuthShell({ children, online }: AuthShellProps) {
   return (
     <div className="auth-shell min-vh-100">
       <header className="auth-shell__topbar">
-        <span className="auth-shell__logo">{t("common.appName")}</span>
+        <span className="auth-shell__logo">
+          <span className="auth-shell__logo-mark" aria-hidden="true">R</span>
+          <span className="auth-shell__logo-text">{t("common.appName")}</span>
+        </span>
         <div className="auth-shell__topbar-actions">
           <ThemeToggle variant="navbar" />
           <LanguageSwitcher variant="navbar" />

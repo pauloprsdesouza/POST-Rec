@@ -6,29 +6,29 @@
   flex-direction: column;
   margin-inline: auto;
   max-width: 28rem;
-  padding: var(--postrec-space-12) var(--postrec-space-4);
+  padding: var(--researchly-space-12) var(--researchly-space-4);
   text-align: center;
 }
 
 .empty-state__art {
-  margin-bottom: var(--postrec-space-6);
+  margin-bottom: var(--researchly-space-6);
   max-width: 200px;
   width: 100%;
 }
 
 .empty-state__title {
-  font-size: var(--postrec-text-xl);
+  font-size: var(--researchly-text-xl);
   font-weight: 700;
   letter-spacing: -0.02em;
-  margin-bottom: var(--postrec-space-2);
+  margin-bottom: var(--researchly-space-2);
 }
 
 .empty-state__description {
-  color: var(--postrec-muted);
-  font-size: var(--postrec-text-base);
+  color: var(--researchly-muted);
+  font-size: var(--researchly-text-base);
   font-weight: 400;
-  line-height: var(--postrec-leading);
-  margin-bottom: var(--postrec-space-6);
+  line-height: var(--researchly-leading);
+  margin-bottom: var(--researchly-space-6);
 }
 
 .empty-state__action .btn {
@@ -43,18 +43,18 @@
 
 .runs-empty-hero {
   display: grid;
-  gap: var(--postrec-space-8);
+  gap: var(--researchly-space-8);
   margin-inline: auto;
   max-width: 36rem;
-  padding-block: var(--postrec-space-8);
+  padding-block: var(--researchly-space-8);
   text-align: center;
 }
 
 @media (min-width: 768px) {
   .runs-empty-hero {
-    gap: var(--postrec-space-10);
+    gap: var(--researchly-space-10);
     max-width: 40rem;
-    padding-block: var(--postrec-space-12);
+    padding-block: var(--researchly-space-12);
     text-align: left;
   }
 }
@@ -72,59 +72,59 @@
 }
 
 .runs-empty-hero__eyebrow {
-  color: var(--postrec-primary);
-  font-size: var(--postrec-text-sm);
+  color: var(--researchly-primary);
+  font-size: var(--researchly-text-sm);
   font-weight: 500;
   letter-spacing: 0;
-  margin-bottom: var(--postrec-space-2);
+  margin-bottom: var(--researchly-space-2);
   text-transform: none;
 }
 
 .runs-empty-hero__title {
-  font-size: clamp(1.5rem, 4vw, var(--postrec-text-2xl));
+  font-size: clamp(1.5rem, 4vw, var(--researchly-text-2xl));
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.15;
-  margin-bottom: var(--postrec-space-3);
+  margin-bottom: var(--researchly-space-3);
 }
 
 .runs-empty-hero__subtitle {
-  color: var(--postrec-muted);
-  font-size: var(--postrec-text-base);
+  color: var(--researchly-muted);
+  font-size: var(--researchly-text-base);
   font-weight: 400;
-  line-height: var(--postrec-leading);
-  margin-bottom: var(--postrec-space-6);
+  line-height: var(--researchly-leading);
+  margin-bottom: var(--researchly-space-6);
 }
 
 .runs-empty-hero__steps {
   display: flex;
   flex-direction: column;
-  gap: var(--postrec-space-4);
+  gap: var(--researchly-space-4);
   list-style: none;
-  margin: 0 0 var(--postrec-space-8);
+  margin: 0 0 var(--researchly-space-8);
   padding: 0;
   text-align: left;
 }
 
 .runs-empty-hero__step {
   align-items: flex-start;
-  color: var(--postrec-text-secondary);
+  color: var(--researchly-text-secondary);
   display: flex;
-  font-size: var(--postrec-text-sm);
+  font-size: var(--researchly-text-sm);
   font-weight: 400;
-  gap: var(--postrec-space-3);
-  line-height: var(--postrec-leading);
+  gap: var(--researchly-space-3);
+  line-height: var(--researchly-leading);
 }
 
 .runs-empty-hero__step-num {
   align-items: center;
-  background: var(--postrec-surface);
-  border: 1px solid var(--postrec-border);
-  border-radius: var(--postrec-radius-sm);
-  color: var(--postrec-muted);
+  background: var(--researchly-surface);
+  border: 1px solid var(--researchly-border);
+  border-radius: var(--researchly-radius-sm);
+  color: var(--researchly-muted);
   display: inline-flex;
   flex-shrink: 0;
-  font-size: var(--postrec-text-xs);
+  font-size: var(--researchly-text-xs);
   font-weight: 600;
   height: 1.5rem;
   justify-content: center;
@@ -135,7 +135,7 @@
   align-items: flex-start;
   display: flex;
   flex-direction: column;
-  gap: var(--postrec-space-3);
+  gap: var(--researchly-space-3);
 }
 
 @media (min-width: 768px) {
@@ -151,8 +151,8 @@
 
 .runs-empty-hero__link {
   align-self: center;
-  color: var(--postrec-muted);
-  font-size: var(--postrec-text-sm);
+  color: var(--researchly-muted);
+  font-size: var(--researchly-text-sm);
   font-weight: 500;
   text-decoration: none;
 }
@@ -164,6 +164,6 @@
 }
 
 .runs-empty-hero__link:hover {
-  color: var(--postrec-primary);
+  color: var(--researchly-primary);
   text-decoration: underline;
 }

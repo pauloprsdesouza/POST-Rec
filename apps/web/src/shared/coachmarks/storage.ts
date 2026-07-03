@@ -1,6 +1,6 @@
 import type { CoachMarkTourId } from "./types";
 
-const STORAGE_KEY = "postrec.coachmarks";
+const STORAGE_KEY = "researchly.coachmarks";
 
 interface CoachMarkStorage {
   completed: CoachMarkTourId[];

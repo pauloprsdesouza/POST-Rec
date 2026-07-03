@@ -1,6 +1,7 @@
 {
   "common": {
-    "appName": "POST-Rec",
+    "appName": "Researchly",
+    "appTagline": "Pesquise melhor",
     "loading": "Carregando…",
     "loadingRuns": "Carregando execuções…",
     "loadingInsights": "Carregando métricas…",
@@ -107,7 +108,7 @@
     "newRun": {
       "topics": {
         "title": "Tópicos iniciais",
-        "body": "Descreva o que você quer explorar. O POST-Rec usa esses tópicos para buscar e analisar artigos."
+        "body": "Descreva o que você quer explorar. O Researchly usa esses tópicos para buscar e analisar artigos."
       },
       "mode": {
         "title": "Modo de geração",
@@ -149,15 +150,15 @@
     "insights": {
       "overview": {
         "title": "Suas métricas de pesquisa",
-        "body": "Acompanhe taxas de aprovação, alinhamento e resultados das execuções ao usar o POST-Rec."
+        "body": "Acompanhe taxas de aprovação, alinhamento e resultados das execuções ao usar o Researchly."
       }
     }
   },
   "auth": {
-    "brandPanelLabel": "Sobre o POST-Rec",
+    "brandPanelLabel": "Sobre o Researchly",
     "eyebrow": "Para pesquisadores",
     "heroTitle": "Transforme a literatura na sua próxima ideia de pesquisa",
-    "heroSubtitle": "O POST-Rec busca artigos científicos reais, identifica lacunas na literatura e sugere direções com respaldo em evidências — em minutos.",
+    "heroSubtitle": "O Researchly busca artigos científicos reais, identifica lacunas na literatura e sugere direções com respaldo em evidências — em minutos.",
     "feature1": "Ideias baseadas em artigos reais de catálogos abertos",
     "feature2": "Recomendações personalizadas que aprendem com seu feedback",
     "feature3": "De tópicos iniciais a ideias prontas para revisão em uma execução",
@@ -208,14 +209,14 @@
   },
   "consent": {
     "pageTitle": "Configuração inicial",
-    "pageSubtitle": "Leia e aceite antes de usar o POST-Rec. Você não verá isso novamente — está sempre disponível no seu perfil.",
-    "intro": "O POST-Rec é uma <strong>ferramenta experimental de pesquisa</strong>. Ao continuar, você reconhece que:",
+    "pageSubtitle": "Leia e aceite antes de usar o Researchly. Você não verá isso novamente — está sempre disponível no seu perfil.",
+    "intro": "O Researchly é uma <strong>ferramenta experimental de pesquisa</strong>. Ao continuar, você reconhece que:",
     "acceptAndContinue": "Aceitar e continuar",
     "errorSave": "Não foi possível salvar o consentimento.",
     "panelTitle": "Consentimento de participação",
     "accepted": "Aceito",
     "pending": "Pendente",
-    "panelIntro": "O POST-Rec é uma <strong>ferramenta experimental de pesquisa</strong>. Ao participar, você reconhece que:",
+    "panelIntro": "O Researchly é uma <strong>ferramenta experimental de pesquisa</strong>. Ao participar, você reconhece que:",
     "acceptedOn": "Aceito em {{date}}",
     "version": "Versão {{version}}",
     "agreedTo": "Você concordou com:",
@@ -255,7 +256,7 @@
     "experience": "Experiência",
     "experienceAi": "IA",
     "experienceWriting": "Redação científica",
-    "goalLabel": "O que você espera do POST-Rec?",
+    "goalLabel": "O que você espera do Researchly?",
     "goalPlaceholder": "Encontrar ideias de pesquisa acionáveis que eu possa transformar em um artigo.",
     "saveResearchProfile": "Salvar perfil de pesquisa",
     "saveAndContinue": "Salvar e continuar",
@@ -307,7 +308,7 @@
     "generate": "Gerar recomendações",
     "generateHint": "Geralmente pronto em alguns minutos — avisaremos quando as ideias estiverem prontas.",
     "stickyHint": "Um toque para começar a gerar ideias",
-    "valueStripLabel": "Por que pesquisadores usam o POST-Rec",
+    "valueStripLabel": "Por que pesquisadores usam o Researchly",
     "valueEvidence": "Evidências de artigos reais",
     "valuePersonalized": "Aprende com seu feedback",
     "valueFast": "Pronto em minutos",
@@ -326,8 +327,8 @@
       "recommended": "Padrão",
       "auto": {
         "label": "Auto",
-        "shortHint": "Deixe o POST-Rec escolher o método de geração para esta execução.",
-        "hint": "Recomendado para a maioria — o POST-Rec escolhe o melhor pipeline automaticamente."
+        "shortHint": "Deixe o Researchly escolher o método de geração para esta execução.",
+        "hint": "Recomendado para a maioria — o Researchly escolhe o melhor pipeline automaticamente."
       },
       "quick": {
         "label": "Rápido",
@@ -358,7 +359,7 @@
     "subtitleStats": "{{total}} no total · {{active}} em andamento · {{completed}} prontas para revisar",
     "emptyHeroEyebrow": "Comece aqui",
     "emptyHeroTitle": "Gere suas primeiras ideias de pesquisa",
-    "emptyHeroSubtitle": "O POST-Rec busca artigos reais, encontra lacunas e sugere ideias que você pode transformar em pesquisa — em minutos.",
+    "emptyHeroSubtitle": "O Researchly busca artigos reais, encontra lacunas e sugere ideias que você pode transformar em pesquisa — em minutos.",
     "emptyHeroStep1": "Adicione alguns tópicos que deseja explorar",
     "emptyHeroStep2": "Buscamos e analisamos a literatura",
     "emptyHeroStep3": "Revise ideias com evidências e avalie o que ajuda",
@@ -469,7 +470,7 @@
     "notePlaceholderHint": "Opcional — contexto que pode melhorar execuções futuras.",
     "sectionNav": "Seções da ideia",
     "feedbackPromptTitle": "Ajude a melhorar sua próxima execução",
-    "feedbackPromptText": "Uma avaliação rápida (menos de um minuto) ajuda o POST-Rec a aprender o que funciona para você.",
+    "feedbackPromptText": "Uma avaliação rápida (menos de um minuto) ajuda o Researchly a aprender o que funciona para você.",
     "yourFeedback": "Seu feedback",
     "feedbackHint": "As avaliações melhoram sua próxima execução.",
     "feedbackSaved": "Salvo · alinhamento {{score}}",
@@ -617,7 +618,7 @@
   },
   "researchReport": {
     "title": "Relatório de pesquisa",
-    "subtitle": "A história de como o POST-Rec performou — escrita para revisores e coautores.",
+    "subtitle": "A história de como o Researchly performou — escrita para revisores e coautores.",
     "loading": "Gerando relatório de pesquisa…",
     "loadError": "Não foi possível carregar o relatório.",
     "unavailable": "Relatório indisponível.",
@@ -736,7 +737,7 @@
       "chapter3Title": "Os pesquisadores voltariam?",
       "chapter3Lead": "Após cada sessão, usuários responderam uma pesquisa curta sobre expectativas e reutilização.",
       "chapter4Title": "O ranking reflete a preferência do usuário?",
-      "chapter4Lead": "Verificamos se as ideias mais bem ranqueadas pelo POST-Rec são as que os usuários mais valorizaram.",
+      "chapter4Lead": "Verificamos se as ideias mais bem ranqueadas pelo Researchly são as que os usuários mais valorizaram.",
       "chapter5Title": "FGGV vs SOTA — quem venceu?",
       "chapter5Lead": "No experimento cego, alguns receberam FGGV e outros SOTA — sem saber qual método foi usado.",
       "chapter6Title": "Quão bem as ideias estão ancoradas na literatura?",
@@ -804,7 +805,7 @@
         "caution": "Baixa taxa de uso — ideias parecem exploratórias."
       },
       "rankingVerdict": {
-        "positive": "O ranking do POST-Rec reflete bem a preferência dos usuários (NDCG ≥ 0,7).",
+        "positive": "O ranking do Researchly reflete bem a preferência dos usuários (NDCG ≥ 0,7).",
         "neutral": "Ranking razoável, mas não perfeito (NDCG 0,5–0,7).",
         "caution": "Ranking diverge da preferência — lógica de ordenação pode precisar ajuste."
       },
@@ -836,19 +837,19 @@
   },
   "survey": {
     "title": "Feedback da sessão",
-    "subtitle": "Ajude-nos a melhorar o POST-Rec com uma breve pesquisa final.",
+    "subtitle": "Ajude-nos a melhorar o Researchly com uma breve pesquisa final.",
     "subtitleShort": "Dois toques — pronto.",
     "quickPrompt": "Como foi esta sessão?",
     "quickSatisfaction": "Satisfação geral",
-    "quickUseAgain": "Usaria o POST-Rec novamente?",
+    "quickUseAgain": "Usaria o Researchly novamente?",
     "quickSubmit": "Concluir",
     "autoSaveHint": "Salva automaticamente ao responder as duas perguntas.",
-    "sessionFeedbackIntro": "Suas respostas melhoram execuções futuras e nos ajudam a medir a utilidade do POST-Rec.",
+    "sessionFeedbackIntro": "Suas respostas melhoram execuções futuras e nos ajudam a medir a utilidade do Researchly.",
     "backToRuns": "Voltar às execuções",
     "thankYouShort": "Obrigado pelo feedback!",
     "expectationsMet": "Os resultados atenderam suas expectativas? ({{score}})",
     "wouldUseInPaper": "Você usaria alguma recomendação em um artigo real?",
-    "wouldUseAgain": "Usaria o POST-Rec novamente",
+    "wouldUseAgain": "Usaria o Researchly novamente",
     "wouldRecommend": "Recomendaria a um colega",
     "whatHelped": "O que mais ajudou?",
     "whatImprove": "O que poderia melhorar?",
@@ -957,7 +958,7 @@
     }
   },
   "transparency": {
-    "title": "Como o POST-Rec funciona",
+    "title": "Como o Researchly funciona",
     "subtitle": "Descrição formal de recuperação, pontuação, geração e feedback — para você entender exatamente como as recomendações são produzidas.",
     "tocLabel": "Nesta página",
     "sections": {
@@ -980,14 +981,14 @@
       "limitations": "Limitações e transparência"
     },
     "contributions": {
-      "intro": "O POST-Rec apresenta quatro componentes metodológicos explícitos:",
+      "intro": "O Researchly apresenta quatro componentes metodológicos explícitos:",
       "c1": "Pipeline de ideação fundamentado em SOTA — artefatos de landscape e matriz de lacunas antes da geração de propostas",
       "c2": "Modelo de recuperação híbrida — busca dual-pass no OpenAlex, relevância lexical, ranking BM25 + denso + pgvector e cotas por tier",
       "c3": "Facet-Grounded Gap Verification (FGGV) — mapas de facetas, alinhamento lacuna–faceta, novidade contrastiva por faceta e seleção por diversidade",
       "c4": "Avaliação online transparente — A/B cego ao vivo entre SOTA e FGGV com feedback de voluntários (EAS, originalidade, aprovação); harnesses offline para regressão em desenvolvimento"
     },
     "overview": {
-      "p1": "O POST-Rec é um recomendador de pesquisa fundamentado em literatura. Cada execução combina fontes bibliográficas abertas, filtragem determinística de relevância e um LLM restrito a citar apenas artigos recuperados.",
+      "p1": "O Researchly é um recomendador de pesquisa fundamentado em literatura. Cada execução combina fontes bibliográficas abertas, filtragem determinística de relevância e um LLM restrito a citar apenas artigos recuperados.",
       "p2": "O sistema separa quatro camadas:",
       "bullet1": "Recuperação dual-pass, ranking híbrido BM25 + denso + pgvector",
       "bullet2": "Geração multiestágio fundamentada em SOTA com verificação determinística",
@@ -995,7 +996,7 @@
       "bullet4": "Aprendizado em loop fechado a partir das suas avaliações (Expectation Alignment Score)"
     },
     "notation": {
-      "intro": "Símbolos usados na proposta (veja também papers/POST-Rec_Literature-Grounded_Research_Ideation.md):",
+      "intro": "Símbolos usados na proposta (veja também papers/Researchly_Literature-Grounded_Research_Ideation.md):",
       "colSymbol": "Símbolo",
       "colMeaning": "Significado",
       "expansionCaption": "Conjunto de tópicos expandido e conjunto de artigos retidos",
@@ -1069,13 +1070,13 @@
       "expansionCaption": "Conjunto de tópicos expandido para recuperação"
     },
     "retrieval": {
-      "p1": "O POST-Rec consulta estes catálogos abertos:",
+      "p1": "O Researchly consulta estes catálogos abertos:",
       "p2": "Resultados são mesclados, normalizados (título, resumo, DOI, ano, citações) e pontuados. Apenas os melhor ranqueados seguem para geração.",
       "dualPass": "Cada consulta executa dois passes: SOTA (artigos recentes) e foundation (clássicos altamente citados), mesclados com cota SOTA configurável.",
       "hybridNote": "Após embedding, artigos são re-ranqueados com BM25 + similaridade densa + pgvector; cotas de tier garantem ~{{quota}} de artigos SOTA-recentes no contexto final."
     },
     "sotaTiers": {
-      "intro": "O POST-Rec define estado da arte explicitamente como tier configurável — não um único benchmark da comunidade. Em cada execução:",
+      "intro": "O Researchly define estado da arte explicitamente como tier configurável — não um único benchmark da comunidade. Em cada execução:",
       "recent": "Tier SOTA-recente: artigos dos últimos {{years}} anos (sota_recent_years)",
       "seminal": "Tier foundation: clássicos com ≥ {{citations}} citações (sota_seminal_citation_threshold)",
       "quota": "O ranking híbrido garante ~{{quota}} das vagas do contexto final para o tier SOTA-recente (sota_tier_quota)",
@@ -1151,14 +1152,14 @@
       "modeNote": "Selecione o modo FGGV explicitamente ou use Auto para atribuição cega e persistente entre SOTA (controle) e FGGV (tratamento)."
     },
     "evaluation": {
-      "intro": "No sistema em produção, a avaliação é principalmente online: pesquisadores reais usam o POST-Rec, avaliam ideias e o feedback é agregado por variante experimental.",
+      "intro": "No sistema em produção, a avaliação é principalmente online: pesquisadores reais usam o Researchly, avaliam ideias e o feedback é agregado por variante experimental.",
       "online": "A/B cego online — modo Auto atribui buckets persistentes SOTA (controle) vs FGGV (tratamento); rótulos de método ocultos; EAS, originalidade e aprovação no painel de validação",
       "offline": "Harness offline (suplementar) — testes de regressão em tópicos golden para Quick (B1), SOTA (B2) e FGGV (M); apoia desenvolvimento, não validação principal",
       "expert": "Protocolo estendido com especialistas (planejado) — complementa avaliações de voluntários com julgamentos cegos de originalidade (docs/fggv-evaluation.md)",
       "docNote": "Artigo metodológico completo: papers/elsarticle/post-rec-ideation.tex (template Elsevier elsarticle)"
     },
     "feedback": {
-      "intro": "Ao avaliar uma ideia, o POST-Rec calcula um Expectation Alignment Score (EAS) na escala 1–5:",
+      "intro": "Ao avaliar uma ideia, o Researchly calcula um Expectation Alignment Score (EAS) na escala 1–5:",
       "easCaption": "Expectation Alignment Score (EAS)",
       "wouldUse": "O campo would-use-in-paper mapeia para W:",
       "wouldUseYes": "Sim → W = {{score}}",
@@ -1203,7 +1204,7 @@
     },
     "overview": {
       "title": "Visão operacional",
-      "subtitle": "Saúde e uso geral do POST-Rec",
+      "subtitle": "Saúde e uso geral do Researchly",
       "platform": "Métricas da plataforma",
       "users": "Usuários totais",
       "activeUsers": "Usuários ativos",

@@ -294,3 +294,4 @@ volumes:
   postrec_minio_data:
   postrec_evolution_instances:
   postrec_portainer_data:
+  postrec_grafana_data:

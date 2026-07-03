@@ -33,8 +33,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="POST-Rec API",
-    description="Paper-Oriented Scientific Topic Recommender",
+    title="Researchly API",
+    description="Research smarter — literature-grounded research ideas",
     version="0.1.0",
     lifespan=lifespan,
 )

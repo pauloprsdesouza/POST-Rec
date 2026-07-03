@@ -1,6 +1,6 @@
-# POST-Rec
+# Researchly
 
-**Paper-Oriented Scientific Topic Recommender** — research ideas grounded in retrieved literature, with verified novelty scoring and volunteer validation.
+**Research smarter** — literature-grounded research ideas with verified novelty — research ideas grounded in retrieved literature, with verified novelty scoring and volunteer validation.
 
 ## Features
 
@@ -35,8 +35,8 @@
 ### 1. Clone and configure
 
 ```powershell
-git clone https://github.com/pauloprsdesouza/POST-Rec.git
-cd POST-Rec
+git clone https://github.com/pauloprsdesouza/Researchly.git
+cd Researchly
 copy .env.example .env
 # Edit .env: DATABASE_URL, RabbitMQ, Redis, GEMINI_API_KEY
 ```
@@ -79,7 +79,7 @@ npm run dev
 
 ### Docker (recommended when homelab is offline)
 
-POST-Rec needs **PostgreSQL + pgvector**, **Redis**, **RabbitMQ**, and **MinIO**. All are included in `docker-compose.yml`.
+Researchly needs **PostgreSQL + pgvector**, **Redis**, **RabbitMQ**, and **MinIO**. All are included in `docker-compose.yml`.
 
 **Option A — infrastructure only** (run API/worker/web on the host):
 

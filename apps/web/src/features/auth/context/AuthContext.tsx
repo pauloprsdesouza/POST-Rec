@@ -11,7 +11,7 @@ import {
 import { profileService, sessionService, authService } from "@/shared/api";
 import type { AuthResponse, UserRole } from "@/shared/types/api";
 
-const STORAGE_KEY = "postrec.auth";
+const STORAGE_KEY = "researchly.auth";
 
 export interface AuthUser {
   userId: string;

@@ -1,6 +1,6 @@
 export type ThemePreference = "light" | "dark" | "system";
 
-const STORAGE_KEY = "postrec-theme";
+const STORAGE_KEY = "researchly-theme";
 
 export function getStoredTheme(): ThemePreference {
   try {

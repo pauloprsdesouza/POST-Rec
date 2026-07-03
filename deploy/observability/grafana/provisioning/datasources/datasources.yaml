@@ -10,7 +10,7 @@ datasources:
     type: loki
     access: proxy
     url: http://loki:3100
-  - name: POST-Rec PostgreSQL
+  - name: Researchly PostgreSQL
     type: grafana-postgresql-datasource
     uid: postrec-postgres
     access: proxy

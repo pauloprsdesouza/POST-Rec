@@ -40,8 +40,8 @@
 .coach-mark__ring {
   border: 2px solid rgba(255, 255, 255, 0.95);
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--postrec-primary) 55%, transparent),
-    0 0 0 6px color-mix(in srgb, var(--postrec-primary) 16%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--researchly-primary) 55%, transparent),
+    0 0 0 6px color-mix(in srgb, var(--researchly-primary) 16%, transparent);
   pointer-events: none;
   position: fixed;
   transition:
@@ -60,20 +60,20 @@
 @keyframes coach-mark-ring-pulse {
   0% {
     box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--postrec-primary) 55%, transparent),
-      0 0 0 6px color-mix(in srgb, var(--postrec-primary) 16%, transparent);
+      0 0 0 1px color-mix(in srgb, var(--researchly-primary) 55%, transparent),
+      0 0 0 6px color-mix(in srgb, var(--researchly-primary) 16%, transparent);
   }
 
   45% {
     box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--postrec-primary) 70%, transparent),
-      0 0 0 12px color-mix(in srgb, var(--postrec-primary) 24%, transparent);
+      0 0 0 1px color-mix(in srgb, var(--researchly-primary) 70%, transparent),
+      0 0 0 12px color-mix(in srgb, var(--researchly-primary) 24%, transparent);
   }
 
   100% {
     box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--postrec-primary) 55%, transparent),
-      0 0 0 6px color-mix(in srgb, var(--postrec-primary) 16%, transparent);
+      0 0 0 1px color-mix(in srgb, var(--researchly-primary) 55%, transparent),
+      0 0 0 6px color-mix(in srgb, var(--researchly-primary) 16%, transparent);
   }
 }
 
@@ -82,13 +82,13 @@
 }
 
 .coach-mark__popover {
-  background: var(--postrec-surface);
-  border: 1px solid var(--postrec-border);
-  border-radius: var(--postrec-radius-lg);
-  box-shadow: var(--postrec-shadow-lg);
+  background: var(--researchly-surface);
+  border: 1px solid var(--researchly-border);
+  border-radius: var(--researchly-radius-lg);
+  box-shadow: var(--researchly-shadow-lg);
   max-width: 19rem;
   opacity: 0;
-  padding: var(--postrec-space-5);
+  padding: var(--researchly-space-5);
   position: fixed;
   transform: translateY(6px);
   transition:
@@ -124,14 +124,14 @@
 }
 
 .coach-mark__popover--docked {
-  border-radius: var(--postrec-radius-lg) var(--postrec-radius-lg) var(--postrec-radius) var(--postrec-radius);
+  border-radius: var(--researchly-radius-lg) var(--researchly-radius-lg) var(--researchly-radius) var(--researchly-radius);
   max-width: none;
   width: auto;
 }
 
 .coach-mark__arrow {
-  background: var(--postrec-surface);
-  border: 1px solid var(--postrec-border);
+  background: var(--researchly-surface);
+  border: 1px solid var(--researchly-border);
   height: 0.8rem;
   position: absolute;
   width: 0.8rem;
@@ -169,9 +169,9 @@
 .coach-mark__header {
   align-items: center;
   display: flex;
-  gap: var(--postrec-space-3);
+  gap: var(--researchly-space-3);
   justify-content: space-between;
-  margin-bottom: var(--postrec-space-3);
+  margin-bottom: var(--researchly-space-3);
 }
 
 .coach-mark__dots {
@@ -182,8 +182,8 @@
 }
 
 .coach-mark__dot {
-  background: var(--postrec-border-subtle);
-  border-radius: var(--postrec-radius-pill);
+  background: var(--researchly-border-subtle);
+  border-radius: var(--researchly-radius-pill);
   display: inline-block;
   height: 0.35rem;
   transition:
@@ -193,18 +193,18 @@
 }
 
 .coach-mark__dot--active {
-  background: var(--postrec-primary);
+  background: var(--researchly-primary);
   width: 1.1rem;
 }
 
 .coach-mark__dot--done {
-  background: color-mix(in srgb, var(--postrec-primary) 45%, var(--postrec-border-subtle));
+  background: color-mix(in srgb, var(--researchly-primary) 45%, var(--researchly-border-subtle));
 }
 
 .coach-mark__progress {
-  color: var(--postrec-muted);
+  color: var(--researchly-muted);
   flex-shrink: 0;
-  font-size: var(--postrec-text-xs);
+  font-size: var(--researchly-text-xs);
   font-weight: 600;
   letter-spacing: 0.03em;
   margin: 0;
@@ -229,47 +229,47 @@
 }
 
 .coach-mark__title {
-  font-size: var(--postrec-text-base);
+  font-size: var(--researchly-text-base);
   font-weight: 700;
-  line-height: var(--postrec-leading-tight);
-  margin-bottom: var(--postrec-space-2);
+  line-height: var(--researchly-leading-tight);
+  margin-bottom: var(--researchly-space-2);
 }
 
 .coach-mark__body {
-  color: var(--postrec-muted);
-  font-size: var(--postrec-text-sm);
-  line-height: var(--postrec-leading);
-  margin-bottom: var(--postrec-space-4);
+  color: var(--researchly-muted);
+  font-size: var(--researchly-text-sm);
+  line-height: var(--researchly-leading);
+  margin-bottom: var(--researchly-space-4);
 }
 
 .coach-mark__actions {
   align-items: center;
   display: flex;
-  gap: var(--postrec-space-3);
+  gap: var(--researchly-space-3);
   justify-content: space-between;
 }
 
 .coach-mark__skip {
   background: none;
   border: none;
-  color: var(--postrec-muted);
+  color: var(--researchly-muted);
   cursor: pointer;
   flex-shrink: 0;
-  font-size: var(--postrec-text-sm);
+  font-size: var(--researchly-text-sm);
   padding: 0;
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }
 
 .coach-mark__skip:hover {
-  color: var(--postrec-text);
+  color: var(--researchly-text);
 }
 
 .coach-mark__nav {
   align-items: center;
   display: flex;
   flex-shrink: 0;
-  gap: var(--postrec-space-2);
+  gap: var(--researchly-space-2);
   margin-left: auto;
 }
 

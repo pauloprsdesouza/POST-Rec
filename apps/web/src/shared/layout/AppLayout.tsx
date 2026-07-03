@@ -4,7 +4,6 @@ import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useCoachMarks } from "@/shared/coachmarks/CoachMarkProvider";
-import { useApiHealth } from "@/shared/hooks/useApiHealth";
 import { LanguageSwitcher } from "@/shared/ui/LanguageSwitcher";
 import { ThemeToggle } from "@/shared/ui/ThemeToggle";
 import { MobileBottomNav } from "./MobileBottomNav";
@@ -20,23 +19,22 @@ export function AppLayout() {
   const { t } = useTranslation();
   const { user, signOut, consentDone, profileDone, isAdmin } = useAuth();
   const { startTourForCurrentPage, resetTours } = useCoachMarks();
-  const online = useApiHealth();
   const navigate = useNavigate();
 
   const setupComplete = consentDone && profileDone;
   const setupHref = !consentDone ? "/consent" : "/profile?tab=research";
   const displayName = user?.fullName?.split(" ")[0] ?? t("common.researcher");
 
-  const apiTitle =
-    online === null ? t("common.apiChecking") : online ? t("common.apiOnline") : t("common.apiOffline");
-
   return (
     <>
       <Navbar expand="lg" className="app-navbar sticky-top">
         <div className="container-fluid container-lg">
           <Navbar.Brand as={Link} to="/" className="app-brand">
-            <span className="app-brand__mark">P</span>
-            <span className="app-brand__text">{t("common.appName")}</span>
+            <span className="app-brand__mark" aria-hidden="true">R</span>
+            <span className="app-brand__lockup">
+              <span className="app-brand__text">{t("common.appName")}</span>
+              <span className="app-brand__tagline">{t("common.appTagline")}</span>
+            </span>
           </Navbar.Brand>
 
           <Navbar.Toggle aria-controls="main-nav" />
@@ -71,15 +69,6 @@ export function AppLayout() {
             <div className="d-flex align-items-center gap-2 py-2 py-lg-0">
               <ThemeToggle variant="navbar" />
               <LanguageSwitcher variant="navbar" />
-
-              <span
-                className={`api-pill ${online ? "api-pill--online" : online === false ? "api-pill--offline" : ""}`}
-                title={apiTitle}
-                aria-label={apiTitle}
-              >
-                <span className="api-pill__dot" aria-hidden />
-                <span className="api-pill__label d-none d-xl-inline">{apiTitle}</span>
-              </span>
 
               <Dropdown align="end" className="user-dropdown">
                 <Dropdown.Toggle variant="link" className="user-dropdown__toggle text-decoration-none">

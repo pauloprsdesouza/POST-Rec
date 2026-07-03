@@ -3,7 +3,7 @@
 // Validation metrics dashboard — panel grouping, flat metrics.
 
 .insights-page .page-stack {
-  gap: var(--postrec-space-8);
+  gap: var(--researchly-space-8);
 }
 
 .insight-section {
@@ -11,22 +11,22 @@
 }
 
 .insight-section.panel {
-  padding: var(--postrec-space-5);
+  padding: var(--researchly-space-5);
 }
 
 @media (min-width: 768px) {
   .insight-section.panel {
-    padding: var(--postrec-space-6);
+    padding: var(--researchly-space-6);
   }
 }
 
 .insight-section .panel__header {
-  margin-bottom: var(--postrec-space-4);
+  margin-bottom: var(--researchly-space-4);
 }
 
 .insight-section__grid {
   display: grid;
-  gap: var(--postrec-space-2);
+  gap: var(--researchly-space-2);
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -37,9 +37,9 @@
 }
 
 .insight-metric {
-  background: var(--postrec-surface);
-  border: 1px solid var(--postrec-border-subtle);
-  border-radius: var(--postrec-radius);
+  background: var(--researchly-surface);
+  border: 1px solid var(--researchly-border-subtle);
+  border-radius: var(--researchly-radius);
   box-shadow: none;
   display: flex;
   flex-direction: column;
@@ -47,11 +47,11 @@
   min-height: 5rem;
   min-width: 0;
   overflow: hidden;
-  padding: var(--postrec-space-4);
+  padding: var(--researchly-space-4);
 }
 
 .insight-metric--highlight {
-  border-color: color-mix(in srgb, var(--postrec-primary) 30%, var(--postrec-border-subtle));
+  border-color: color-mix(in srgb, var(--researchly-primary) 30%, var(--researchly-border-subtle));
 }
 
 .insight-metric__label {
@@ -60,7 +60,7 @@
 }
 
 .insight-metric__value {
-  color: var(--postrec-text);
+  color: var(--researchly-text);
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.02em;

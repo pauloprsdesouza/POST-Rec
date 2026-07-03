@@ -1,12 +1,12 @@
 {
   "domain": "paulorobertosouza.com.br",
   "apps": {
-    "postrec": {
-      "title": "POST-Rec",
-      "description": "Paper-Oriented Scientific Topic Recommender",
+    "researchly": {
+      "title": "Researchly",
+      "description": "Research smarter — ideas grounded in real literature",
       "service_host": "postrec-web",
       "service_port": 80,
-      "base_path": "/postrec"
+      "base_path": "/researchly"
     },
     "evolution": {
       "title": "Evolution API",
@@ -24,6 +24,13 @@
       "service_port": 80,
       "base_path": "/portainer",
       "root_paths": ["/locales", "/api"]
+    },
+    "grafana": {
+      "title": "Grafana",
+      "description": "Metrics, logs, and Researchly operations dashboards",
+      "service_host": "postrec-grafana-proxy",
+      "service_port": 80,
+      "base_path": "/grafana"
     }
   }
 }

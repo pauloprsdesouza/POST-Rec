@@ -80,7 +80,7 @@ def main() -> int:
     parser.add_argument("--key-file", default=os.environ.get("HOSTINGER_SSH_KEY"))
     parser.add_argument("--remote-dir", default="/opt/post-rec")
     parser.add_argument("--domain", default=DOMAIN)
-    parser.add_argument("--app", default="postrec", help="Primary app name in registry")
+    parser.add_argument("--app", default="researchly", help="Primary app name in registry")
     parser.add_argument("--upload-project", action="store_true")
     args = parser.parse_args()
 
@@ -157,7 +157,7 @@ def main() -> int:
     print("PATH-BASED ROUTING DEPLOYED")
     print("=" * 60)
     print(f"Home:        https://{args.domain}/")
-    print(f"POST-Rec:    https://{args.domain}/postrec")
+    print(f"Researchly:    https://{args.domain}/researchly")
     print(f"Evolution:   https://{args.domain}/evolution/manager")
     print(f"Unknown app: https://{args.domain}/<name> -> 404 if not in registry")
     print()

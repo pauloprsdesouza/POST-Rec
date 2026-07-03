@@ -1,15 +1,15 @@
 // Light frosted top bar — modern SaaS pattern (Linear, Notion, Stripe).
 
 .app-navbar {
-  background: var(--postrec-nav-bg) !important;
-  border-bottom: 1px solid var(--postrec-nav-border);
+  background: var(--researchly-nav-bg) !important;
+  border-bottom: 1px solid var(--researchly-nav-border);
   box-shadow: none;
-  min-height: var(--postrec-nav-height);
+  min-height: var(--researchly-nav-height);
   padding-block: 0.375rem;
 }
 
 .app-navbar .navbar-toggler {
-  border-color: var(--postrec-border);
+  border-color: var(--researchly-border);
   padding: 0.375rem 0.5rem;
 }
 
@@ -28,64 +28,89 @@
 
 .app-brand__mark {
   align-items: center;
-  background: var(--postrec-primary);
-  border: 1px solid var(--postrec-primary-dark);
-  border-radius: var(--postrec-radius-sm);
-  box-shadow: none;
-  color: var(--postrec-on-primary);
+  background: linear-gradient(135deg, var(--researchly-primary) 0%, var(--researchly-accent-soft) 100%);
+  border: none;
+  border-radius: var(--researchly-radius-sm);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--researchly-primary) 35%, transparent);
+  color: var(--researchly-on-primary);
   display: inline-flex;
-  font-size: 0.875rem;
-  font-weight: 700;
-  height: 1.875rem;
+  flex-shrink: 0;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  height: 2rem;
   justify-content: center;
-  width: 1.875rem;
+  width: 2rem;
+}
+
+.app-brand__lockup {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.15;
+  min-width: 0;
 }
 
 .app-brand__text {
-  color: var(--postrec-text);
+  color: var(--researchly-text);
   font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.app-brand__tagline {
+  color: var(--researchly-muted-light);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 991.98px) {
+  .app-brand__tagline {
+    display: none;
+  }
 }
 
 .app-nav .nav-link {
-  border-radius: var(--postrec-radius-sm);
-  color: var(--postrec-muted) !important;
-  font-size: var(--postrec-text-sm);
+  border-radius: var(--researchly-radius-sm);
+  color: var(--researchly-muted) !important;
+  font-size: var(--researchly-text-sm);
   font-weight: 500;
   margin-inline: 0.125rem;
   padding: 0.4375rem 0.875rem !important;
   transition:
-    background var(--postrec-duration) var(--postrec-ease),
-    color var(--postrec-duration) var(--postrec-ease);
+    background var(--researchly-duration) var(--researchly-ease),
+    color var(--researchly-duration) var(--researchly-ease);
 }
 
 .app-nav .nav-link:hover {
-  background: var(--postrec-surface-hover);
-  color: var(--postrec-text) !important;
+  background: var(--researchly-surface-hover);
+  color: var(--researchly-text) !important;
 }
 
 .app-nav .nav-link.active {
-  background: var(--postrec-primary-light);
-  color: var(--postrec-primary) !important;
+  background: var(--researchly-primary-light);
+  color: var(--researchly-primary) !important;
   font-weight: 600;
 }
 
 .app-nav__setup-link {
-  background: var(--postrec-warning-bg) !important;
-  color: var(--postrec-warning) !important;
+  background: var(--researchly-warning-bg) !important;
+  color: var(--researchly-warning) !important;
   font-weight: 600;
 }
 
 .app-nav__setup-link:hover {
-  background: var(--postrec-warning-bg) !important;
-  color: var(--postrec-warning) !important;
+  background: var(--researchly-warning-bg) !important;
+  color: var(--researchly-warning) !important;
   filter: brightness(0.97);
 }
 
 .api-pill {
   align-items: center;
-  background: var(--postrec-surface-muted);
-  border: 1px solid var(--postrec-border);
-  border-radius: var(--postrec-radius-pill);
+  background: var(--researchly-surface-muted);
+  border: 1px solid var(--researchly-border);
+  border-radius: var(--researchly-radius-pill);
   display: inline-flex;
   font-size: 0.6875rem;
   font-weight: 600;
@@ -95,47 +120,47 @@
 }
 
 .api-pill__dot {
-  background: var(--postrec-muted-light);
-  border-radius: var(--postrec-radius-pill);
+  background: var(--researchly-muted-light);
+  border-radius: var(--researchly-radius-pill);
   flex-shrink: 0;
   height: 0.4375rem;
   width: 0.4375rem;
 }
 
 .api-pill__label {
-  color: var(--postrec-muted);
+  color: var(--researchly-muted);
   letter-spacing: 0.01em;
 }
 
 .api-pill--online {
-  background: var(--postrec-success-bg);
-  border-color: var(--postrec-success-border);
+  background: var(--researchly-success-bg);
+  border-color: var(--researchly-success-border);
 }
 
 .api-pill--online .api-pill__dot {
-  background: var(--postrec-success);
+  background: var(--researchly-success);
 }
 
 .api-pill--online .api-pill__label {
-  color: var(--postrec-success);
+  color: var(--researchly-success);
 }
 
 .api-pill--offline {
-  background: var(--postrec-danger-bg);
-  border-color: var(--postrec-danger-border);
+  background: var(--researchly-danger-bg);
+  border-color: var(--researchly-danger-border);
 }
 
 .api-pill--offline .api-pill__dot {
-  background: var(--postrec-danger);
+  background: var(--researchly-danger);
 }
 
 .api-pill--offline .api-pill__label {
-  color: var(--postrec-danger);
+  color: var(--researchly-danger);
 }
 
 .user-dropdown__toggle {
   align-items: center;
-  color: var(--postrec-text) !important;
+  color: var(--researchly-text) !important;
   display: flex !important;
   gap: 0.5rem;
   padding: 0.25rem 0.5rem !important;
@@ -148,10 +173,10 @@
 
 .user-dropdown__avatar {
   align-items: center;
-  background: var(--postrec-primary-light);
-  border: 1px solid var(--postrec-primary-subtle);
+  background: var(--researchly-primary-light);
+  border: 1px solid var(--researchly-primary-subtle);
   border-radius: 50%;
-  color: var(--postrec-primary);
+  color: var(--researchly-primary);
   display: inline-flex;
   font-size: 0.8125rem;
   font-weight: 700;
@@ -161,15 +186,15 @@
 }
 
 .user-dropdown__name {
-  color: var(--postrec-text-secondary);
-  font-size: var(--postrec-text-sm);
+  color: var(--researchly-text-secondary);
+  font-size: var(--researchly-text-sm);
   font-weight: 600;
 }
 
 .user-dropdown__menu {
-  background: var(--postrec-surface);
-  border: 1px solid var(--postrec-border);
-  border-radius: var(--postrec-radius);
+  background: var(--researchly-surface);
+  border: 1px solid var(--researchly-border);
+  border-radius: var(--researchly-radius);
   box-shadow: none;
   min-width: 220px;
   padding: 0.375rem;
@@ -180,6 +205,6 @@
 }
 
 .user-dropdown__email {
-  color: var(--postrec-muted);
-  font-size: var(--postrec-text-xs);
+  color: var(--researchly-muted);
+  font-size: var(--researchly-text-xs);
 }

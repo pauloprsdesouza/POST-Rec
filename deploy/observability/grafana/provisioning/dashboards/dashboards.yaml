@@ -1,11 +1,11 @@
 apiVersion: 1
 
 providers:
-  - name: POST-Rec
+  - name: Researchly
     orgId: 1
-    folder: POST-Rec
+    folder: Researchly
     type: file
     disableDeletion: false
     updateIntervalSeconds: 30
     options:
-      path: /etc/grafana/provisioning/dashboards/json
+      path: /var/lib/grafana/dashboards
