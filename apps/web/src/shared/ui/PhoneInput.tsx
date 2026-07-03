@@ -3,8 +3,17 @@ import { Form } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 
 import { getCountryByIso, phoneCountriesForSelect } from "@/shared/constants/phoneCountries";
-import { composePhone, defaultPhoneCountryIso, parseStoredPhone } from "@/shared/utils/phoneNumber";
+import {
+  composePhone,
+  defaultPhoneCountryIso,
+  normalizeNationalNumber,
+  parseStoredPhone,
+} from "@/shared/utils/phoneNumber";
 import { CountryFlag } from "@/shared/ui/CountryFlag";
+
+function phoneDigits(value: string | null | undefined): string {
+  return (value ?? "").replace(/\D/g, "");
+}
 
 interface PhoneInputProps {
   id?: string;
@@ -28,20 +37,27 @@ export function PhoneInput({
   const { t, i18n } = useTranslation();
   const menuId = useId();
   const pickerRef = useRef<HTMLDivElement>(null);
+  const lastEmittedRef = useRef<string | null>(null);
   const fallbackIso = useMemo(() => defaultPhoneCountryIso(i18n.language), [i18n.language]);
   const countries = useMemo(() => phoneCountriesForSelect(), []);
 
-  const parsed = useMemo(() => parseStoredPhone(value, fallbackIso), [value, fallbackIso]);
-  const [countryIso, setCountryIso] = useState(parsed.countryIso);
-  const [nationalNumber, setNationalNumber] = useState(parsed.nationalNumber);
+  const [countryIso, setCountryIso] = useState(() => parseStoredPhone(value, fallbackIso).countryIso);
+  const [nationalNumber, setNationalNumber] = useState(
+    () => parseStoredPhone(value, fallbackIso).nationalNumber,
+  );
   const [open, setOpen] = useState(false);
 
   const selectedCountry = getCountryByIso(countryIso);
 
+  // Sync from parent only when value changes externally (e.g. profile load).
   useEffect(() => {
+    if (phoneDigits(value) === phoneDigits(lastEmittedRef.current)) {
+      return;
+    }
+    const parsed = parseStoredPhone(value, fallbackIso);
     setCountryIso(parsed.countryIso);
     setNationalNumber(parsed.nationalNumber);
-  }, [parsed.countryIso, parsed.nationalNumber]);
+  }, [value, fallbackIso]);
 
   useEffect(() => {
     if (!open) {
@@ -66,12 +82,16 @@ export function PhoneInput({
   }, [open]);
 
   const emitChange = (iso: string, national: string) => {
-    onChange(composePhone(iso, national));
+    const composed = composePhone(iso, national);
+    lastEmittedRef.current = composed;
+    onChange(composed);
   };
 
   const selectCountry = (iso: string) => {
+    const normalized = normalizeNationalNumber(iso, nationalNumber);
     setCountryIso(iso);
-    emitChange(iso, nationalNumber);
+    setNationalNumber(normalized);
+    emitChange(iso, normalized);
     setOpen(false);
   };
 
@@ -129,9 +149,9 @@ export function PhoneInput({
         placeholder={placeholder}
         autoComplete={autoComplete}
         onChange={(event) => {
-          const next = event.target.value.replace(/[^\d\s()-]/g, "");
-          setNationalNumber(next);
-          emitChange(countryIso, next);
+          const normalized = normalizeNationalNumber(countryIso, event.target.value);
+          setNationalNumber(normalized);
+          emitChange(countryIso, normalized);
         }}
       />
     </div>
