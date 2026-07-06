@@ -86,7 +86,7 @@ def render_run_completed_email(
     safe_topics = escape(topic_line)
     body_html = (
         f'<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:{_TEXT_SECONDARY};">'
-        f"<strong style=\"color:{_TEXT};\">{recommendation_count}</strong> research ideas are ready for you."
+        f'<strong style="color:{_TEXT};">{recommendation_count}</strong> research ideas are ready for you.'
         f"</p>"
         f'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" '
         f'style="background:{_SUCCESS_BG};border:1px solid {_SUCCESS_BORDER};border-radius:12px;margin:0 0 8px;">'

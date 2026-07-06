@@ -15,9 +15,7 @@ def check_readiness(db: Session, settings: Settings | None = None) -> dict[str, 
 
     try:
         db.execute(text("SELECT 1"))
-        ext = db.execute(
-            text("SELECT extversion FROM pg_extension WHERE extname = 'vector'")
-        ).scalar()
+        ext = db.execute(text("SELECT extversion FROM pg_extension WHERE extname = 'vector'")).scalar()
         checks["postgres"] = "ok" if ext else "fail: pgvector extension missing"
         if ext:
             checks["pgvector"] = f"ok ({ext})"

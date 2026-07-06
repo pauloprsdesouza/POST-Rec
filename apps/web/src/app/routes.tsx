@@ -31,6 +31,16 @@ const RunDetailPage = lazy(() =>
 const RunsPage = lazy(() =>
   import("@/features/runs/pages/RunsPage").then((module) => ({ default: module.RunsPage })),
 );
+const ProjectsPage = lazy(() =>
+  import("@/features/projects/pages/ProjectsPage").then((module) => ({
+    default: module.ProjectsPage,
+  })),
+);
+const ProjectWorkspacePage = lazy(() =>
+  import("@/features/projects/pages/ProjectWorkspacePage").then((module) => ({
+    default: module.ProjectWorkspacePage,
+  })),
+);
 const TransparencyPage = lazy(() =>
   import("@/features/transparency/pages/TransparencyPage").then((module) => ({
     default: module.TransparencyPage,
@@ -149,6 +159,22 @@ export function AppRoutes() {
             element={
               <ProtectedRoute requireConsent requireProfile>
                 <RunsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:projectId"
+            element={
+              <ProtectedRoute requireConsent requireProfile>
+                <ProjectWorkspacePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects"
+            element={
+              <ProtectedRoute requireConsent requireProfile>
+                <ProjectsPage />
               </ProtectedRoute>
             }
           />

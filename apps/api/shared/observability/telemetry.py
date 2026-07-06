@@ -46,9 +46,7 @@ def _setup_traces(resource, endpoint: str, insecure: bool, app: FastAPI | None) 
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
     provider = TracerProvider(resource=resource)
-    provider.add_span_processor(
-        BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint, insecure=insecure))
-    )
+    provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint, insecure=insecure)))
     trace.set_tracer_provider(provider)
 
     if app is not None:

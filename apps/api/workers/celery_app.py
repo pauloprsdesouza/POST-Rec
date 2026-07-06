@@ -42,6 +42,7 @@ def validate_worker_embedding_configuration(**_kwargs) -> None:
 
     logger.info("worker_embedding_model_validated", model=current.gemini_embedding_model)
 
+
 celery_app = Celery(
     "postrec",
     broker=settings.celery_broker_url,

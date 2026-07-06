@@ -239,7 +239,7 @@ function scoreLayout(
   return score;
 }
 
-export function shouldUseDockedPopover(_target: TargetRect, _insets: ViewportInsets): boolean {
+export function shouldUseDockedPopover(): boolean {
   return window.innerWidth < MOBILE_SHEET_BREAKPOINT;
 }
 
@@ -286,7 +286,7 @@ export function computePopoverLayout(
   popoverWidth = DEFAULT_POPOVER_WIDTH,
   popoverHeight = DEFAULT_POPOVER_HEIGHT,
 ): PopoverLayout {
-  if (shouldUseDockedPopover(target, insets)) {
+  if (shouldUseDockedPopover()) {
     return computeDockedLayout(insets, popoverHeight, target);
   }
 

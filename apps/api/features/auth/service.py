@@ -7,6 +7,7 @@ import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
@@ -35,6 +36,7 @@ class OtpDeliveryRequest:
     phone: str | None
     use_whatsapp: bool
     otp_ttl_minutes: int
+
 
 class AuthError(Exception):
     pass
@@ -116,12 +118,7 @@ class AuthService:
             raise AuthError("Invalid or expired token") from exc
 
     def _check_rate_limit(self, db: Session, email: str, now: datetime, resend_seconds: int) -> None:
-        latest = (
-            db.query(AuthOtpChallenge)
-            .filter_by(email=email)
-            .order_by(AuthOtpChallenge.created_at.desc())
-            .first()
-        )
+        latest = db.query(AuthOtpChallenge).filter_by(email=email).order_by(AuthOtpChallenge.created_at.desc()).first()
         if latest and latest.created_at:
             created = latest.created_at
             if created.tzinfo is None:
@@ -187,7 +184,6 @@ class AuthService:
         phone: str | None = None,
         whatsapp_opt_in: bool = False,
     ) -> tuple[int, OtpDeliveryRequest]:
-        settings = get_settings()
         otp_length, otp_ttl_minutes, resend_seconds, max_attempts = self._otp_settings()
         now = datetime.now(UTC)
         normalized_email = normalize_email(email)
@@ -359,6 +355,7 @@ class AuthService:
             phone=user.phone_number,
             whatsapp_opt_in=user.whatsapp_opt_in,
         )
+
     def verify_otp(self, db: Session, *, email: str, code: str) -> tuple[User, str]:
         normalized_email = normalize_email(email)
         user = db.query(User).filter_by(email=normalized_email).first()

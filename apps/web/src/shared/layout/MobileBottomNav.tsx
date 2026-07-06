@@ -7,8 +7,8 @@ import { NavIcon } from "@/shared/ui/NavIcons";
 
 type BottomNavItem = {
   to: string;
-  labelKey: "nav.runs" | "nav.new" | "nav.admin" | "nav.profile";
-  icon: "runs" | "new" | "insights" | "profile";
+  labelKey: "nav.runs" | "nav.projects" | "nav.new" | "nav.admin" | "nav.profile";
+  icon: "runs" | "projects" | "new" | "insights" | "profile";
   match: (path: string) => boolean;
   primary: boolean;
 };
@@ -26,6 +26,13 @@ export function MobileBottomNav() {
         labelKey: "nav.runs",
         icon: "runs",
         match: (path: string) => path === "/runs" || /^\/runs\/[^/]+/.test(path),
+        primary: false,
+      },
+      {
+        to: "/projects",
+        labelKey: "nav.projects",
+        icon: "projects",
+        match: (path: string) => path === "/projects" || path.startsWith("/projects/"),
         primary: false,
       },
       {

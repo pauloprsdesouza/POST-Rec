@@ -22,13 +22,11 @@ def _otp_digits_html(code: str) -> str:
     for digit in code:
         cells.append(
             f'<td style="width:44px;height:52px;text-align:center;vertical-align:middle;'
-            f'background:{_PRIMARY_LIGHT};border:1px solid #c7d2fe;border-radius:10px;'
-            f'font-family:Consolas,Monaco,monospace;font-size:28px;font-weight:700;'
+            f"background:{_PRIMARY_LIGHT};border:1px solid #c7d2fe;border-radius:10px;"
+            f"font-family:Consolas,Monaco,monospace;font-size:28px;font-weight:700;"
             f'color:{_PRIMARY_DARK};letter-spacing:0;">{escape(digit)}</td>'
         )
-        cells.append(
-            f'<td style="width:8px;font-size:0;line-height:0;">&nbsp;</td>'
-        )
+        cells.append('<td style="width:8px;font-size:0;line-height:0;">&nbsp;</td>')
     if cells:
         cells.pop()  # trailing spacer
     return (
