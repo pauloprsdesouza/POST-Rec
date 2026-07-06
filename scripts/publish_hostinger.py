@@ -18,7 +18,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from scripts.deploy_config import load_env_file, require_deploy_domain
 
-HOST = os.environ.get("HOSTINGER_HOST", "")
+HOST = os.environ.get("HOSTINGER_HOST", "187.127.39.214")
 PASSWORD = os.environ.get("HOSTINGER_SSH_PASSWORD", "")
 REMOTE_DIR = "/opt/post-rec"
 
@@ -79,7 +79,7 @@ def upsert_env_line(text: str, key: str, value: str) -> str:
     return text + line + "\n"
 
 
-def merge_remote_env(remote: str, local: dict[str, str], *, app_url: str) -> str:
+def merge_remote_env(remote: str, local: dict[str, str], *, app_url: str, domain: str) -> str:
     env = remote
     for key in SYNC_KEYS:
         if key in SKIP_SYNC_KEYS:
@@ -91,6 +91,17 @@ def merge_remote_env(remote: str, local: dict[str, str], *, app_url: str) -> str
     env = upsert_env_line(env, "APP_NAME", "researchly")
     env = upsert_env_line(env, "API_BASE_URL", app_url)
     env = upsert_env_line(env, "FRONTEND_APP_URL", app_url)
+    env = upsert_env_line(env, "DEPLOY_DOMAIN", domain)
+    grafana_root = local.get("GRAFANA_ROOT_URL", "").strip() or f"https://{domain}/grafana/"
+    if not grafana_root.endswith("/"):
+        grafana_root += "/"
+    env = upsert_env_line(env, "GRAFANA_ROOT_URL", grafana_root)
+    if "GRAFANA_ADMIN_PASSWORD=" not in env:
+        grafana_password = local.get("GRAFANA_ADMIN_PASSWORD", "").strip()
+        if grafana_password:
+            env = upsert_env_line(env, "GRAFANA_ADMIN_PASSWORD", grafana_password)
+    if "GRAFANA_ADMIN_USER=" not in env:
+        env = upsert_env_line(env, "GRAFANA_ADMIN_USER", "admin")
     if "GEMINI_GENERATION_MODEL=" not in env:
         env = upsert_env_line(env, "GEMINI_GENERATION_MODEL", "gemini-2.5-flash")
     if "QUALIS_ENABLED=" not in env:
@@ -212,7 +223,7 @@ def main() -> int:
     except FileNotFoundError:
         remote_env = (PROJECT_ROOT / ".env.production.example").read_text(encoding="utf-8")
 
-    merged = merge_remote_env(remote_env, local_env, app_url=app_url)
+    merged = merge_remote_env(remote_env, local_env, app_url=app_url, domain=domain)
     with sftp.open(f"{REMOTE_DIR}/.env", "w") as f:
         f.write(merged)
     synced = [k for k in SYNC_KEYS if k not in SKIP_SYNC_KEYS and local_env.get(k, "").strip()]
