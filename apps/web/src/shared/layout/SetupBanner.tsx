@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { OnboardingProgress } from "@/shared/ui/OnboardingProgress";
+import { PromoBanner } from "@/shared/ui/PromoBanner";
 
 export function SetupBanner() {
   const { t } = useTranslation();
@@ -18,21 +19,16 @@ export function SetupBanner() {
   const ctaLabel = step === "consent" ? t("setup.reviewConsent") : t("setup.completeProfile");
 
   return (
-    <aside className="setup-banner-v2" aria-labelledby="setup-banner-heading">
-      <div className="setup-banner-v2__inner">
-        <OnboardingProgress />
-        <div className="setup-banner-v2__row">
-          <div>
-            <span className="setup-banner-v2__badge">{t("setup.timeEstimate")}</span>
-            <p id="setup-banner-heading" className="setup-banner-v2__message">
-              {message}
-            </p>
-          </div>
-          <Link to={actionTo} className="btn btn-primary setup-banner-v2__cta">
-            {ctaLabel} →
-          </Link>
-        </div>
-      </div>
-    </aside>
+    <PromoBanner
+      id="setup-banner-heading"
+      badge={t("setup.timeEstimate")}
+      message={message}
+      header={<OnboardingProgress />}
+      actions={
+        <Link to={actionTo} className="btn btn-primary promo-banner__cta">
+          {ctaLabel} →
+        </Link>
+      }
+    />
   );
 }

@@ -85,6 +85,18 @@
   --researchly-bottom-nav-content: 3rem;
   --researchly-bottom-nav-height: var(--researchly-bottom-nav-content);
   --researchly-sticky-cta-height: 6.5rem;
+  --researchly-sticky-footer-height: var(--researchly-sticky-cta-height);
+  --researchly-chrome-blur: 12px;
+  --researchly-chrome-surface: color-mix(in srgb, var(--researchly-surface) 94%, transparent);
+  --researchly-panel-padding: var(--researchly-space-5);
+  --researchly-panel-padding-mobile: var(--researchly-space-4);
+  --researchly-inset-padding: var(--researchly-space-6);
+  --researchly-inset-padding-mobile: var(--researchly-space-4);
+  --researchly-banner-padding: var(--researchly-space-5) var(--researchly-space-6);
+  --researchly-banner-padding-mobile: var(--researchly-space-3) var(--researchly-space-4);
+  --researchly-page-stack-gap: var(--researchly-space-10);
+  --researchly-page-stack-gap-tight: var(--researchly-space-8);
+  --researchly-page-stack-gap-mobile: var(--researchly-space-6);
   --researchly-safe-bottom: env(safe-area-inset-bottom, 0px);
   --researchly-safe-top: env(safe-area-inset-top, 0px);
   --researchly-page-gutter: var(--researchly-space-4);
@@ -157,7 +169,6 @@
   --researchly-success-bg: rgba(16, 185, 129, 0.15);
   --researchly-success-border: rgba(52, 211, 153, 0.4);
   --researchly-warning: #fbbf24;
-  --researchly-warning: #b45309;
   --researchly-warning-bg: rgba(245, 158, 11, 0.12);
   --researchly-warning-border: rgba(251, 191, 36, 0.35);
   --researchly-danger: #f87171;

@@ -2,7 +2,7 @@
 @use "./onboarding";
 @use "./coachmarks";
 @use "./profile";
-@use "./layout-mobile";
+@use "./mobile";
 @use "./runs";
 @use "./ideas";
 @use "./feedback";
@@ -10,5 +10,3 @@
 @use "./research-report";
 @use "./transparency";
 @use "./admin";
-@use "./mobile-refinements";
-@use "./mobile-hig-final";

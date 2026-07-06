@@ -5,6 +5,8 @@ import { Trans, useTranslation } from "react-i18next";
 import { Navigate, useNavigate } from "react-router-dom";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { PageShell } from "@/shared/ui/PageShell";
+import { Panel } from "@/shared/ui/Panel";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { useConsentStrings } from "@/shared/i18n/useConsentStrings";
 import { useAuth } from "@/features/auth/context/AuthContext";
@@ -46,13 +48,13 @@ export function ConsentPage() {
   };
 
   return (
-    <div className="page-shell page-shell--narrow">
+    <PageShell width="narrow">
       <div className="page-stack page-stack--tight">
         <PageHeader title={t("consent.pageTitle")} subtitle={t("consent.pageSubtitle")} />
 
         <p className="consent-time-badge consent-time-badge--solo">{t("setup.timeEstimate")}</p>
 
-        <div className="panel consent-page__panel">
+        <Panel className="consent-page__panel">
           <p className="lead-text mb-4">
             <Trans i18nKey="consent.intro" components={{ strong: <strong /> }} />
           </p>
@@ -91,8 +93,8 @@ export function ConsentPage() {
               {loading ? t("common.saving") : t("consent.acceptAndContinue")}
             </Button>
           </Form>
-        </div>
+        </Panel>
       </div>
-    </div>
+    </PageShell>
   );
 }

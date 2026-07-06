@@ -1,3 +1,5 @@
+import { PageShell } from "@/shared/ui/PageShell";
+
 interface RunDetailSkeletonProps {
   /** Full page load vs ideas-only while run metadata is already shown */
   variant?: "full" | "ideas";
@@ -9,7 +11,7 @@ function Shimmer({ className }: { className: string }) {
 
 export function RunDetailSkeleton({ variant = "full" }: RunDetailSkeletonProps) {
   return (
-    <div className="page-shell run-detail run-detail--skeleton" aria-busy="true" aria-live="polite">
+    <PageShell pageClass="run-detail run-detail--skeleton" aria-busy="true" aria-live="polite">
       {variant === "full" ? (
         <header className="run-detail__header">
           <Shimmer className="skeleton-line skeleton-line--sm skeleton-line--w25" />
@@ -53,6 +55,6 @@ export function RunDetailSkeleton({ variant = "full" }: RunDetailSkeletonProps) 
         </div>
         <Shimmer className="skeleton-feedback mt-4" />
       </div>
-    </div>
+    </PageShell>
   );
 }

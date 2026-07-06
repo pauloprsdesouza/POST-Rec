@@ -10,6 +10,7 @@ import { RunsReadyBanner } from "@/features/runs/components/RunsReadyBanner";
 import { RunsSearchBar } from "@/features/runs/components/RunsSearchBar";
 import { RunsStatsStrip, type RunsFilter } from "@/features/runs/components/RunsStatsStrip";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { PageShell } from "@/shared/ui/PageShell";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useRuns } from "@/features/runs/context/RunsContext";
@@ -128,30 +129,30 @@ export function RunsPage() {
 
   if (!loaded && loading) {
     return (
-      <div className="page-shell page-shell--list runs-page">
+      <PageShell width="list" pageClass="runs-page">
         <RunsListSkeleton />
-      </div>
+      </PageShell>
     );
   }
 
   if (error && !runs.length) {
     return (
-      <div className="page-shell page-shell--list runs-page">
+      <PageShell width="list" pageClass="runs-page">
         <InlineAlert variant="danger">{error}</InlineAlert>
-      </div>
+      </PageShell>
     );
   }
 
   if (!runs.length) {
     return (
-      <div className="page-shell page-shell--list runs-page">
+      <PageShell width="list" pageClass="runs-page">
         <RunsEmptyHero />
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="page-shell page-shell--list runs-page">
+    <PageShell width="list" pageClass="runs-page">
       <div className="page-stack">
         <header className="page-stack__block runs-page__header">
           <PageHeader
@@ -268,7 +269,7 @@ export function RunsPage() {
           )}
         </main>
       </div>
-    </div>
+    </PageShell>
   );
 }
 

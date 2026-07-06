@@ -14,19 +14,4 @@ html[data-pwa-mode="browser"] .bottom-nav {
   html[data-pwa-mode="browser"] .app-main {
     padding-bottom: var(--researchly-space-4);
   }
-
-  html[data-pwa-mode="standalone"] .sticky-form-cta {
-    bottom: var(--researchly-mobile-chrome-bottom);
-    padding-bottom: 0.625rem;
-  }
-
-  html[data-pwa-mode="standalone"] .page-shell--with-sticky-cta {
-    padding-bottom: calc(
-      var(--researchly-mobile-chrome-bottom) + var(--researchly-sticky-cta-height) + var(--researchly-space-4)
-    );
-  }
-
-  html[data-pwa-mode="standalone"] .profile-form-sticky {
-    bottom: var(--researchly-mobile-chrome-bottom);
-  }
 }

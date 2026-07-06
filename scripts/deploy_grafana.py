@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 """Deploy Grafana observability stack and update Traefik routing on the VPS."""
+
 from __future__ import annotations
 
 import argparse
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import paramiko
-import requests
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DOMAIN = "paulorobertosouza.com.br"
-GRAFANA_PASSWORD = "CmC3Hzi9Klu34V"
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from scripts.deploy_config import require_deploy_domain
 
 
 def run(client: paramiko.SSHClient, cmd: str, timeout: int = 900) -> tuple[int, str, str]:
@@ -25,14 +27,27 @@ def run(client: paramiko.SSHClient, cmd: str, timeout: int = 900) -> tuple[int, 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Deploy Grafana on VPS")
-    parser.add_argument("--host", default=os.environ.get("HOSTINGER_HOST", "187.127.39.214"))
+    parser.add_argument("--host", default=os.environ.get("HOSTINGER_HOST"))
     parser.add_argument("--user", default="root")
     parser.add_argument("--password", default=os.environ.get("HOSTINGER_SSH_PASSWORD"))
     parser.add_argument("--remote-dir", default="/opt/post-rec")
+    parser.add_argument("--grafana-password", default=os.environ.get("GRAFANA_ADMIN_PASSWORD", os.environ.get("GRAFANA_PASSWORD")))
     args = parser.parse_args()
 
     if not args.password:
         print("Error: set --password or HOSTINGER_SSH_PASSWORD", file=sys.stderr)
+        return 1
+    if not args.host:
+        print("Error: set --host or HOSTINGER_HOST", file=sys.stderr)
+        return 1
+    if not args.grafana_password:
+        print("Error: set --grafana-password or GRAFANA_ADMIN_PASSWORD", file=sys.stderr)
+        return 1
+
+    try:
+        domain = require_deploy_domain()
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
         return 1
 
     subprocess.run(
@@ -57,6 +72,7 @@ def main() -> int:
         "deploy/homelab/grafana-business-panels.json",
         "scripts/grafana_dashboard.py",
         "scripts/import_grafana_dashboard.py",
+        "scripts/deploy_config.py",
     ]
 
     client = paramiko.SSHClient()
@@ -96,60 +112,57 @@ def main() -> int:
     run(client, "docker network connect --alias postrec-grafana-proxy coolify postrec-grafana-proxy 2>/dev/null || true")
     run(client, "docker restart coolify-proxy")
 
-    grafana_url = f"https://{DOMAIN}/grafana"
+    grafana_url = f"https://{domain}/grafana"
+    grafana_user = os.environ.get("GRAFANA_USER", "admin")
     print("Importing homelab dashboard (ops + business panels)...")
     import_cmd = (
         f"cd {args.remote_dir} && docker compose -f docker-compose.yml -f docker-compose.prod.yml "
-        f"exec -T -e GRAFANA_URL={grafana_url} -e GRAFANA_PASSWORD={GRAFANA_PASSWORD} api "
+        f"exec -T -e GRAFANA_URL={grafana_url} -e GRAFANA_PASSWORD={args.grafana_password} api "
         "python scripts/import_grafana_dashboard.py --write-file"
     )
     code, out, err = run(client, import_cmd, timeout=120)
     print((out + err)[-3000:])
     if code != 0:
-        # Fallback: import from local machine via public URL
-        sys.path.insert(0, str(PROJECT_ROOT))
         from scripts.grafana_dashboard import import_homelab_dashboard, write_merged_dashboard
 
         write_merged_dashboard()
-        result = import_homelab_dashboard(grafana_url, password=GRAFANA_PASSWORD)
+        result = import_homelab_dashboard(grafana_url, user=grafana_user, password=args.grafana_password)
         print(f"Imported via local API call: {grafana_url}{result.get('url', '')}")
 
     run(client, "docker exec postrec-prometheus wget -qO- --post-data='' http://127.0.0.1:9090/-/reload 2>/dev/null || true")
 
     print("Waiting for Grafana...")
     healthy = False
+    auth = f"{grafana_user}:{args.grafana_password}"
     for _ in range(18):
         code, out, _ = run(
             client,
-            f"curl -s -o /dev/null -w '%{{http_code}}' -u admin:CmC3Hzi9Klu34V "
-            f"https://{DOMAIN}/grafana/api/health",
+            f"curl -s -o /dev/null -w '%{{http_code}}' -u {auth!r} https://{domain}/grafana/api/health",
             timeout=30,
         )
         if out.strip() == "200":
             healthy = True
             break
-        import time
-
         time.sleep(5)
 
     verify_cmds = [
         "docker ps --filter name=postrec-grafana --format '{{.Names}} {{.Status}}'",
-        f"curl -sI https://{DOMAIN}/grafana/ | head -8",
-        f"curl -s -u admin:CmC3Hzi9Klu34V https://{DOMAIN}/grafana/api/org",
+        f"curl -sI https://{domain}/grafana/ | head -8",
+        f"curl -s -u {auth!r} https://{domain}/grafana/api/org",
     ]
     for cmd in verify_cmds:
         print("===", cmd)
-        _, o, e = client.exec_command(cmd, timeout=60)
-        print((o.read() + e.read()).decode("utf-8", errors="replace")[:800])
+        _, stdout, stderr = client.exec_command(cmd, timeout=60)
+        print((stdout.read() + stderr.read()).decode("utf-8", errors="replace")[:800])
 
     client.close()
 
     print("\n" + "=" * 60)
     print("GRAFANA DEPLOYED")
     print("=" * 60)
-    print(f"URL:      https://{DOMAIN}/grafana/")
-    print("Username: admin")
-    print("Password: CmC3Hzi9Klu34V")
+    print(f"URL:      https://{domain}/grafana/")
+    print(f"Username: {grafana_user}")
+    print("Password: (GRAFANA_ADMIN_PASSWORD env)")
     if not healthy:
         print("\nWARNING: Grafana health check did not return 200 yet — it may still be starting.")
         return 1

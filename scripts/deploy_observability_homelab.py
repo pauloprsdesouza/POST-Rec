@@ -253,53 +253,25 @@ def ensure_postgres_datasource(creds: dict[str, str]) -> str:
 
 
 def load_dashboard_payload() -> dict:
-    dashboard_path = ROOT / "deploy/observability/grafana/dashboards/postrec-operations.json"
-    if not dashboard_path.exists():
-        raise FileNotFoundError(f"missing Grafana dashboard at {dashboard_path}")
+    sys.path.insert(0, str(ROOT))
+    from scripts.grafana_dashboard import load_dashboard_payload as load_payload
 
-    payload = json.loads(dashboard_path.read_text(encoding="utf-8"))
-    business_path = ROOT / "deploy/homelab/grafana-business-panels.json"
-    if business_path.exists():
-        business_panels = json.loads(business_path.read_text(encoding="utf-8"))
-        payload["panels"] = payload.get("panels", []) + business_panels
-        payload["title"] = "POST-Rec Operations & Business"
-        payload["time"] = {"from": "now-90d", "to": "now"}
-        payload["refresh"] = "1m"
-        payload["version"] = int(payload.get("version", 1)) + 1
-    return payload
+    return load_payload(include_business=True)
 
 
 def import_grafana_dashboard(client: paramiko.SSHClient | None = None) -> None:
     creds = _load_database_creds(client)
-    pg_uid = ensure_postgres_datasource(creds)
-    payload = load_dashboard_payload()
+    ensure_postgres_datasource(creds)
+    sys.path.insert(0, str(ROOT))
+    from scripts.grafana_dashboard import import_homelab_dashboard
 
-    ds_resp = requests.get(
-        f"{GRAFANA_URL}/api/datasources",
-        auth=(GRAFANA_USER, GRAFANA_PASSWORD),
-        timeout=30,
+    result = import_homelab_dashboard(
+        GRAFANA_URL,
+        user=GRAFANA_USER,
+        password=GRAFANA_PASSWORD,
+        include_business=True,
     )
-    ds_resp.raise_for_status()
-    prom_uid = next(d["uid"] for d in ds_resp.json() if d.get("type") == "prometheus")
-    loki_uid = next(d["uid"] for d in ds_resp.json() if d.get("type") == "loki")
-
-    dash_str = json.dumps(payload)
-    dash_str = dash_str.replace("${DS_PROMETHEUS}", prom_uid).replace("${DS_LOKI}", loki_uid)
-    dash_str = dash_str.replace("PBFA97CFB590B2093", prom_uid).replace("P8E80F9AEF21F6940", loki_uid)
-    dash_str = dash_str.replace("POSTREC_POSTGRES", pg_uid)
-    dash = json.loads(dash_str)
-    dash.pop("__inputs", None)
-    dash.pop("__requires", None)
-
-    resp = requests.post(
-        f"{GRAFANA_URL}/api/dashboards/db",
-        json={"dashboard": dash, "overwrite": True},
-        auth=(GRAFANA_USER, GRAFANA_PASSWORD),
-        timeout=30,
-    )
-    resp.raise_for_status()
-    data = resp.json()
-    print(f"Grafana dashboard: {GRAFANA_URL}{data.get('url', '')}")
+    print(f"Grafana dashboard: {GRAFANA_URL}{result.get('url', '')}")
 
 
 def validate(client: paramiko.SSHClient) -> None:

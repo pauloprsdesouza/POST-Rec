@@ -5,7 +5,7 @@ import re
 import paramiko
 from pathlib import Path
 
-HOST = os.environ.get("HOSTINGER_HOST", "187.127.39.214")
+HOST = os.environ.get("HOSTINGER_HOST", "")
 PASSWORD = os.environ.get("HOSTINGER_SSH_PASSWORD", "")
 REMOTE = "/opt/post-rec"
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,6 +40,9 @@ def run(client, cmd, timeout=900):
 def main() -> int:
     if not PASSWORD:
         print("Set HOSTINGER_SSH_PASSWORD", file=__import__("sys").stderr)
+        return 1
+    if not HOST:
+        print("Set HOSTINGER_HOST", file=__import__("sys").stderr)
         return 1
 
     client = paramiko.SSHClient()

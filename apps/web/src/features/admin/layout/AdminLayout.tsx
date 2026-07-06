@@ -1,6 +1,8 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
+import { Panel } from "@/shared/ui/Panel";
+
 const ADMIN_NAV = [
   { to: "/admin", labelKey: "admin.nav.overview", end: true },
   { to: "/admin/evaluation", labelKey: "admin.nav.evaluation", end: false },
@@ -14,7 +16,7 @@ export function AdminLayout() {
 
   return (
     <div className="admin-shell">
-      <aside className="admin-shell__sidebar panel" aria-label={t("admin.sidebarLabel")}>
+      <Panel as="aside" className="admin-shell__sidebar" aria-label={t("admin.sidebarLabel")}>
         <div className="admin-shell__brand">
           <span className="admin-shell__badge">{t("admin.badge")}</span>
           <h1 className="admin-shell__title">{t("admin.title")}</h1>
@@ -37,7 +39,7 @@ export function AdminLayout() {
             {t("admin.backToResearch")}
           </NavLink>
         </nav>
-      </aside>
+      </Panel>
       <div className="admin-shell__content">
         <Outlet />
       </div>

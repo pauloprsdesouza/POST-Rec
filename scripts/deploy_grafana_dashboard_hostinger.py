@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Deploy homelab Grafana dashboard (ops + business) to Hostinger."""
+
 from __future__ import annotations
 
 import os
@@ -12,23 +13,37 @@ import paramiko
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from scripts.deploy_config import require_deploy_domain
 from scripts.grafana_dashboard import write_merged_dashboard
 
-HOST = os.environ.get("HOSTINGER_HOST", "187.127.39.214")
 PASSWORD = os.environ.get("HOSTINGER_SSH_PASSWORD", "")
+HOST = os.environ.get("HOSTINGER_HOST", "")
 REMOTE = "/opt/post-rec"
-DOMAIN = "paulorobertosouza.com.br"
+GRAFANA_PASSWORD = os.environ.get("GRAFANA_ADMIN_PASSWORD", os.environ.get("GRAFANA_PASSWORD", ""))
+GRAFANA_USER = os.environ.get("GRAFANA_USER", "admin")
 
 
 def run(client, cmd, timeout=600):
-    _, o, e = client.exec_command(cmd, timeout=timeout)
-    out = (o.read() + e.read()).decode("utf-8", errors="replace")
-    return o.channel.recv_exit_status(), out
+    _, stdout, stderr = client.exec_command(cmd, timeout=timeout)
+    out = (stdout.read() + stderr.read()).decode("utf-8", errors="replace")
+    return stdout.channel.recv_exit_status(), out
 
 
 def main() -> int:
     if not PASSWORD:
         print("Set HOSTINGER_SSH_PASSWORD", file=sys.stderr)
+        return 1
+    if not HOST:
+        print("Set HOSTINGER_HOST", file=sys.stderr)
+        return 1
+    if not GRAFANA_PASSWORD:
+        print("Set GRAFANA_ADMIN_PASSWORD", file=sys.stderr)
+        return 1
+
+    try:
+        domain = require_deploy_domain()
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
         return 1
 
     merged = write_merged_dashboard()
@@ -50,7 +65,6 @@ def main() -> int:
     remote_dashboard = f"{REMOTE}/deploy/observability/grafana/dashboards/postrec-operations-business.json"
     sftp.put(str(merged), remote_dashboard)
 
-    # Retire the smaller ops-only dashboard so Grafana loads the homelab-equivalent one.
     try:
         sftp.remove(f"{REMOTE}/deploy/observability/grafana/dashboards/postrec-operations.json")
     except OSError:
@@ -75,14 +89,15 @@ def main() -> int:
     run(client, "docker exec postrec-prometheus wget -qO- --post-data='' http://127.0.0.1:9090/-/reload 2>/dev/null || true")
 
     time.sleep(8)
+    auth = f"{GRAFANA_USER}:{GRAFANA_PASSWORD}"
     _, verify = run(
         client,
-        f"curl -s -u admin:CmC3Hzi9Klu34V https://{DOMAIN}/grafana/api/search?query=POST-Rec",
+        f"curl -s -u {auth!r} https://{domain}/grafana/api/search?query=POST-Rec",
         timeout=30,
     )
     print("Dashboards:", verify[:1000])
     client.close()
-    print(f"\nOpen: https://{DOMAIN}/grafana/d/postrec-ops-business/post-rec-operations-and-business")
+    print(f"\nOpen: https://{domain}/grafana/d/postrec-ops-business/post-rec-operations-and-business")
     return 0
 
 

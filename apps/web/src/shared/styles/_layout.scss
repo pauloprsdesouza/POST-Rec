@@ -1,15 +1,26 @@
 @use "./mixins" as *;
+@use "./breakpoints" as *;
 
 // Refactoring UI — layout rhythm, grouping, hierarchy.
 
 .page-stack {
   display: flex;
   flex-direction: column;
-  gap: var(--researchly-space-10);
+  gap: var(--researchly-page-stack-gap);
 }
 
 .page-stack--tight {
-  gap: var(--researchly-space-8);
+  gap: var(--researchly-page-stack-gap-tight);
+}
+
+@include down(md) {
+  .page-stack {
+    gap: var(--researchly-page-stack-gap-mobile);
+  }
+
+  .page-stack--tight {
+    gap: var(--researchly-space-6);
+  }
 }
 
 .page-stack__block {
@@ -31,12 +42,12 @@
 .panel {
   background: var(--researchly-surface-muted);
   border-radius: var(--researchly-radius-lg);
-  padding: var(--researchly-space-5);
+  padding: var(--researchly-panel-padding-mobile);
 }
 
 @media (min-width: 768px) {
   .panel {
-    padding: var(--researchly-space-6);
+    padding: var(--researchly-panel-padding);
   }
 }
 
@@ -208,13 +219,13 @@
   border: 1px solid var(--researchly-border-subtle);
   border-radius: var(--researchly-radius-lg);
   box-shadow: none;
-  padding: var(--researchly-space-6);
+  padding: var(--researchly-inset-padding-mobile);
 }
 
 @media (min-width: 768px) {
   .surface-inset,
   .page-card.surface-inset {
-    padding: var(--researchly-space-8);
+    padding: var(--researchly-inset-padding);
   }
 }
 

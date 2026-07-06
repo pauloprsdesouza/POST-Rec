@@ -5,6 +5,8 @@ import { useAuth } from "@/features/auth/context/AuthContext";
 import { adminService } from "@/shared/api";
 import type { AdminSystemConfig } from "@/shared/types/api";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { PageShell } from "@/shared/ui/PageShell";
+import { Panel } from "@/shared/ui/Panel";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
 
@@ -44,10 +46,10 @@ export function AdminSystemPage() {
   const entries = Object.entries(config.environment).sort(([a], [b]) => a.localeCompare(b));
 
   return (
-    <div className="page-shell admin-page">
+    <PageShell pageClass="admin-page">
       <PageHeader title={t("admin.system.title")} subtitle={t("admin.system.subtitle")} />
 
-      <section className="admin-section panel">
+      <Panel as="section" className="admin-section">
         <p className="text-muted">{t("admin.system.readOnlyNote")}</p>
         <dl className="admin-config-list admin-config-list--grid">
           {entries.map(([key, value]) => (
@@ -57,7 +59,7 @@ export function AdminSystemPage() {
             </div>
           ))}
         </dl>
-      </section>
-    </div>
+      </Panel>
+    </PageShell>
   );
 }

@@ -6,6 +6,7 @@ import { runService } from "@/shared/api";
 import type { RecommendationRun } from "@/shared/types/api";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
+import { Panel } from "@/shared/ui/Panel";
 import { canCancelRun, canDismissRun, canRetryRun } from "@/features/runs/utils/runs";
 
 type PendingAction = "archive" | "remove" | null;
@@ -135,7 +136,7 @@ export function RunManageActions({ token, run, onRunUpdated, onRunsChanged }: Ru
     pendingAction === "archive" ? t("runs.actions.archive") : t("runs.actions.remove");
 
   return (
-    <section className="run-manage panel" aria-label={t("runs.actions.title")}>
+    <Panel as="section" className="run-manage" aria-label={t("runs.actions.title")}>
       <h2 className="run-manage__title">{t("runs.actions.title")}</h2>
 
       {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
@@ -231,6 +232,6 @@ export function RunManageActions({ token, run, onRunUpdated, onRunsChanged }: Ru
           ) : null}
         </div>
       </ConfirmModal>
-    </section>
+    </Panel>
   );
 }

@@ -5,6 +5,8 @@ import { useAuth } from "@/features/auth/context/AuthContext";
 import { adminService } from "@/shared/api";
 import type { AdminUserRecord, UserRole } from "@/shared/types/api";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { PageShell } from "@/shared/ui/PageShell";
+import { Panel } from "@/shared/ui/Panel";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
 
@@ -59,7 +61,7 @@ export function AdminUsersPage() {
   }
 
   return (
-    <div className="page-shell admin-page">
+    <PageShell pageClass="admin-page">
       <PageHeader
         title={t("admin.users.title")}
         subtitle={t("admin.users.subtitle", { count: total })}
@@ -67,7 +69,7 @@ export function AdminUsersPage() {
 
       {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
 
-      <section className="admin-section panel">
+      <Panel as="section" className="admin-section">
         <div className="table-responsive">
           <table className="table table-sm admin-table">
             <thead>
@@ -119,7 +121,7 @@ export function AdminUsersPage() {
             </tbody>
           </table>
         </div>
-      </section>
-    </div>
+      </Panel>
+    </PageShell>
   );
 }

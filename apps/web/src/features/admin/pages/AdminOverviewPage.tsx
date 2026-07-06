@@ -7,16 +7,18 @@ import { adminService } from "@/shared/api";
 import type { AdminOverview } from "@/shared/types/api";
 import { formatDecimal, formatPercent } from "@/features/runs/utils/runs";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { PageShell } from "@/shared/ui/PageShell";
+import { Panel } from "@/shared/ui/Panel";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
 
 function MetricCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="admin-metric panel">
+    <Panel className="admin-metric">
       <span className="admin-metric__label">{label}</span>
       <span className="admin-metric__value">{value}</span>
       {hint ? <span className="admin-metric__hint text-muted">{hint}</span> : null}
-    </div>
+    </Panel>
   );
 }
 
@@ -64,7 +66,7 @@ export function AdminOverviewPage() {
   }
 
   return (
-    <div className="page-shell admin-page">
+    <PageShell pageClass="admin-page">
       <PageHeader title={t("admin.overview.title")} subtitle={t("admin.overview.subtitle")} />
 
       <div className="admin-page__actions">
@@ -97,20 +99,24 @@ export function AdminOverviewPage() {
         </div>
       </section>
 
-      <section className="admin-section panel">
-        <div className="panel__header">
-          <h2 className="panel__title">{t("admin.overview.systemHealth")}</h2>
+      <Panel
+        as="section"
+        className="admin-section"
+        title={t("admin.overview.systemHealth")}
+        headingLevel="h2"
+        headerExtra={
           <span
             className={`admin-status-pill admin-status-pill--${overview.system_status === "ready" ? "ok" : "warn"}`}
           >
             {overview.system_status}
           </span>
-        </div>
+        }
+      >
         <p className="text-muted mb-3">
           {t("admin.overview.environment")}: <strong>{overview.app_env}</strong>
         </p>
         <HealthCheckList checks={overview.health_checks} />
-      </section>
-    </div>
+      </Panel>
+    </PageShell>
   );
 }

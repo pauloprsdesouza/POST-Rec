@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { Panel } from "@/shared/ui/Panel";
+
 interface TransparencySectionProps {
   id: string;
   title: string;
@@ -26,21 +28,22 @@ export function TransparencySection({
 
   if (collapsible) {
     return (
-      <details
+      <Panel
+        as="details"
         id={id}
-        className="transparency-section panel transparency-section--collapsible"
+        className="transparency-section transparency-section--collapsible"
         open={defaultOpen}
       >
         <summary className="transparency-section__title">{title}</summary>
         {body}
-      </details>
+      </Panel>
     );
   }
 
   return (
-    <section id={id} className="transparency-section panel">
+    <Panel as="section" id={id} className="transparency-section">
       <h2 className="transparency-section__title">{title}</h2>
       {body}
-    </section>
+    </Panel>
   );
 }

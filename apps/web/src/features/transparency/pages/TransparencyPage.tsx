@@ -5,6 +5,8 @@ import { NotationTable } from "@/features/transparency/components/NotationTable"
 import { TransparencySection } from "@/features/transparency/components/TransparencySection";
 import { WeightTable } from "@/features/transparency/components/WeightTable";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { PageShell } from "@/shared/ui/PageShell";
+import { Panel } from "@/shared/ui/Panel";
 import {
   EAS_WEIGHTS,
   FGGV_WEIGHTS,
@@ -48,12 +50,11 @@ export function TransparencyPage() {
   const rel = PAPER_RELEVANCE;
 
   return (
-    <div className="page-shell page-shell--wide transparency-page">
+    <PageShell width="wide" pageClass="transparency-page">
       <div className="page-stack">
         <PageHeader title={t("transparency.title")} subtitle={t("transparency.subtitle")} />
 
-        <nav className="transparency-toc panel" aria-label={t("transparency.tocLabel")}>
-          <p className="panel__title mb-3">{t("transparency.tocLabel")}</p>
+        <Panel as="nav" className="transparency-toc" aria-label={t("transparency.tocLabel")} title={t("transparency.tocLabel")} headingLevel="h2">
           <ol className="transparency-toc__list">
           {TOC_SECTIONS.map((id) => (
             <li key={id}>
@@ -61,7 +62,7 @@ export function TransparencyPage() {
             </li>
           ))}
         </ol>
-      </nav>
+        </Panel>
 
       <article className="transparency-article">
         <TransparencySection id="overview" title={t("transparency.sections.overview")}>
@@ -284,6 +285,6 @@ export function TransparencyPage() {
         </TransparencySection>
       </article>
       </div>
-    </div>
+    </PageShell>
   );
 }

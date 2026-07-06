@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { NarrativeTone } from "@/features/insights/utils/reportNarrative";
+import { Panel } from "@/shared/ui/Panel";
 
 export function ReportChapter({
   number,
@@ -17,7 +18,7 @@ export function ReportChapter({
   id?: string;
 }) {
   return (
-    <section className="research-report__chapter panel" id={id}>
+    <Panel as="section" className="research-report__chapter" id={id}>
       <div className="research-report__chapter-header">
         <span className="research-report__chapter-number">
           {String(number).padStart(2, "0")}
@@ -28,7 +29,7 @@ export function ReportChapter({
         </div>
       </div>
       <div className="research-report__chapter-body">{children}</div>
-    </section>
+    </Panel>
   );
 }
 
@@ -44,12 +45,12 @@ export function StoryAtAGlance({
   children: ReactNode;
 }) {
   return (
-    <section className="research-report__glance panel" id="story">
+    <Panel as="section" className="research-report__glance" id="story">
       <p className="research-report__glance-eyebrow">{eyebrow}</p>
       <h2 className="research-report__glance-headline">{headline}</h2>
       <p className="research-report__glance-subheadline">{subheadline}</p>
       <div className="research-report__glance-grid">{children}</div>
-    </section>
+    </Panel>
   );
 }
 
@@ -89,7 +90,7 @@ export function ReportTableOfContents({
   }
 
   return (
-    <nav className="research-report__toc panel" aria-label="Report sections">
+    <Panel as="nav" className="research-report__toc" aria-label="Report sections">
       <p className="research-report__toc-title">In this report</p>
       <ol className="research-report__toc-list">
         {items.map((item) => (
@@ -98,7 +99,7 @@ export function ReportTableOfContents({
           </li>
         ))}
       </ol>
-    </nav>
+    </Panel>
   );
 }
 
@@ -144,13 +145,16 @@ export function ReportSection({
   id?: string;
 }) {
   return (
-    <section className="research-report__section panel" id={id}>
-      <div className="panel__header">
-        <h2 className="panel__title">{title}</h2>
-        {subtitle ? <p className="panel__subtitle text-muted mb-0">{subtitle}</p> : null}
-      </div>
+    <Panel
+      as="section"
+      className="research-report__section"
+      id={id}
+      title={title}
+      subtitle={subtitle}
+      headingLevel="h2"
+    >
       {children}
-    </section>
+    </Panel>
   );
 }
 

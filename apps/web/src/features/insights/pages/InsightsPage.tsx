@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { PageShell } from "@/shared/ui/PageShell";
+import { Panel } from "@/shared/ui/Panel";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
 import { EmptyState } from "@/shared/ui/EmptyState";
@@ -47,12 +49,9 @@ function InsightMetric({
 
 function InsightSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="insight-section panel">
-      <div className="panel__header">
-        <h2 className="panel__title">{title}</h2>
-      </div>
+    <Panel as="section" className="insight-section" title={title} headingLevel="h2">
       <div className="insight-section__grid">{children}</div>
-    </section>
+    </Panel>
   );
 }
 
@@ -80,19 +79,19 @@ export function InsightsPage() {
 
   if (isLoading) {
     return (
-      <div className="page-shell">
+      <PageShell>
         <LoadingSpinner label={t("common.loadingInsights")} />
-      </div>
+      </PageShell>
     );
   }
 
   if (error || !dashboard) {
     const message = error instanceof Error ? error.message : t("common.couldNotLoadMetrics");
     return (
-      <div className="page-shell">
+      <PageShell>
         <PageHeader title={t("insights.title")} subtitle={t("insights.subtitle")} />
         <InlineAlert variant="danger">{message}</InlineAlert>
-      </div>
+      </PageShell>
     );
   }
 
@@ -101,7 +100,7 @@ export function InsightsPage() {
   const ranking = dashboard.ranking_summary;
 
   return (
-    <div className="page-shell insights-page">
+    <PageShell pageClass="insights-page">
       <div className="page-stack">
         <div data-coach="coach-insights-overview" className="insights-coach-target">
           <PageHeader
@@ -201,32 +200,29 @@ export function InsightsPage() {
         </InsightSection>
 
         {ranking && (ranking.run_count ?? 0) > 0 ? (
-          <section className="insight-section panel">
-            <div className="panel__header">
-              <h2 className="panel__title">{t("insights.rankingMetrics")}</h2>
-            </div>
-            <div className="insight-section__grid">
-              <InsightMetric label="NDCG@5" value={formatDecimal(ranking["ndcg@5"] ?? 0, locale)} highlight />
-              <InsightMetric label="MAP" value={formatDecimal(ranking.map ?? 0, locale)} />
-              <InsightMetric label="MRR" value={formatDecimal(ranking.mrr ?? 0, locale)} />
-              <InsightMetric
-                label={t("insights.spearman")}
-                value={
-                  ranking.mean_spearman_rho != null
-                    ? formatDecimal(ranking.mean_spearman_rho, locale)
-                    : "—"
-                }
-              />
-            </div>
-          </section>
+          <InsightSection title={t("insights.rankingMetrics")}>
+            <InsightMetric label="NDCG@5" value={formatDecimal(ranking["ndcg@5"] ?? 0, locale)} highlight />
+            <InsightMetric label="MAP" value={formatDecimal(ranking.map ?? 0, locale)} />
+            <InsightMetric label="MRR" value={formatDecimal(ranking.mrr ?? 0, locale)} />
+            <InsightMetric
+              label={t("insights.spearman")}
+              value={
+                ranking.mean_spearman_rho != null
+                  ? formatDecimal(ranking.mean_spearman_rho, locale)
+                  : "—"
+              }
+            />
+          </InsightSection>
         ) : null}
 
         {dashboard.experiment && dashboard.experiment.variants.length > 0 ? (
-          <section className="insight-section panel">
-            <div className="panel__header">
-              <h2 className="panel__title">{t("insights.experiment")}</h2>
-              <p className="panel__subtitle text-muted mb-0">{dashboard.experiment.experiment_id}</p>
-            </div>
+          <Panel
+            as="section"
+            className="insight-section"
+            title={t("insights.experiment")}
+            subtitle={dashboard.experiment.experiment_id}
+            headingLevel="h2"
+          >
             <div className="insight-section__grid">
               {dashboard.experiment.variants.map((variant: ExperimentVariantMetrics) => (
                 <InsightMetric
@@ -257,14 +253,11 @@ export function InsightsPage() {
                 />
               </Suspense>
             ) : null}
-          </section>
+          </Panel>
         ) : null}
 
         {(dashboard.weekly_trends?.length ?? 0) > 0 ? (
-          <section className="insight-section panel">
-            <div className="panel__header">
-              <h2 className="panel__title">{t("insights.trends")}</h2>
-            </div>
+          <InsightSection title={t("insights.trends")}>
             <Suspense fallback={<ChartFallback />}>
               <LazyTrendLineChart
                 data={dashboard.weekly_trends ?? []}
@@ -272,7 +265,7 @@ export function InsightsPage() {
                 label={t("insights.avgEas")}
               />
             </Suspense>
-          </section>
+          </InsightSection>
         ) : null}
 
         <InsightSection title={t("insights.activity")}>
@@ -288,6 +281,6 @@ export function InsightsPage() {
           />
         </InsightSection>
       </div>
-    </div>
+    </PageShell>
   );
 }

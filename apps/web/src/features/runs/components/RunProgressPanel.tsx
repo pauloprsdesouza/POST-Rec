@@ -17,6 +17,7 @@ import { formatEstimatedCost } from "@/features/runs/utils/formatCost";
 import { filterUserFacingEvents } from "@/features/runs/utils/runLog";
 
 import { RunProgressBar } from "./RunProgressBar";
+import { Panel } from "@/shared/ui/Panel";
 interface RunProgressPanelProps {
   run: RecommendationRun;
   events: RunEvent[];
@@ -63,7 +64,7 @@ export function RunProgressPanel({ run, events, live = true }: RunProgressPanelP
   const elapsed = formatRunElapsed(run.started_at, i18n.language, nowMs);
 
   return (
-    <div className="run-progress panel">
+    <Panel className="run-progress">
       {isActive ? (
         <p className="run-progress__encourage">{t("progress.encourage")}</p>
       ) : null}
@@ -146,6 +147,6 @@ export function RunProgressPanel({ run, events, live = true }: RunProgressPanelP
           ) : null}
         </details>
       ) : null}
-    </div>
+    </Panel>
   );
 }

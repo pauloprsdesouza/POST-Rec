@@ -3,5 +3,8 @@
 @use "./auth";
 @use "./theme-toggle";
 @use "./language";
+@use "./components";
+@use "./pwa";
+@use "./modals";
 @use "./conversion";
 @use "./empty";

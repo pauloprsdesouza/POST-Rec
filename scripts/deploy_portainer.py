@@ -11,7 +11,9 @@ from pathlib import Path
 import paramiko
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DOMAIN = "paulorobertosouza.com.br"
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from scripts.deploy_config import require_deploy_domain
 
 
 def run(client: paramiko.SSHClient, cmd: str, timeout: int = 600) -> tuple[int, str, str]:
@@ -35,6 +37,12 @@ def main() -> int:
 
     if not args.host:
         print("Error: set --host or HOSTINGER_HOST", file=sys.stderr)
+        return 1
+
+    try:
+        domain = require_deploy_domain()
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
         return 1
 
     password = args.password
@@ -102,8 +110,8 @@ def main() -> int:
 
     verify_cmds = [
         "docker ps --filter name=postrec-portainer --format '{{.Names}} {{.Status}}'",
-        f"curl -sI -H 'Host: {DOMAIN}' http://127.0.0.1/portainer/ | head -5",
-        f"curl -sI https://{DOMAIN}/portainer/ | head -8",
+        f"curl -sI -H 'Host: {domain}' http://127.0.0.1/portainer/ | head -5",
+        f"curl -sI https://{domain}/portainer/ | head -8",
     ]
     for cmd in verify_cmds:
         print("===", cmd)
@@ -115,9 +123,9 @@ def main() -> int:
     print("\n" + "=" * 60)
     print("PORTAINER DEPLOYED")
     print("=" * 60)
-    print(f"URL:      https://{DOMAIN}/portainer/")
+    print(f"URL:      https://{domain}/portainer/")
     print("Username: admin")
-    print("Password: CmC3Hzi9Klu34V")
+    print("Password: (configured in docker-compose.prod.yml / PORTAINER_ADMIN_PASSWORD)")
     return 0
 
 

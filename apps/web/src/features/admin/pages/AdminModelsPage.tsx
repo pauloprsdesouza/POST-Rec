@@ -6,6 +6,8 @@ import { adminService } from "@/shared/api";
 import type { AdminModelEvaluation } from "@/shared/types/api";
 import { formatDecimal } from "@/features/runs/utils/runs";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { PageShell } from "@/shared/ui/PageShell";
+import { Panel } from "@/shared/ui/Panel";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
 
@@ -37,10 +39,10 @@ export function AdminModelsPage() {
   }
 
   return (
-    <div className="page-shell admin-page">
+    <PageShell pageClass="admin-page">
       <PageHeader title={t("admin.models.title")} subtitle={t("admin.models.subtitle")} />
 
-      <section className="admin-section panel">
+      <Panel as="section" className="admin-section">
         <h2 className="admin-section__title">{t("admin.models.configured")}</h2>
         <dl className="admin-config-list">
           <div>
@@ -54,29 +56,29 @@ export function AdminModelsPage() {
             </dd>
           </div>
         </dl>
-      </section>
+      </Panel>
 
       <section className="admin-section">
         <h2 className="admin-section__title">{t("admin.models.usage")}</h2>
         <div className="admin-metric-grid">
-          <div className="admin-metric panel">
+          <Panel className="admin-metric">
             <span className="admin-metric__label">{t("admin.models.calls")}</span>
             <span className="admin-metric__value">{data.aggregate.call_count}</span>
-          </div>
-          <div className="admin-metric panel">
+          </Panel>
+          <Panel className="admin-metric">
             <span className="admin-metric__label">{t("admin.models.tokens")}</span>
             <span className="admin-metric__value">{data.aggregate.total_tokens.toLocaleString(locale)}</span>
-          </div>
-          <div className="admin-metric panel">
+          </Panel>
+          <Panel className="admin-metric">
             <span className="admin-metric__label">{t("admin.models.cost")}</span>
             <span className="admin-metric__value">
               ${formatDecimal(data.aggregate.estimated_cost_usd, locale, 2)}
             </span>
-          </div>
+          </Panel>
         </div>
       </section>
 
-      <section className="admin-section panel">
+      <Panel as="section" className="admin-section">
         <h2 className="admin-section__title">{t("admin.models.byModel")}</h2>
         <div className="table-responsive">
           <table className="table table-sm admin-table">
@@ -111,7 +113,7 @@ export function AdminModelsPage() {
             </tbody>
           </table>
         </div>
-      </section>
-    </div>
+      </Panel>
+    </PageShell>
   );
 }

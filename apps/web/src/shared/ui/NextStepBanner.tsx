@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
+import { PromoBanner } from "@/shared/ui/PromoBanner";
+
 interface NextStepBannerProps {
   title: string;
   description: string;
@@ -12,18 +14,18 @@ export function NextStepBanner({ title, description, ctaLabel, ctaTo }: NextStep
   const { t } = useTranslation();
 
   return (
-    <div className="next-step-banner" role="status">
-      <div className="next-step-banner__icon" aria-hidden>
-        ✓
-      </div>
-      <div className="next-step-banner__body">
-        <p className="next-step-banner__title">{title}</p>
-        <p className="next-step-banner__desc">{description}</p>
-      </div>
-      <Link to={ctaTo} className="btn btn-primary next-step-banner__cta">
-        {ctaLabel}
-      </Link>
-      <p className="next-step-banner__footnote">{t("conversion.nextStepFootnote")}</p>
-    </div>
+    <PromoBanner
+      variant="step"
+      role="status"
+      icon="✓"
+      title={title}
+      description={description}
+      actions={
+        <Link to={ctaTo} className="btn btn-primary promo-banner__cta">
+          {ctaLabel}
+        </Link>
+      }
+      footnote={t("conversion.nextStepFootnote")}
+    />
   );
 }

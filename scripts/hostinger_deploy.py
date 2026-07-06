@@ -13,6 +13,9 @@ from pathlib import Path
 import paramiko
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from scripts.deploy_config import require_deploy_domain
 
 
 def load_gemini_key_from_env_file(env_path: Path = PROJECT_ROOT / ".env") -> str:
@@ -134,7 +137,13 @@ def main() -> int:
 
     jwt_secret = secrets.token_urlsafe(48)
     evolution_key = secrets.token_urlsafe(24)
+    grafana_password = os.environ.get("GRAFANA_ADMIN_PASSWORD") or secrets.token_urlsafe(24)
     base_url = args.base_url.rstrip("/") if args.base_url else f"https://{args.host}"
+    try:
+        deploy_domain = require_deploy_domain()
+    except ValueError:
+        deploy_domain = args.host
+    grafana_root = os.environ.get("GRAFANA_ROOT_URL", f"https://{deploy_domain}/grafana/").rstrip("/") + "/"
 
     steps: list[tuple[str, str]] = [
         ("system info", "uname -a && cat /etc/os-release | head -5 && free -h | head -2 && df -h /"),
@@ -221,6 +230,10 @@ WHATSAPP_NOTIFICATIONS_ENABLED=true
 RETRIEVAL_CACHE_ENABLED=true
 RETRIEVAL_USE_CELERY_DEFERRED=true
 OTEL_ENABLED=false
+DEPLOY_DOMAIN={deploy_domain}
+GRAFANA_ROOT_URL={grafana_root}
+GRAFANA_ADMIN_PASSWORD={grafana_password}
+GRAFANA_ADMIN_USER=admin
 """
 
     sftp = client.open_sftp()

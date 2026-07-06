@@ -13,6 +13,7 @@ import { RunDetailSkeleton } from "@/features/runs/components/RunDetailSkeleton"
 import { OutcomeBadge } from "@/shared/ui/OutcomeBadge";
 
 import { InlineAlert } from "@/shared/ui/InlineAlert";
+import { PageShell } from "@/shared/ui/PageShell";
 
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { sessionService } from "@/shared/api";
@@ -116,23 +117,23 @@ export function RunDetailPage() {
 
   if (error && !run) {
     return (
-      <div className="page-shell">
+      <PageShell>
         <InlineAlert variant="danger">{error}</InlineAlert>
         <Link to="/runs" className="btn btn-outline-primary">
           {t("runs.backToRuns")}
         </Link>
-      </div>
+      </PageShell>
     );
   }
 
   if (!run) {
     return (
-      <div className="page-shell">
+      <PageShell>
         <InlineAlert variant="warning">{t("common.runNotFound")}</InlineAlert>
         <Link to="/runs" className="btn btn-outline-primary">
           {t("runs.backToRuns")}
         </Link>
-      </div>
+      </PageShell>
     );
   }
 
@@ -140,7 +141,7 @@ export function RunDetailPage() {
   const loadingIdeasOnly = showIdeas && loadingIdeas && recommendations.length === 0;
 
   return (
-    <div className="page-shell run-detail">
+    <PageShell pageClass="run-detail">
       <div className="page-stack page-stack--tight">
         <header className="run-detail__header">
         <Link to="/runs" className="run-detail__back">
@@ -197,6 +198,6 @@ export function RunDetailPage() {
           </>
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

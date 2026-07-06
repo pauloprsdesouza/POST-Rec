@@ -10,6 +10,9 @@ import {
   RecommendationPreferencesForm,
 } from "@/features/profile/components/RecommendationPreferencesForm";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { PageShell } from "@/shared/ui/PageShell";
+import { Panel } from "@/shared/ui/Panel";
+import { StickyFooter } from "@/shared/ui/StickyFooter";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { LanguageSwitcher } from "@/shared/ui/LanguageSwitcher";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
@@ -209,12 +212,14 @@ export function ProfilePage() {
   const setupIncomplete = !consentDone || !profileDone;
 
   return (
-    <div className="page-shell profile-page">
+    <PageShell pageClass="profile-page">
       <div className="page-stack page-stack--tight">
         <PageHeader title={t("profile.title")} subtitle={t("profile.subtitle")} />
 
         {setupIncomplete && activeTab === "research" ? (
-          <p className="profile-setup__hint panel">{t("profile.researchSetupHint")}</p>
+          <Panel as="p" className="profile-setup__hint">
+            {t("profile.researchSetupHint")}
+          </Panel>
         ) : null}
 
         {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
@@ -231,7 +236,7 @@ export function ProfilePage() {
         ) : null}
 
         <Tab.Container activeKey={activeTab} onSelect={(key) => key && setTab(key as ProfileTab)}>
-          <div className="profile-hub panel">
+          <Panel className="profile-hub">
             <div className="profile-hub__tabs" data-coach="coach-profile-tabs">
               <Nav variant="tabs" className="border-0">
                 <Nav.Item>
@@ -315,11 +320,11 @@ export function ProfilePage() {
                       : t("profile.whatsappOptInRequiresPhone")}
                   </Form.Text>
 
-                  <div className="profile-form-sticky">
+                  <StickyFooter variant="dock">
                     <Button type="submit" variant="primary" disabled={savingAccount} className="w-100 w-md-auto">
                       {savingAccount ? t("common.saving") : t("profile.saveAccount")}
                     </Button>
-                  </div>
+                  </StickyFooter>
                 </Form>
                 </SectionGroup>
               </Tab.Pane>
@@ -405,7 +410,7 @@ export function ProfilePage() {
                     />
                   </Form.Group>
 
-                  <div className="profile-form-sticky">
+                  <StickyFooter variant="dock">
                     <Button type="submit" variant="primary" disabled={savingProfile} className="w-100 w-md-auto">
                       {savingProfile
                         ? t("common.saving")
@@ -418,7 +423,7 @@ export function ProfilePage() {
                         {t("profile.startRun")}
                       </Button>
                     ) : null}
-                  </div>
+                  </StickyFooter>
                 </Form>
                 </SectionGroup>
               </Tab.Pane>
@@ -466,9 +471,9 @@ export function ProfilePage() {
               </Tab.Pane>
             </Tab.Content>
             </div>
-          </div>
+          </Panel>
         </Tab.Container>
       </div>
-    </div>
+    </PageShell>
   );
 }

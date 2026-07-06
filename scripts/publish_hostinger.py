@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import json
 import os
 import re
 import subprocess
@@ -15,11 +14,13 @@ import httpx
 import paramiko
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DOMAIN = "paulorobertosouza.com.br"
-HOST = os.environ.get("HOSTINGER_HOST", "187.127.39.214")
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from scripts.deploy_config import load_env_file, require_deploy_domain
+
+HOST = os.environ.get("HOSTINGER_HOST", "")
 PASSWORD = os.environ.get("HOSTINGER_SSH_PASSWORD", "")
 REMOTE_DIR = "/opt/post-rec"
-APP_URL = f"https://{DOMAIN}/researchly"
 
 SKIP_DIRS = frozenset({".git", ".venv", "node_modules", "__pycache__", ".pytest_cache", "dist", "build"})
 
@@ -68,19 +69,6 @@ SYNC_KEYS = (
 SKIP_SYNC_KEYS = frozenset({"JWT_SECRET"})
 
 
-def load_env_file(path: Path) -> dict[str, str]:
-    if not path.is_file():
-        return {}
-    out: dict[str, str] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        out[key.strip()] = value.strip().strip('"').strip("'")
-    return out
-
-
 def upsert_env_line(text: str, key: str, value: str) -> str:
     pattern = re.compile(rf"^{re.escape(key)}=.*$", re.MULTILINE)
     line = f"{key}={value}"
@@ -91,7 +79,7 @@ def upsert_env_line(text: str, key: str, value: str) -> str:
     return text + line + "\n"
 
 
-def merge_remote_env(remote: str, local: dict[str, str]) -> str:
+def merge_remote_env(remote: str, local: dict[str, str], *, app_url: str) -> str:
     env = remote
     for key in SYNC_KEYS:
         if key in SKIP_SYNC_KEYS:
@@ -101,8 +89,8 @@ def merge_remote_env(remote: str, local: dict[str, str]) -> str:
             env = upsert_env_line(env, key, value)
     env = upsert_env_line(env, "APP_ENV", "production")
     env = upsert_env_line(env, "APP_NAME", "researchly")
-    env = upsert_env_line(env, "API_BASE_URL", APP_URL)
-    env = upsert_env_line(env, "FRONTEND_APP_URL", APP_URL)
+    env = upsert_env_line(env, "API_BASE_URL", app_url)
+    env = upsert_env_line(env, "FRONTEND_APP_URL", app_url)
     if "GEMINI_GENERATION_MODEL=" not in env:
         env = upsert_env_line(env, "GEMINI_GENERATION_MODEL", "gemini-2.5-flash")
     if "QUALIS_ENABLED=" not in env:
@@ -184,6 +172,17 @@ def main() -> int:
     if not PASSWORD:
         print("Error: set HOSTINGER_SSH_PASSWORD", file=sys.stderr)
         return 1
+    if not HOST:
+        print("Error: set HOSTINGER_HOST", file=sys.stderr)
+        return 1
+
+    try:
+        domain = require_deploy_domain()
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+
+    app_url = f"https://{domain}/researchly"
 
     local_env = load_env_file(PROJECT_ROOT / ".env")
     if not local_env.get("OPENALEX_EMAIL") and local_env.get("ADMIN_BOOTSTRAP_EMAILS"):
@@ -213,7 +212,7 @@ def main() -> int:
     except FileNotFoundError:
         remote_env = (PROJECT_ROOT / ".env.production.example").read_text(encoding="utf-8")
 
-    merged = merge_remote_env(remote_env, local_env)
+    merged = merge_remote_env(remote_env, local_env, app_url=app_url)
     with sftp.open(f"{REMOTE_DIR}/.env", "w") as f:
         f.write(merged)
     synced = [k for k in SYNC_KEYS if k not in SKIP_SYNC_KEYS and local_env.get(k, "").strip()]
@@ -280,13 +279,13 @@ def main() -> int:
 
     print("\nPublic endpoint smoke tests:")
     tests = [
-        ("landing", f"https://{DOMAIN}/"),
-        ("researchly health", f"{APP_URL}/api/v1/health"),
-        ("researchly web", f"{APP_URL}/"),
-        ("evolution root", f"https://{DOMAIN}/evolution/"),
-        ("evolution manager", f"https://{DOMAIN}/evolution/manager/"),
-        ("portainer", f"https://{DOMAIN}/portainer/"),
-        ("portainer locales", f"https://{DOMAIN}/locales/en/translation.json"),
+        ("landing", f"https://{domain}/"),
+        ("researchly health", f"{app_url}/api/v1/health"),
+        ("researchly web", f"{app_url}/"),
+        ("evolution root", f"https://{domain}/evolution/"),
+        ("evolution manager", f"https://{domain}/evolution/manager/"),
+        ("portainer", f"https://{domain}/portainer/"),
+        ("portainer locales", f"https://{domain}/locales/en/translation.json"),
     ]
     failed = 0
     results: list[dict] = []
@@ -301,7 +300,7 @@ def main() -> int:
         mark = "OK" if ok else "FAIL"
         print(f"  [{mark}] {name}: HTTP {status} — {url}")
 
-    gemini_status, gemini_body = public_get(f"{APP_URL}/api/v1/health")
+    gemini_status, gemini_body = public_get(f"{app_url}/api/v1/health")
     try:
         c2 = paramiko.SSHClient()
         c2.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -323,7 +322,7 @@ def main() -> int:
     print("\n" + "=" * 60)
     print("PUBLISH SUMMARY")
     print("=" * 60)
-    print(f"Researchly:  {APP_URL}")
+    print(f"Researchly:  {app_url}")
     print(f"Stack verify: {'PASS' if stack_ok else 'FAIL'}")
     print(f"Production config: {'PASS' if prod_ok else 'FAIL'}")
     print(f"Public tests: {len(tests) - failed}/{len(tests)} passed")

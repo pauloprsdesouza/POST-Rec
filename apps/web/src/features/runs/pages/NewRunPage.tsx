@@ -11,6 +11,9 @@ import {
 import { RunModeSelector } from "@/features/runs/components/RunModeSelector";
 import { GettingStartedSteps } from "@/features/runs/components/GettingStartedSteps";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { PageShell } from "@/shared/ui/PageShell";
+import { StickyFooter } from "@/shared/ui/StickyFooter";
+import { Surface } from "@/shared/ui/Surface";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
 import { useAuth } from "@/features/auth/context/AuthContext";
@@ -126,7 +129,7 @@ export function NewRunPage() {
   }
 
   return (
-    <div className="page-shell page-shell--with-sticky-cta">
+    <PageShell withStickyFooter>
       <div className="page-stack">
         <header className="page-stack__block">
           <PageHeader title={t("newRun.title")} subtitle={t("newRun.subtitle")} />
@@ -137,7 +140,7 @@ export function NewRunPage() {
 
         <GettingStartedSteps />
 
-        <div className="surface-inset">
+        <Surface>
           <div className="form-stack">
             <div data-coach="coach-newrun-topics">
               <RecommendationPreferencesForm
@@ -158,7 +161,7 @@ export function NewRunPage() {
               />
             </div>
           </div>
-        </div>
+        </Surface>
 
         {(profile.learned_topics?.length ?? 0) > 0 ? (
           <p className="inline-meta mb-0">
@@ -167,9 +170,9 @@ export function NewRunPage() {
         ) : null}
       </div>
 
-      <div className="sticky-form-cta d-lg-none">
-        <div className="sticky-form-cta__mode" data-coach="coach-newrun-mode">
-          <span className="sticky-form-cta__mode-label">{t("newRun.runMode.label")}</span>
+      <StickyFooter variant="fixed" visibleClass="d-lg-none">
+        <div className="sticky-footer__mode" data-coach="coach-newrun-mode">
+          <span className="sticky-footer__mode-label">{t("newRun.runMode.label")}</span>
           <RunModeSelector
             value={runMode}
             onChange={setRunMode}
@@ -184,14 +187,14 @@ export function NewRunPage() {
           type="submit"
           form="new-run-form"
           variant="primary"
-          className="sticky-form-cta__submit"
+          className="sticky-footer__submit"
           disabled={submitting}
           data-coach="coach-newrun-submit"
         >
           {submitting ? t("newRun.starting") : t("newRun.generateShort")}
         </Button>
-        <p className="sticky-form-cta__hint">{t("newRun.stickyHint")}</p>
-      </div>
-    </div>
+        <p className="sticky-footer__hint">{t("newRun.stickyHint")}</p>
+      </StickyFooter>
+    </PageShell>
   );
 }

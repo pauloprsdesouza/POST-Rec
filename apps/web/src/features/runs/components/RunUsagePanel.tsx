@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import type { RecommendationRun, RunUsageSummary } from "@/shared/types/api";
 import { formatEstimatedCost } from "@/features/runs/utils/formatCost";
+import { Panel } from "@/shared/ui/Panel";
 
 interface RunUsagePanelProps {
   run: RecommendationRun;
@@ -32,7 +33,7 @@ export function RunUsagePanel({ run }: RunUsagePanelProps) {
       : null;
 
   return (
-    <details className="run-usage panel">
+    <Panel as="details" className="run-usage">
       <summary className="run-usage__summary">{t("usage.summary", { cost: totalCost })}</summary>
 
       <div className="run-usage__body">
@@ -96,6 +97,6 @@ export function RunUsagePanel({ run }: RunUsagePanelProps) {
           </div>
         ) : null}
       </div>
-    </details>
+    </Panel>
   );
 }

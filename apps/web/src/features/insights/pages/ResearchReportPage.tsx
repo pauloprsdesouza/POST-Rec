@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { PageShell } from "@/shared/ui/PageShell";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
 import { useAuth } from "@/features/auth/context/AuthContext";
@@ -194,18 +195,18 @@ export function ResearchReportPage() {
 
   if (loading) {
     return (
-      <div className="page-shell">
+      <PageShell>
         <LoadingSpinner label={t("researchReport.loading")} />
-      </div>
+      </PageShell>
     );
   }
 
   if (error || !report || !narrative) {
     return (
-      <div className="page-shell">
+      <PageShell>
         <PageHeader title={t("researchReport.title")} subtitle={t("researchReport.subtitle")} />
         <InlineAlert variant="danger">{error ?? t("researchReport.unavailable")}</InlineAlert>
-      </div>
+      </PageShell>
     );
   }
 
@@ -217,7 +218,7 @@ export function ResearchReportPage() {
   const nextChapter = () => ++chapter;
 
   return (
-    <div className="page-shell research-report-page">
+    <PageShell pageClass="research-report-page">
       <div className="page-stack">
         <div className="research-report__hero">
           <PageHeader title={t("researchReport.title")} subtitle={t("researchReport.subtitle")} />
@@ -659,6 +660,6 @@ export function ResearchReportPage() {
           </CollapsibleBlock>
         </ReportChapter>
       </div>
-    </div>
+    </PageShell>
   );
 }

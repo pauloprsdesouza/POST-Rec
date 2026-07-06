@@ -1,5 +1,4 @@
-// Researchly application styles — entry point.
-// Foundation loads design tokens and shared primitives first.
+// Researchly application styles — optional full bundle (sign-in + authenticated).
 @use "./foundation";
 @use "./layout";
 @use "./navbar";
@@ -7,19 +6,18 @@
 @use "./coachmarks";
 @use "./profile";
 @use "./auth";
-@use "./layout-mobile";
+@use "./mobile";
 @use "./runs";
 @use "./ideas";
 @use "./feedback";
 @use "./empty";
 @use "./theme-toggle";
+@use "./components";
 @use "./conversion";
 @use "./insights";
 @use "./research-report";
 @use "./language";
 @use "./transparency";
 @use "./admin";
-@use "./mobile-refinements";
-@use "./mobile-hig-final";
 @use "./modals";
 @use "./pwa";
