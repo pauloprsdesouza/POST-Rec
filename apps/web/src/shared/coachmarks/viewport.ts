@@ -1,3 +1,5 @@
+import { getPwaMode } from "@/shared/pwa/detect";
+
 export interface ViewportInsets {
   top: number;
   right: number;
@@ -9,7 +11,7 @@ export function getViewportInsets(): ViewportInsets {
   const root = getComputedStyle(document.documentElement);
   const navHeight = Number.parseFloat(root.getPropertyValue("--researchly-nav-height")) || 56;
   const bottomNavHeight =
-    window.innerWidth < 992
+    getPwaMode() === "standalone" && window.innerWidth < 992
       ? Number.parseFloat(root.getPropertyValue("--researchly-bottom-nav-height")) || 64
       : 0;
   const safeTop = Number.parseFloat(root.getPropertyValue("--researchly-safe-top")) || 0;

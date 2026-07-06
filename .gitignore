@@ -17,6 +17,7 @@ postgres_data/
 portainer-stack/
 apps/web/node_modules/
 apps/web/dist/
+apps/web/dev-dist/
 *_logs.txt
 papers/**/*.out
 papers/**/*.spl

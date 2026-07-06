@@ -1,12 +1,15 @@
+import { useCallback, useState } from "react";
 import { Dropdown, Nav, Navbar } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useCoachMarks } from "@/shared/coachmarks/CoachMarkProvider";
+import { usePwaMode } from "@/shared/pwa/PwaModeProvider";
 import { LanguageSwitcher } from "@/shared/ui/LanguageSwitcher";
 import { ThemeToggle } from "@/shared/ui/ThemeToggle";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { PwaInstallBanner } from "./PwaInstallBanner";
 import { SetupBanner } from "./SetupBanner";
 
 const DESKTOP_NAV = [
@@ -20,14 +23,49 @@ export function AppLayout() {
   const { user, signOut, consentDone, profileDone, isAdmin } = useAuth();
   const { startTourForCurrentPage, resetTours } = useCoachMarks();
   const navigate = useNavigate();
+  const isPwaMode = usePwaMode();
+  const [navExpanded, setNavExpanded] = useState(false);
 
   const setupComplete = consentDone && profileDone;
   const setupHref = !consentDone ? "/consent" : "/profile?tab=research";
   const displayName = user?.fullName?.split(" ")[0] ?? t("common.researcher");
 
+  const closeNav = useCallback(() => setNavExpanded(false), []);
+
+  const primaryNavLinks = setupComplete ? (
+    <>
+      {DESKTOP_NAV.map((item) => (
+        <Nav.Link
+          as={NavLink}
+          to={item.to}
+          key={item.to}
+          end={item.to === "/runs"}
+          onClick={closeNav}
+          {...(item.to === "/runs/new" ? { "data-coach": "coach-nav-new-run" } : {})}
+        >
+          {t(item.labelKey)}
+        </Nav.Link>
+      ))}
+      {isAdmin ? (
+        <Nav.Link as={NavLink} to="/admin" onClick={closeNav}>
+          {t("nav.admin")}
+        </Nav.Link>
+      ) : null}
+    </>
+  ) : (
+    <Nav.Link as={NavLink} to={setupHref} className="app-nav__setup-link" onClick={closeNav}>
+      {t("nav.completeSetup")}
+    </Nav.Link>
+  );
+
   return (
     <>
-      <Navbar expand="lg" className="app-navbar sticky-top">
+      <Navbar
+        expand="lg"
+        className="app-navbar sticky-top"
+        expanded={isPwaMode ? undefined : navExpanded}
+        onToggle={isPwaMode ? undefined : setNavExpanded}
+      >
         <div className="container-fluid container-lg">
           <Navbar.Brand as={Link} to="/" className="app-brand">
             <span className="app-brand__mark" aria-hidden="true">R</span>
@@ -39,32 +77,13 @@ export function AppLayout() {
 
           <Navbar.Toggle aria-controls="main-nav" />
           <Navbar.Collapse id="main-nav">
-            <Nav className="me-auto app-nav d-none d-lg-flex">
-              {setupComplete ? (
-                <>
-                  {DESKTOP_NAV.map((item) => (
-                    <Nav.Link
-                      as={NavLink}
-                      to={item.to}
-                      key={item.to}
-                      end={item.to === "/runs"}
-                      {...(item.to === "/runs/new" ? { "data-coach": "coach-nav-new-run" } : {})}
-                    >
-                      {t(item.labelKey)}
-                    </Nav.Link>
-                  ))}
-                  {isAdmin ? (
-                    <Nav.Link as={NavLink} to="/admin">
-                      {t("nav.admin")}
-                    </Nav.Link>
-                  ) : null}
-                </>
-              ) : (
-                <Nav.Link as={NavLink} to={setupHref} className="app-nav__setup-link">
-                  {t("nav.completeSetup")}
-                </Nav.Link>
-              )}
-            </Nav>
+            <Nav className="me-auto app-nav d-none d-lg-flex">{primaryNavLinks}</Nav>
+
+            {!isPwaMode ? (
+              <Nav className="app-nav app-nav--mobile d-lg-none" aria-label={t("nav.mainNavigation")}>
+                {primaryNavLinks}
+              </Nav>
+            ) : null}
 
             <div className="d-flex align-items-center gap-2 py-2 py-lg-0 app-navbar__tools">
               <ThemeToggle variant="navbar" />
@@ -135,14 +154,15 @@ export function AppLayout() {
         </div>
       </Navbar>
 
-      <main className="app-main app-main--with-bottom-nav">
+      <main className={`app-main${isPwaMode ? " app-main--with-bottom-nav" : ""}`}>
         <div className="container-fluid container-lg">
           <SetupBanner />
+          <PwaInstallBanner />
           <Outlet />
         </div>
       </main>
 
-      <MobileBottomNav />
+      {isPwaMode ? <MobileBottomNav /> : null}
     </>
   );
 }

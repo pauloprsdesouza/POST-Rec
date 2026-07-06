@@ -6,6 +6,23 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="description" content="Researchly — research smarter. Find literature-grounded research ideas, gaps, and verified novelty in minutes." />
     <meta name="theme-color" content="#4338ca" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Researchly" />
+    <link rel="apple-touch-icon" href="/pwa-maskable.svg" />
+    <script>
+      (function () {
+        try {
+          var standalone =
+            window.matchMedia("(display-mode: standalone)").matches ||
+            window.matchMedia("(display-mode: minimal-ui)").matches ||
+            window.matchMedia("(display-mode: fullscreen)").matches ||
+            window.navigator.standalone === true;
+          document.documentElement.dataset.pwaMode = standalone ? "standalone" : "browser";
+        } catch (e) {}
+      })();
+    </script>
     <script>
       (function () {
         try {

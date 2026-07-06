@@ -72,6 +72,17 @@
     "reviewConsent": "Revisar consentimento",
     "completeProfile": "Completar perfil"
   },
+  "pwa": {
+    "installBadge": "Instalar app",
+    "installTitle": "Use o Researchly como um app nativo",
+    "installMessage": "Salve o Researchly na tela inicial para acesso rápido e a barra de abas no celular.",
+    "installAction": "Instalar",
+    "dismiss": "Agora não",
+    "iosTitle": "Adicionar à Tela de Início",
+    "iosStep1": "Toque em Compartilhar no Safari (ícone de quadrado com seta para cima).",
+    "iosStep2": "Role para baixo e toque em \"Adicionar à Tela de Início\".",
+    "iosStep3": "Toque em Adicionar — o Researchly abrirá com a navegação completa do app."
+  },
   "onboarding": {
     "progressLabel": "Progresso da configuração",
     "steps": {

@@ -2,13 +2,9 @@
 
 // Bottom tab bar — iOS / modern mobile app pattern.
 
-.app-main--with-bottom-nav {
-  padding-bottom: calc(var(--researchly-mobile-chrome-bottom) + var(--researchly-space-5));
-}
-
-@include up(lg) {
+@include down(lg) {
   .app-main--with-bottom-nav {
-    padding-bottom: var(--researchly-space-10);
+    padding-bottom: calc(var(--researchly-mobile-chrome-bottom) + var(--researchly-space-5));
   }
 }
 
