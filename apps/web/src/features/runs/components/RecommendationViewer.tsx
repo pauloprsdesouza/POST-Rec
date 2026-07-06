@@ -85,18 +85,6 @@ export function RecommendationViewer({
     }
   }, [onFeedbackChange, recommendations]);
 
-  const scheduleAdvance = useCallback(
-    (currentId: string, rated: Record<string, number>) => {
-      const ratedIds = new Set(Object.keys(rated));
-      const currentIdx = recommendations.findIndex((r) => r.id === currentId);
-      const nextIdx = findNextIndex(recommendations, new Set(), ratedIds, currentIdx + 1);
-      if (nextIdx >= 0 && nextIdx !== currentIdx) {
-        window.setTimeout(() => onActiveIndexChange(nextIdx), 400);
-      }
-    },
-    [onActiveIndexChange, recommendations],
-  );
-
   const handleRated = useCallback(
     (recommendationId: string, rating: number, isFirstRating: boolean) => {
       setRatings((prev) => {
@@ -110,14 +98,11 @@ export function RecommendationViewer({
           setCelebration("all");
         }
 
-        if (isFirstRating) {
-          scheduleAdvance(recommendationId, next);
-        }
         onFeedbackChange?.(nextCount, recommendations.length);
         return next;
       });
     },
-    [onFeedbackChange, recommendations.length, scheduleAdvance],
+    [onFeedbackChange, recommendations.length],
   );
 
   const jumpToUnrated = useCallback(() => {

@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "@/features/auth/context/AuthContext";
@@ -74,14 +73,6 @@ export function SessionQuickFeedback({
     return (
       <div className={`session-quick-feedback session-quick-feedback--done ${compact ? "session-quick-feedback--compact" : ""}`}>
         <p className="session-quick-feedback__thanks">{t("survey.thankYouShort")}</p>
-        <div className="session-quick-feedback__actions">
-          <Link to="/runs/new" className="btn btn-primary btn-sm">
-            {t("runs.completeBanner.newRun")}
-          </Link>
-          <Link to="/runs" className="btn btn-link btn-sm session-quick-feedback__secondary">
-            {t("survey.backToRuns")}
-          </Link>
-        </div>
       </div>
     );
   }

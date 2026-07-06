@@ -44,7 +44,6 @@ export function RecommendationDetail({
     setSavedRating(initialRating);
   }, [recommendation.id, initialRating]);
   const [wouldUse, setWouldUse] = useState<WouldUse>("maybe");
-  const [comment, setComment] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -107,10 +106,9 @@ export function RecommendationDetail({
         usefulness_score: rating,
         would_use_in_real_paper: useInPaper,
         decision: decisionFromRating(rating),
-        comment: comment.trim() || undefined,
       });
       setSavedRating(rating);
-      setMessage(isFirstRating ? t("ideas.feedbackSavedNext") : t("ideas.feedbackSavedShort"));
+      setMessage(t("ideas.feedbackSavedShort"));
       onRated?.(recommendation.id, rating, isFirstRating);
     } catch (err) {
       setError(getErrorMessage(err, t("ideas.feedbackError")));
@@ -262,13 +260,6 @@ export function RecommendationDetail({
             setWouldUse(value);
             if (savedRating != null) {
               void submitRating(savedRating, value);
-            }
-          }}
-          comment={comment}
-          onCommentChange={setComment}
-          onCommentBlur={() => {
-            if (savedRating != null && comment.trim()) {
-              void submitRating(savedRating, wouldUse);
             }
           }}
         />

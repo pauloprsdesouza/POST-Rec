@@ -290,13 +290,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn {
+  align-items: center;
   border-radius: var(--researchly-radius);
+  display: inline-flex;
   font-family: var(--researchly-font);
   font-size: var(--researchly-text-sm);
   font-weight: 600;
+  justify-content: center;
   letter-spacing: 0;
   line-height: 1.25;
   padding: 0.5rem 1rem;
+  text-align: center;
   transition:
     background-color var(--researchly-duration) var(--researchly-ease),
     border-color var(--researchly-duration) var(--researchly-ease),

@@ -1,4 +1,3 @@
-import { Form } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 
 import { InlineAlert } from "@/shared/ui/InlineAlert";
@@ -27,9 +26,6 @@ interface QuickFeedbackPanelProps {
   error: string | null;
   onStarClick: (value: number) => void;
   onWouldUseChange: (value: WouldUse) => void;
-  comment: string;
-  onCommentChange: (value: string) => void;
-  onCommentBlur: () => void;
 }
 
 export function QuickFeedbackPanel({
@@ -40,9 +36,6 @@ export function QuickFeedbackPanel({
   error,
   onStarClick,
   onWouldUseChange,
-  comment,
-  onCommentChange,
-  onCommentBlur,
 }: QuickFeedbackPanelProps) {
   const { t } = useTranslation();
 
@@ -85,19 +78,6 @@ export function QuickFeedbackPanel({
             ))}
           </div>
         </div>
-
-        <Form.Group className="quick-feedback__field quick-rating__note quick-rating__note--inline">
-          <Form.Label className="quick-feedback__field-label">{t("ideas.notePlaceholder")}</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={2}
-            placeholder={t("ideas.notePlaceholderHint")}
-            value={comment}
-            onChange={(e) => onCommentChange(e.target.value)}
-            onBlur={onCommentBlur}
-            disabled={submitting}
-          />
-        </Form.Group>
 
         {message ? (
           <span className="quick-feedback__saved">

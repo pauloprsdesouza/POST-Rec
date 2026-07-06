@@ -311,16 +311,40 @@
 }
 
 @include down(lg) {
+  .profile-page .profile-hub__body {
+    padding-bottom: var(--researchly-space-8);
+  }
+
+  html[data-pwa-mode="standalone"] .profile-page .profile-hub__body {
+    padding-bottom: calc(var(--researchly-mobile-chrome-bottom) + 5.5rem);
+  }
+
   .profile-form-sticky {
     background: var(--researchly-surface);
     border-top: 1px solid var(--researchly-border-subtle);
-    bottom: var(--researchly-mobile-chrome-bottom);
+    bottom: 0;
     box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.06);
-    left: 0;
-    margin: var(--researchly-space-6) calc(-1 * var(--researchly-space-6)) calc(-1 * var(--researchly-space-6));
-    padding: var(--researchly-space-4) var(--researchly-space-6);
+    gap: var(--researchly-space-2);
+    margin-inline: calc(-1 * var(--researchly-space-4));
+    margin-top: var(--researchly-space-6);
+    padding: var(--researchly-space-4);
     position: sticky;
-    z-index: 5;
+    z-index: 1020;
+  }
+
+  html[data-pwa-mode="standalone"] .profile-form-sticky {
+    bottom: var(--researchly-mobile-chrome-bottom);
+    padding-bottom: 0.625rem;
+  }
+
+  html[data-pwa-mode="browser"] .profile-form-sticky {
+    padding-bottom: calc(var(--researchly-space-4) + var(--researchly-safe-bottom));
+  }
+
+  .profile-form-sticky .btn {
+    align-items: center;
+    display: flex;
+    justify-content: center;
   }
 
   [data-theme="dark"] .profile-form-sticky {

@@ -209,7 +209,7 @@ export function ProfilePage() {
   const setupIncomplete = !consentDone || !profileDone;
 
   return (
-    <div className="page-shell">
+    <div className="page-shell profile-page">
       <div className="page-stack page-stack--tight">
         <PageHeader title={t("profile.title")} subtitle={t("profile.subtitle")} />
 
@@ -315,9 +315,11 @@ export function ProfilePage() {
                       : t("profile.whatsappOptInRequiresPhone")}
                   </Form.Text>
 
-                  <Button type="submit" variant="primary" disabled={savingAccount}>
-                    {savingAccount ? t("common.saving") : t("profile.saveAccount")}
-                  </Button>
+                  <div className="profile-form-sticky">
+                    <Button type="submit" variant="primary" disabled={savingAccount} className="w-100 w-md-auto">
+                      {savingAccount ? t("common.saving") : t("profile.saveAccount")}
+                    </Button>
+                  </div>
                 </Form>
                 </SectionGroup>
               </Tab.Pane>
