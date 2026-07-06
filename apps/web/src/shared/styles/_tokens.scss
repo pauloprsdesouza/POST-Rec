@@ -102,6 +102,7 @@
   --researchly-page-gutter: var(--researchly-space-4);
   --researchly-page-gutter-md: var(--researchly-space-5);
   --researchly-mobile-chrome-bottom: calc(var(--researchly-bottom-nav-height) + var(--researchly-safe-bottom));
+  --researchly-pwa-bottom-inset: calc(var(--researchly-mobile-chrome-bottom) + var(--researchly-space-4));
   --researchly-touch-min: 2.75rem;
   --researchly-touch-target: var(--researchly-touch-min);
   --researchly-coach-z: 11000;

@@ -308,7 +308,7 @@
   }
 
   html[data-pwa-mode="standalone"] .profile-page .profile-hub__body {
-    padding-bottom: calc(var(--researchly-mobile-chrome-bottom) + 5.5rem);
+    padding-bottom: calc(var(--researchly-pwa-bottom-inset) + 5.5rem);
   }
 }
 

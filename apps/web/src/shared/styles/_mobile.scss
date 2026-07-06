@@ -23,15 +23,12 @@
   }
 
   html[data-pwa-mode="standalone"] {
-    scroll-padding-bottom: calc(var(--researchly-mobile-chrome-bottom) + var(--researchly-space-3));
-  }
-
-  .app-main--with-bottom-nav {
-    padding-bottom: calc(var(--researchly-mobile-chrome-bottom) + var(--researchly-space-4));
+    scroll-padding-bottom: var(--researchly-pwa-bottom-inset);
   }
 
   .app-main {
-    padding-block: var(--researchly-space-3) var(--researchly-space-5);
+    padding-top: var(--researchly-space-3);
+    padding-bottom: var(--researchly-space-5);
   }
 
   .app-main .container-fluid,
@@ -208,7 +205,7 @@
   }
 
   .idea-detail__feedback-dock {
-    scroll-margin-bottom: calc(var(--researchly-mobile-chrome-bottom) + var(--researchly-space-3));
+    scroll-margin-bottom: var(--researchly-pwa-bottom-inset);
   }
 
   .runs-list {
@@ -641,5 +638,24 @@
   .auth-form__subtitle {
     font-size: var(--researchly-text-caption-mobile);
     line-height: 1.5;
+  }
+}
+
+// ── PWA tab bar — keep page content above bottom chrome (all pages) ──
+
+@include down(lg) {
+  html[data-pwa-mode="standalone"] .app-main,
+  html[data-pwa-mode="standalone"] .app-main--with-bottom-nav {
+    padding-bottom: var(--researchly-pwa-bottom-inset);
+  }
+
+  html[data-pwa-mode="standalone"] {
+    .idea-sources-all,
+    .feedback-footer,
+    .idea-viewer > :last-child,
+    .page-stack > :last-child,
+    .run-detail .page-stack > :last-child {
+      scroll-margin-bottom: var(--researchly-pwa-bottom-inset);
+    }
   }
 }

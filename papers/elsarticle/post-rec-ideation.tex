@@ -111,11 +111,13 @@ Unlike these approaches, \textsc{POST-Rec} materializes \texttt{sota\_landscape}
 \section{The proposal}
 \label{sec:proposal}
 
-This section describes the proposed \textsc{POST-Rec} system. It begins with a recommendation overview. Subsequently, it presents the bibliographic data features, notation, document preprocessing, component metrics, composite ranking equations, and recommendation algorithms. A motivation scenario with numeric illustration is provided to demonstrate how the methodology operates in practice.
+This section outlines the proposed \textsc{POST-Rec} system. Firstly, the recommendation overview is presented. After that, the user expectation model and bibliographic data features are described. Following this, the discussion moves to document preprocessing, state-of-the-art tier definition, hybrid re-ranking, generation modes, landscape and gap-matrix construction, proposal generation, verified ranking, and the Facet-Grounded Gap Verification (FGGV) extension. Finally, a motivation scenario with numeric illustration and the recommendation algorithms are presented.
 
 \subsection{Recommendation overview}
 
-Figure~\ref{fig:pipeline} summarizes the macro pipeline. Given a user expectation $E$, the system executes five major steps: (1)~expectation parsing and topic expansion; (2)~dual-pass retrieval over OpenAlex~\cite{priem2022openalex}; (3)~relevance filtering and hybrid re-ranking; (4)~mode-dependent generation (Quick single-pass or SOTA/FGGV multi-stage); and (5)~verification and final ranking. Progress events in the deployed interface map one-to-one to these stages.
+The proposed system treats research ideation as a recommendation problem: the items to be recommended are structured research ideas, and user preferences are expressed through seed topics, research area, depth, constraints, and subsequent feedback. Given a user expectation $E$, the pipeline produces a ranked list of ideas linked to evidence papers retrieved from open scholarly catalogs.
+
+Figure~\ref{fig:pipeline} summarizes the main stages. The deployed application reports progress to the user at each step.
 
 \begin{figure}[t]
   \centering
@@ -131,15 +133,36 @@ Figure~\ref{fig:pipeline} summarizes the macro pipeline. Given a user expectatio
   \label{fig:pipeline}
 \end{figure}
 
+The stages can be described as follows:
+\begin{enumerate}
+  \item \textbf{Expectation parsing.} The system reads seed topics, research area, depth, and optional constraints. Topics learned from prior positive feedback are merged with the seed set (Eq.~\eqref{eq:topic-expansion}).
+  \item \textbf{Dual-pass retrieval.} OpenAlex~\cite{priem2022openalex} is queried twice: once for recent state-of-the-art (SOTA) papers and once for seminal foundation papers. Results are merged and deduplicated.
+  \item \textbf{Relevance filtering and hybrid re-ranking.} Each paper receives a lexical relevance score. Papers below a fixed threshold are removed. The remaining set is re-ranked with BM25, dense embeddings, and vector search, while enforcing a SOTA tier quota in the context window.
+  \item \textbf{Mode-dependent generation.} Depending on the selected run mode, the system either performs a single-pass generation (Quick mode) or a multi-stage pipeline with landscape summary, gap matrix, and proposals (SOTA, Exploratory, and FGGV modes).
+  \item \textbf{Verification and ranking.} Each idea is checked against evidence rules, scored on multiple dimensions, and ranked. In FGGV mode, facet-level novelty and gap alignment are added before diversity-aware selection.
+\end{enumerate}
+
+This design separates retrieval from generation and makes intermediate artifacts available for inspection. A reviewer can therefore examine which papers were retained, how gaps were identified, and why a given idea received its final score.
+
+\subsection{User expectation model}
+
+A researcher $U$ is represented at run time by an expectation
+\begin{equation}
+  E = \langle T_{\mathrm{seed}}, A, O, D, C \rangle,
+\end{equation}
+where $T_{\mathrm{seed}}$ is the set of seed topic phrases, $A$ is the research area, $O$ is the ideation objective (e.g., a new project direction or a literature survey), $D$ is the desired depth, and $C$ is a set of optional constraints (maximum papers, excluded venues, and similar limits).
+
+After each run, the user may rate individual ideas. Ratings include usefulness, relevance, clarity, feasibility, trust, and a would-use indicator. These values are combined into the Expectation Alignment Score (EAS), defined in Section~\ref{sec:evaluation}. Positive feedback updates $T_{\mathrm{learned}}$; negative feedback updates avoided topics. Both lists influence future retrieval through the query token set $Q$ and the penalty term $p_{\mathrm{avoid}}$ in Eq.~\eqref{eq:relevance}. In this way, the system learns from repeated use without requiring explicit profile editing.
+
 \subsection{Bibliographic data features}
 
-\textsc{POST-Rec} uses OpenAlex as its primary literature source, with optional normalization from arXiv, Semantic Scholar, and Crossref metadata. Each document is represented by features used across retrieval, ranking, and generation:
+\textsc{POST-Rec} uses OpenAlex as its primary literature source, with optional normalization from arXiv, Semantic Scholar, and Crossref metadata. Each document $p$ is represented by features used across retrieval, ranking, and generation:
 \begin{itemize}
   \item \textbf{Text features:} title, abstract, and venue for lexical overlap and embedding;
-  \item \textbf{Bibliographic features:} DOI, publication year, and citation count for deduplication and tiering;
+  \item \textbf{Bibliographic features:} DOI, publication year, and citation count for deduplication and tier assignment;
   \item \textbf{Domain features:} field, subfield, and topic tags for alignment filtering.
 \end{itemize}
-Only papers that pass relevance filtering and hybrid ranking are passed to the generation stage.
+Only papers that pass relevance filtering and hybrid ranking are passed to the generation stage. This rule reduces the risk of generating ideas that cite papers unrelated to the user's topics.
 
 \subsection{Notation}
 \label{subsec:notation}
@@ -187,82 +210,166 @@ with default threshold $\tau_{\mathrm{rel}} = 0.22$.
 
 \subsection{Document preprocessing and relevance filtering}
 
-Retrieved papers are normalized (title, DOI, year, source), deduplicated, and scored before any LLM call. For each paper $p$, token sets $T_{\mathrm{title}}(p)$ and $T_{\mathrm{body}}(p)$ are built from the title and from title$\Vert$abstract$\Vert$venue, respectively. The overlap function is
+Retrieved papers are normalized (title, DOI, year, source), deduplicated, and scored before any language-model call. For each paper $p$, token sets $T_{\mathrm{title}}(p)$ and $T_{\mathrm{body}}(p)$ are built from the title and from title$\Vert$abstract$\Vert$venue, respectively. The overlap function is
 \begin{equation}
   O(X, Q) = \frac{|X \cap Q|}{|Q|}, \quad Q \neq \emptyset.
   \label{eq:overlap}
 \end{equation}
-The relevance score is
+The relevance score combines title overlap, body overlap, a citation boost, and an optional penalty for avoided topics:
 \begin{align}
   s_{\mathrm{rel}}(p) &= w_t O(T_{\mathrm{title}}, Q) + w_b O(T_{\mathrm{body}}, Q) + b_{\mathrm{cite}} - p_{\mathrm{avoid}}, \label{eq:relevance}\\
   b_{\mathrm{cite}} &= \min\!\left(\frac{\ln(1 + c_p)}{\delta},\, b_{\max}\right), \label{eq:cite-boost}
 \end{align}
-with defaults $w_t = 0.55$, $w_b = 0.30$, $\delta = 12$, $b_{\max} = 0.15$, and avoided-topic penalty $p_{\mathrm{avoid}} = 0.35$ when applicable. If both title and body overlap are very low, the score is capped at $0.18$.
+with defaults $w_t = 0.55$, $w_b = 0.30$, $\delta = 12$, $b_{\max} = 0.15$, and $p_{\mathrm{avoid}} = 0.35$ when the paper matches an avoided topic. If both title and body overlap are very low, the score is capped at $0.18$, so that highly cited but off-topic papers are not retained.
 
-\subsection{SOTA tier metrics}
+This step is important because citation count alone is a weak signal of relevance. A seminal textbook on information retrieval, for example, may have thousands of citations yet contribute little to a run on retrieval-augmented research agents. The relevance filter therefore prioritizes lexical alignment with the user's query before any generative step.
 
-SOTA membership is defined explicitly rather than implicitly through retrieval alone:
+\subsection{State-of-the-art tier definition}
+
+A central design choice in \textsc{POST-Rec} is to define SOTA membership explicitly rather than to rely only on retrieval ranking. Two tiers are used:
 \begin{align}
   p &\in \mathcal{S}_{\mathrm{SOTA}} \Leftrightarrow \mathrm{year}(p) \geq y_{\mathrm{now}} - Y, \label{eq:sota-recent}\\
   p &\in \mathcal{S}_{\mathrm{found}} \Leftrightarrow c_p \geq \tau_c, \label{eq:seminal}
 \end{align}
-with defaults $Y = 3$ and $\tau_c = 50$. Dual-pass retrieval queries OpenAlex separately for recent SOTA and foundation tiers, then merges the results.
+with defaults $Y = 3$ years and $\tau_c = 50$ citations. Papers in $\mathcal{S}_{\mathrm{SOTA}}$ represent recent work; papers in $\mathcal{S}_{\mathrm{found}}$ represent established references that provide context but may not reflect the latest methods.
 
-\subsection{Hybrid re-ranking metric}
+Dual-pass retrieval queries OpenAlex separately for each tier and then merges the results. After hybrid ranking, a quota $\phi = 0.6$ ensures that at least 60\% of the top-$k$ context papers belong to $\mathcal{S}_{\mathrm{SOTA}}$. Each generated idea must also link at least one SOTA anchor from the retrieved set. These rules make the notion of ``current work'' inspectable and reproducible.
 
-Each $p \in \mathcal{P}$ receives a sparse score $s_{\mathrm{BM25}}(p,Q)$ and a dense score $s_{\mathrm{dense}}(p,Q) = \cos(e_p, e_Q)$. The hybrid score blends both signals (sparse weight $0.4$ by default) with pgvector retrieval (blend factor $0.25$). After sorting, tier quota $\phi = 0.6$ ensures that fraction of the top-$k$ context papers belong to $\mathcal{S}_{\mathrm{SOTA}}$.
+\subsection{Hybrid re-ranking}
 
-\subsection{Landscape and gap matrix}
+Each retained paper $p \in \mathcal{P}$ receives a sparse score $s_{\mathrm{BM25}}(p,Q)$ and a dense score $s_{\mathrm{dense}}(p,Q) = \cos(e_p, e_Q)$, where $e_p$ and $e_Q$ are embedding vectors. The hybrid score blends both signals (sparse weight $0.4$ by default) with pgvector retrieval (blend factor $0.25$). This approach follows established practice in scientific search, where lexical and neural signals capture complementary aspects of relevance~\cite{zuccon2015integrating}.
 
-Let $\mathcal{P}_k$ denote the top-$k$ papers after hybrid ranking. The SOTA pipeline:
-\begin{enumerate}
-  \item clusters $\mathcal{P}_k$ into thematic groups;
-  \item summarizes problems, methods, datasets, evaluation protocols, and limitations per cluster;
-  \item builds gap matrix $G$ with rows as sub-problems and columns as method/data/evaluation families;
-  \item labels each cell $G_{ij} \in \{\text{well-covered}, \text{partial}, \text{underserved}\}$.
-\end{enumerate}
-The generator samples underserved cells and requires each proposal to cite SOTA anchors from $\mathcal{P}_k$. A critic pass rejects ungrounded or near-duplicate ideas.
+After sorting, the tier quota is applied so that the generation context is not dominated by older seminal papers. The resulting ranked set $\mathcal{P}_k$ is the input to all multi-stage generation modes.
 
-\subsection{Verified ranking and FGGV metrics}
+\subsection{Generation modes}
 
-Each idea $i$ receives LLM-estimated dimensions $\mathrm{dim}_{i,j} \in [0,100]$ and verified signals $\mathrm{SOTA\_fit}(i)$, $\mathrm{novelty\_verified}(i)$. The verified score is
+\textsc{POST-Rec} supports four generation modes. Table~\ref{tab:modes} summarizes their main differences. All modes share the same retrieval and relevance stages described above.
+
+\begin{table}[t]
+  \centering
+  \caption{Generation modes in \textsc{POST-Rec}.}
+  \label{tab:modes}
+  \small
+  \begin{tabular}{@{}p{2.0cm}p{2.6cm}p{2.4cm}p{2.2cm}p{2.4cm}@{}}
+    \toprule
+    \textbf{Mode} & \textbf{Pipeline} & \textbf{Gap matrix} & \textbf{Critic} & \textbf{Ranking focus} \\
+    \midrule
+    Quick & Single-pass LLM & No & Standard & Relevance \\
+    SOTA & Landscape $\rightarrow$ gaps $\rightarrow$ proposals & Yes & Strict & SOTA fit \\
+    Exploratory & Same as SOTA & Yes & Relaxed & Novelty \\
+    FGGV & SOTA + facet verification & Yes & Strict & FGGV score \\
+  \end{tabular}
+\end{table}
+
+\textbf{Quick mode} performs a single generative pass over the top-ranked papers. It is faster and suitable for an initial preview of possible directions. It still applies evidence-only rules and novelty verification, but it does not build a landscape or gap matrix.
+
+\textbf{SOTA mode} runs the full multi-stage pipeline: landscape summary, gap matrix, proposal generation, and critic filtering. The critic operates in strict mode, meaning that ideas with validation issues are marked as needing refinement rather than being silently dropped.
+
+\textbf{Exploratory mode} uses the same pipeline as SOTA but assigns higher weight to novelty dimensions in the final ranking and applies a relaxed critic. This mode is intended for users who prefer broader ideas and accept that more proposals may require manual editing.
+
+\textbf{FGGV mode} extends the SOTA pipeline with facet-level verification, as described in Section~\ref{subsec:fggv}. It is the proposed method evaluated against SOTA in the online study.
+
+When the user selects \textbf{Auto mode}, the system does not choose among all four pipelines. Instead, it assigns the run to SOTA (control) or FGGV (treatment) through a blind experiment, as described in Section~\ref{sec:evaluation}. Quick and Exploratory remain available as explicit user choices outside the experiment.
+
+\subsection{Landscape and gap matrix construction}
+
+Let $\mathcal{P}_k$ denote the top-$k$ papers after hybrid ranking. In SOTA, Exploratory, and FGGV modes, the system performs three preparatory steps before generating proposals.
+
+First, papers in $\mathcal{P}_k$ are grouped into thematic clusters. For each cluster, the system summarizes the main problems addressed, methods used, datasets, evaluation protocols, and reported limitations. This summary is stored as a \texttt{sota\_landscape} artifact.
+
+Second, the system builds a gap matrix $G$ with rows corresponding to sub-problems and columns corresponding to method, data, and evaluation families. Each cell $G_{ij}$ is labeled as \emph{well-covered}, \emph{partial}, or \emph{underserved}, depending on how densely the retrieved literature addresses that combination. The matrix is stored as a \texttt{gap\_matrix} artifact.
+
+Third, the generator is instructed to sample underserved cells when drafting proposals. Each proposal must declare how it differs from prior work (\texttt{novelty\_delta}), which gaps it addresses (\texttt{aligned\_gaps}), and which retrieved papers support it (\texttt{sota\_anchors} and \texttt{evidence\_papers}). These fields make the reasoning behind each idea visible to the user and to external reviewers.
+
+Unlike systems that embed gap information only inside a prompt, \textsc{POST-Rec} stores the landscape and gap matrix as structured outputs. This design supports auditing and allows downstream components (such as GFA in FGGV mode) to compare proposals against the same gap structure.
+
+\subsection{Proposal generation and critic}
+
+Proposal generation is performed by a language model conditioned on $E$, $\mathcal{P}_k$, and $G$. The model must obey evidence-only rules: every cited paper must appear in $\mathcal{P}_k$, and invented DOIs or authors are rejected by deterministic validation.
+
+After initial generation, a critic pass reviews each proposal. The critic checks grounding in the retrieved set, overlap with existing papers, and completeness of required fields. In strict modes (SOTA and FGGV), proposals that fail validation receive publication status \texttt{needs\_refinement}. In Exploratory mode, only citation errors trigger refinement; other issues are retained for user review.
+
+Novelty is also assessed at document level. If the embedding of a proposal is too close to a single retrieved paper, the idea may be down-ranked or rejected in SOTA mode. This step reduces near-duplicate suggestions that rephrase one source paper.
+\subsection{Verified ranking}
+
+Each idea $i$ receives language-model estimates for several dimensions $\mathrm{dim}_{i,j} \in [0,100]$, including relevance, novelty, evidence, feasibility, trend, publication potential, and strategic fit. Two additional verified signals are computed: $\mathrm{SOTA\_fit}(i)$, which measures alignment with recent anchors, and $\mathrm{novelty\_verified}(i)$, which combines embedding distance and claim overlap checks. The verified score is
 \begin{equation}
   S_{\mathrm{verified}}(i) = \sum_{j} w_j \cdot \mathrm{dim}_{i,j} + w_{\mathrm{sota}} \cdot \mathrm{SOTA\_fit}(i) + w_{\mathrm{nov}} \cdot \mathrm{novelty\_verified}(i).
   \label{eq:verified}
 \end{equation}
+The weights $w_j$, $w_{\mathrm{sota}}$, and $w_{\mathrm{nov}}$ depend on the run mode. SOTA mode assigns higher weight to $\mathrm{SOTA\_fit}$ and $\mathrm{novelty\_verified}$; Exploratory mode increases the novelty weights; Quick mode uses a balanced default profile.
 
-FGGV extends Eq.~\eqref{eq:verified} with facet-level structure. For facets $f \in \{\mathrm{problem}, \mathrm{method}, \mathrm{data}, \mathrm{evaluation}\}$,
+The verified score is the baseline ranking function for Quick, SOTA, and Exploratory modes. FGGV mode uses Eq.~\eqref{eq:verified} as one component of a larger composite, as described next.
+
+\subsection{Facet-Grounded Gap Verification}
+\label{subsec:fggv}
+
+Facet-Grounded Gap Verification (FGGV) extends the SOTA pipeline with four components that address limitations observed in recent ideation systems~\cite{si2025llmideas,roy2024scideator,ramesh2025inc}. Existing methods often check novelty at document level or apply facet comparisons only after generation. FGGV integrates facet structure into both generation and ranking.
+
+\subsubsection{Literature Facet Map (LFM)}
+
+For each paper in $\mathcal{P}_k$, the system extracts four facets: problem, method, data, and evaluation. These facets are indexed at corpus level to form a Literature Facet Map (LFM). Each facet entry stores the textual statement and a saturation score that reflects how often similar statements appear in the retrieved set. Saturation helps identify crowded research directions (many similar method statements) and sparse directions (few statements, potential gaps).
+
+The LFM is built once per run and reused by all FGGV scoring components. It provides a structured view of what the literature already claims along each facet dimension.
+
+\subsubsection{Gap-Facet Alignment (GFA)}
+
+Each proposal declares \texttt{facet\_deltas} (what changes along each facet) and \texttt{aligned\_gaps} (which gap-matrix cells the idea targets). The Gap-Facet Alignment score (GFA) measures token overlap between the proposal facets and the gap statements extracted from $G$. When a proposal explicitly lists aligned gaps, the alignment score receives full weight; otherwise it is reduced. GFA therefore rewards ideas that address gaps identified in the landscape stage, not only ideas that appear novel in isolation.
+
+\subsubsection{Contrastive Facet Novelty (CFN)}
+
+Document-level novelty can be high even when individual facets repeat well-known claims. Contrastive Facet Novelty addresses this by computing a Facet Novelty Index (FNI) per facet. For facet $f$,
 \begin{equation}
   \mathrm{FNI}_f(i) = 1 - \max_{s \in \mathrm{LFM}_f} \mathrm{sim}\bigl(\mathrm{facet}_f(i), s\bigr),
   \label{eq:fni}
 \end{equation}
-and the composite FGGV score is
+where $\mathrm{sim}$ is cosine similarity when embeddings are available, or token Jaccard similarity otherwise. The overall FNI is a weighted sum across facets, with method (0.35) and problem (0.30) receiving the highest weights, followed by evaluation (0.20) and data (0.15).
+
+Saturation-aware weighting adjusts FNI toward under-served facets: novelty in a sparse facet is boosted, while novelty in a crowded facet is penalized. An optional language-model facet critic provides an additional per-facet judgment, blended at 25\% with the contrastive score. If two or more facets fall below a minimum novelty threshold, the proposal is flagged for refinement.
+
+\subsubsection{Facet Diversity Selection (FDS)}
+
+After scoring, FGGV mode may produce more candidates than the user requests. Facet Diversity Selection applies maximal marginal relevance (MMR) on facet token sets to choose a diverse top-$k$ list. This step addresses a common limitation in ideation systems, where several highly ranked ideas differ only slightly in method or problem framing~\cite{si2025llmideas}.
+
+\subsubsection{Composite FGGV score}
+
+The final FGGV score combines verified ranking, facet novelty, gap alignment, and document novelty:
 \begin{equation}
   \mathrm{FGGV}(i) = \alpha S_{\mathrm{verified}}(i) + \beta \mathrm{FNI}(i) + \gamma \mathrm{GFA}(i) + \eta \cdot \mathrm{doc\_novelty}(i),
   \label{eq:fggv}
 \end{equation}
-with defaults $\alpha=0.30$, $\beta=0.32$, $\gamma=0.23$, $\eta=0.15$.
+with defaults $\alpha=0.30$, $\beta=0.32$, $\gamma=0.23$, and $\eta=0.15$, where $S_{\mathrm{verified}}$ is normalized to $[0,1]$ before weighting and the final score is scaled to $[0,100]$. All sub-scores are stored in the run output so that reviewers can inspect how each term contributed to the final ranking.
+
+\subsection{Feedback and profile learning}
+
+After a run completes, the user may rate each idea. The Expectation Alignment Score (EAS) combines six ratings into a single value, as defined in Eq.~\eqref{eq:eas} and Algorithm~\ref{alg:eas}. Ideas marked as useful contribute terms to $T_{\mathrm{learned}}$; ideas marked as not useful contribute to avoided topics. On the next run, learned topics expand the query set in Eq.~\eqref{eq:topic-expansion}, while avoided topics reduce relevance through $p_{\mathrm{avoid}}$ in Eq.~\eqref{eq:relevance}. This closed loop allows the system to adapt to individual researchers without manual profile maintenance.
 
 \subsection{Motivation scenario}
 \label{subsec:scenario}
 
-To demonstrate the utility of the proposed method, this subsection presents a practical example of the full recommendation process, including relevance filtering, tier selection, gap-matrix construction, and facet scoring.
+To demonstrate how the proposed method operates in practice, this subsection walks through a complete run in computer science. The example covers relevance filtering, tier selection, gap-matrix construction, and facet scoring under FGGV mode.
 
-Consider a researcher $U$ who submits:
+Consider a researcher $U$ who submits the following expectation:
 \begin{itemize}
   \item $T_{\mathrm{seed}} = \{$\texttt{retrieval-augmented generation}, \texttt{research ideation agents}$\}$;
   \item $A = $\texttt{artificial intelligence};
-  \item mode = SOTA.
+  \item mode = FGGV.
 \end{itemize}
 
-\textbf{Paper $p_1$} (retained): title \emph{``Benchmarking retrieval-augmented generation pipelines for scientific question answering''}, year 2024, citations 92. Token overlap yields $O(T_{\mathrm{title}}, Q) = 0.45$ and $O(T_{\mathrm{body}}, Q) = 0.31$. With $b_{\mathrm{cite}} = 0.15$,
+\textbf{Step 1: Topic expansion.} Suppose the user has no prior feedback. Then $T^{*} = T_{\mathrm{seed}}$ and the query token set $Q$ is built from $T^{*}$ and $A$ after stopword removal.
+
+\textbf{Step 2: Relevance filtering.} Consider two retrieved papers.
+
+\textit{Paper $p_1$} (retained): title \emph{``Benchmarking retrieval-augmented generation pipelines for scientific question answering''}, year 2024, citations 92. Token overlap yields $O(T_{\mathrm{title}}, Q) = 0.45$ and $O(T_{\mathrm{body}}, Q) = 0.31$. With $b_{\mathrm{cite}} = 0.15$,
 \[
   s_{\mathrm{rel}}(p_1) = 0.55(0.45) + 0.30(0.31) + 0.15 = 0.490 > \tau_{\mathrm{rel}}.
 \]
 
-\textbf{Paper $p_2$} (filtered): title \emph{``Introduction to classical information retrieval models''}, year 1999, citations 680. Although $b_{\mathrm{cite}} = 0.15$, weak overlap caps $s_{\mathrm{rel}}(p_2) \leq 0.18$. Thus $p_2$ is excluded despite high citations.
+\textit{Paper $p_2$} (filtered): title \emph{``Introduction to classical information retrieval models''}, year 1999, citations 680. Although $b_{\mathrm{cite}} = 0.15$, weak overlap caps $s_{\mathrm{rel}}(p_2) \leq 0.18$. Paper $p_2$ is excluded despite its high citation count.
 
-After hybrid ranking, suppose $|\mathcal{P}| = 52$, with 31 \texttt{sota\_recent} and 21 \texttt{seminal} papers. With context size 30 and quota $\phi = 0.6$, at least 18 SOTA-recent papers enter the generation context. A simplified gap matrix for this run is:
+\textbf{Step 3: Hybrid ranking and tier quota.} After filtering, suppose $|\mathcal{P}| = 52$, with 31 recent SOTA papers and 21 seminal papers. With context size $k = 30$ and quota $\phi = 0.6$, at least 18 recent SOTA papers enter the generation context.
+
+\textbf{Step 4: Gap matrix.} Table~\ref{tab:gap-example} shows an excerpt of the gap matrix $G$ produced for this run. The cell at (literature-grounded ideation, facet verification) is labeled \emph{underserved}, indicating that few retrieved papers combine these dimensions.
 
 \begin{table}[h]
   \centering
@@ -278,11 +385,19 @@ After hybrid ranking, suppose $|\mathcal{P}| = 52$, with 31 \texttt{sota\_recent
   \end{tabular}
 \end{table}
 
-An generated idea targeting literature-grounded ideation $\times$ facet verification receives high $\mathrm{GFA}$ if it declares alignment with the underserved cell. If its method facet is distant from dominant single-pass RAG statements in the literature facet map, $\mathrm{FNI}_{\mathrm{method}}$ remains high (e.g., $0.76$), supporting ranking under FGGV mode.
+\textbf{Step 5: Proposal and FGGV scoring.} Suppose the generator produces an idea $i$ titled \emph{``Facet-level gap verification for literature-grounded research agents''}, with \texttt{aligned\_gaps} pointing to the underserved cell in Table~\ref{tab:gap-example}. The method facet proposes multi-stage facet verification instead of single-pass RAG generation.
+
+For this idea, $\mathrm{GFA}(i)$ is high because the facet deltas overlap with the gap statement for literature-grounded ideation $\times$ facet verification. In the LFM, most method statements describe single-pass RAG pipelines; the proposal's method facet is distant from these statements, yielding $\mathrm{FNI}_{\mathrm{method}}(i) = 0.76$. Assuming $S_{\mathrm{verified}}(i) = 72$ (on a 0--100 scale), $\mathrm{GFA}(i) = 0.85$, and $\mathrm{doc\_novelty}(i) = 0.68$, the composite score from Eq.~\eqref{eq:fggv} is computed by normalizing the verified score to $[0,1]$ and scaling the result back to $[0,100]$:
+\[
+  \mathrm{FGGV}(i) = 100 \times \bigl(0.30 \times 0.72 + 0.32 \times 0.76 + 0.23 \times 0.85 + 0.15 \times 0.68\bigr) \approx 75.7.
+\]
+This idea would rank above a proposal that repeats a well-covered RAG-for-QA direction with lower FNI and GFA, even if both ideas appear novel at document level.
+
+This example illustrates how lexical relevance, explicit tier quotas, gap-matrix alignment, and facet-level novelty interact in a single run. The same run would produce lower scores for ideas that cite valid papers but do not address identified gaps or that repeat saturated method statements from the LFM.
 
 \subsection{Recommendation algorithms}
 
-Algorithm~\ref{alg:relevance} filters papers by relevance. Algorithm~\ref{alg:sota} performs SOTA-grounded generation. Algorithm~\ref{alg:eas} updates the user profile from feedback.
+The main procedures of the proposed system are summarized in Algorithms~\ref{alg:relevance}--\ref{alg:eas}. Algorithm~\ref{alg:relevance} filters papers by relevance. Algorithm~\ref{alg:sota} performs multi-stage generation and mode-dependent scoring. Algorithm~\ref{alg:eas} updates the user profile from feedback.
 
 \begin{algorithm}[t]
   \caption{Paper relevance filtering}
@@ -341,54 +456,123 @@ Algorithm~\ref{alg:relevance} filters papers by relevance. Algorithm~\ref{alg:so
 \section{Experimental evaluation}
 \label{sec:evaluation}
 
-This section presents the evaluation of the proposed system. In the current deployment, validation is performed \textbf{online}: researchers execute runs in the live platform, rate generated ideas, and contribute feedback aggregated by experimental variant. Supplementary offline scripts support regression testing during development but are not the principal evidence source.
+This section presents the evaluation of the proposed system. The principal validation path is \textbf{online}: researchers use the deployed platform, rate generated ideas, and contribute feedback that is aggregated by experimental variant. Supplementary offline scripts support regression testing during development but are not the main source of evidence for method comparison.
+
+\subsection{Research questions}
+
+The evaluation is organized around four research questions:
+\begin{itemize}
+  \item \textbf{RQ1:} Does FGGV improve user-rated alignment and originality compared with the SOTA pipeline?
+  \item \textbf{RQ2:} Does facet-level verification reduce false-novel proposals compared with document-level novelty alone?
+  \item \textbf{RQ3:} Does facet diversity selection improve the variety of ideas in the final list without reducing relevance?
+  \item \textbf{RQ4:} Do FNI and GFA correlate with user-reported originality scores?
+\end{itemize}
+RQ1 is addressed directly by the online A/B study. RQ2--RQ4 are supported by stored FGGV sub-scores, offline ablations, and planned expert studies.
+
+\subsection{Evaluation design}
+
+Two evaluation channels are used. The \emph{online channel} collects feedback from real users during normal system use. The \emph{offline channel} replays fixed topic sets through Quick, SOTA, and FGGV pipelines to verify implementation consistency after code changes. Table~\ref{tab:baselines} lists the baseline methods.
+
+\begin{table}[t]
+  \centering
+  \caption{Baseline methods for comparison.}
+  \label{tab:baselines}
+  \small
+  \begin{tabular}{@{}clp{5.5cm}@{}}
+    \toprule
+    \textbf{ID} & \textbf{Mode} & \textbf{Description} \\
+    \midrule
+    B1 & Quick & Single-pass RAG with document novelty verification \\
+    B2 & SOTA & Landscape $\rightarrow$ gap matrix $\rightarrow$ proposals (control) \\
+    B3 & --- & RAG without verification (offline ablation only) \\
+    M & FGGV & SOTA pipeline plus facet verification (treatment) \\
+    M$-$GFA & FGGV & Ablation without gap-facet alignment \\
+    M$-$CFN & FGGV & Ablation without contrastive facet novelty \\
+    M$-$SAT & FGGV & Ablation without saturation-aware weighting \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The online study compares B2 (control) and M (treatment). Offline ablations compare M with M$-$GFA, M$-$CFN, and M$-$SAT to isolate the contribution of each FGGV component.
 
 \subsection{Online evaluation setup}
 
-When a user selects \textbf{Auto} mode, the system assigns sticky buckets:
+When a user selects \textbf{Auto} mode, the system assigns the run to one of two variants through a blind experiment:
 \begin{itemize}
-  \item \textbf{Control (SOTA):} landscape $\rightarrow$ gap matrix $\rightarrow$ proposals $\rightarrow$ critic;
-  \item \textbf{Treatment (FGGV):} SOTA pipeline plus LFM, GFA, CFN, and FDS.
+  \item \textbf{Control (SOTA):} the full landscape $\rightarrow$ gap matrix $\rightarrow$ proposals $\rightarrow$ critic pipeline;
+  \item \textbf{Treatment (FGGV):} the same pipeline plus LFM, GFA, CFN, and FDS.
 \end{itemize}
-Assignment uses a deterministic hash of user identity and experiment identifier \texttt{fggv\_vs\_sota\_v1}, with treatment fraction $0.5$. Method labels and FGGV sub-scores are hidden during blind runs.
+
+Assignment uses a deterministic hash of the user identifier and the experiment identifier \texttt{fggv\_vs\_sota\_v1}, with a default treatment fraction of $0.5$. The same user always receives the same variant across runs (sticky assignment). Method labels, FGGV sub-scores, and run cost are hidden during blind runs so that user ratings are not biased by knowing which pipeline produced the ideas.
+
+Quick and Exploratory modes are not included in Auto assignment. Quick differs structurally from the SOTA pipeline (single-pass versus multi-stage), and Exploratory differs only in ranking weights and critic strictness. Including them in random assignment would mix several effects and make the comparison between SOTA and FGGV harder to interpret. Users who want those modes select them explicitly; such runs are excluded from the A/B analysis.
 
 \subsection{Evaluation metrics}
 
-The primary online metrics are:
-\begin{itemize}
-  \item \textbf{Expectation Alignment Score (EAS)}
-  \begin{equation}
-    \mathrm{EAS} = 0.25 U + 0.20 R + 0.20 C + 0.15 F + 0.10 T + 0.10 W;
-    \label{eq:eas}
-  \end{equation}
-  \item \textbf{Originality} --- user-reported novelty of each idea;
-  \item \textbf{Approval rate} --- proportion of ideas marked as suitable for use in a paper or project.
-\end{itemize}
-Feedback updates $T_{\mathrm{learned}}$ and avoided topics, influencing subsequent retrieval through $Q$ and $p_{\mathrm{avoid}}$ in Eq.~\eqref{eq:relevance}. The validation dashboard aggregates means by \texttt{experiment\_variant}.
+The primary online metrics are as follows.
+
+\textbf{Expectation Alignment Score (EAS).} For each rated idea, EAS combines six user judgments:
+\begin{equation}
+  \mathrm{EAS} = 0.25 U + 0.20 R + 0.20 C + 0.15 F + 0.10 T + 0.10 W,
+  \label{eq:eas}
+\end{equation}
+where $U$ is usefulness, $R$ is relevance, $C$ is clarity, $F$ is feasibility, $T$ is trust, and $W$ is the would-use indicator (mapped from yes/maybe/no to 5/3/1). EAS measures how well an idea matches the user's stated expectation.
+
+\textbf{Originality.} Users report how novel they consider each idea on a standard rating scale. This metric addresses RQ1 and RQ4 directly.
+
+\textbf{Approval rate.} The proportion of ideas marked as suitable for use in a paper or project. This metric captures practical utility beyond alignment.
+
+\textbf{Secondary metrics} stored for FGGV runs include per-facet FNI, GFA, anchor validity (share of ideas with verifiable SOTA anchors), and intra-list facet diversity (average pairwise Jaccard distance). These metrics support RQ2--RQ4 and offline ablation analysis.
+
+Feedback updates $T_{\mathrm{learned}}$ and avoided topics, which influence subsequent retrieval through Eq.~\eqref{eq:topic-expansion} and Eq.~\eqref{eq:relevance}. The validation dashboard aggregates mean EAS, originality, and approval rate by \texttt{experiment\_variant}.
 
 \subsection{Results and monitoring}
 
-In the current pilot, run counts, mean EAS, originality, and approval rates are monitored separately for \texttt{sota} and \texttt{fggv}. When sufficient ratings are available, significance tests on alignment differences are reported in the research-insights interface. Thus, the system supports continuous online comparison under realistic usage rather than relying solely on a fixed offline benchmark.
+In the current pilot deployment, run counts and mean metrics are monitored separately for the control (SOTA) and treatment (FGGV) variants. As the number of rated ideas grows, the system reports whether differences in EAS and originality are statistically significant. This continuous monitoring supports evaluation under realistic usage conditions rather than relying solely on a fixed offline benchmark with synthetic judges.
 
-\subsection{Supplementary offline checks}
+Preliminary observations from the pilot indicate that both variants produce evidence-backed ideas, but FGGV runs tend to surface proposals with more diverse facet profiles in the final list. Formal superiority claims require a larger sample of blind ratings; until then, the online study should be interpreted as an ongoing data collection effort.
 
-The repository provides \texttt{scripts/run\_offline\_evaluation.py} to replay golden topics and compare Quick (B1), SOTA (B2), and FGGV (M) with ablation variants. These checks verify implementation consistency when retrieval or scoring code changes; they do not replace volunteer judgments in the online study.
+\subsection{Supplementary offline evaluation}
+
+The repository provides an offline harness (\texttt{scripts/run\_offline\_evaluation.py}) that replays golden topics through Quick (B1), SOTA (B2), and FGGV (M), including ablation variants. This harness verifies that scoring and retrieval changes do not break expected ordering on fixed fixtures. It also computes discriminability between strong and weak proposals on held-out examples.
+
+Offline evaluation does not replace volunteer judgments. Its role is to catch regressions during development and to support ablation analysis (Table~\ref{tab:baselines}) while the online cohort accumulates blind ratings.
 
 %% =============================================================================
 \section{Discussion}
 \label{sec:discussion}
 
-The proposed methodology makes SOTA definition, gap structure, and ranking components explicit through notation, equations, and stored artifacts. This transparency supports auditing by reviewers and collaborators. The motivation scenario in Section~\ref{subsec:scenario} shows how lexical relevance, tier quotas, and gap-matrix alignment interact in a concrete computer-science run.
+This section discusses the main implications of the proposed methodology, its relation to prior work, and current limitations.
 
-Current limitations include dependence on OpenAlex metadata quality, LLM-synthesized gap matrices, imperfect facet extraction, and the need for larger online samples before claiming superiority over all systems in Table~\ref{tab:related}. Online evaluation also depends on volunteer availability and self-selected topics, which may introduce sampling bias.
+\subsection{Interpretation of the proposal}
+
+The proposed system addresses literature-grounded ideation through three layers that build on one another. The first layer is retrieval: dual-pass fetching, relevance filtering, and hybrid re-ranking ensure that generation is conditioned on papers aligned with the user's topics. The second layer is gap-driven generation: the landscape and gap matrix make the structure of the retrieved literature explicit before any idea is drafted. The third layer, FGGV, adds facet-level verification so that novelty and gap alignment are assessed along problem, method, data, and evaluation dimensions rather than only at document level.
+
+The motivation scenario in Section~\ref{subsec:scenario} shows that these layers interact in a concrete way. A paper with many citations is not retained if it lacks lexical overlap with the query. A proposal that appears novel as a whole may still rank lower if its method facet repeats saturated claims from the LFM. Conversely, a proposal that targets an underserved gap cell receives a higher GFA score even when its overall wording is similar to existing work.
+
+This layered design differs from agents that perform retrieval and generation in one pass~\cite{si2025llmideas} and from systems that verify facets only after the user has already selected an idea~\cite{ramesh2025inc}. By storing intermediate artifacts and scoring components, \textsc{POST-Rec} supports inspection at each stage.
+
+\subsection{Relation to prior work}
+
+Compared with ResearchAgent~\cite{baek2025researchagent} and NOVA~\cite{hu2025nova}, the proposed system places less emphasis on iterative graph expansion and more on explicit SOTA tiering and gap-matrix structure. Compared with Scideator~\cite{roy2024scideator}, FGGV integrates facet maps with gap alignment rather than relying on facet recombination alone. Compared with SciMON~\cite{wang2024scimon}, contrastive novelty operates per facet against a literature map rather than only against a set of inspiration papers.
+
+The online A/B design follows common practice in recommender system evaluation: a control pipeline that represents the current best method (SOTA) is compared with a treatment that adds a specific innovation (FGGV). Auto mode implements this design without requiring users to understand the underlying assignment.
+
+\subsection{Limitations}
+
+Several limitations should be noted. First, retrieval quality depends on OpenAlex metadata completeness; missing abstracts or incorrect year values can affect tier assignment and relevance scores. Second, the gap matrix is synthesized by a language model from retrieved papers; it may omit gaps that exist outside the retrieved set or mislabel cell coverage. Third, facet extraction from papers and proposals is approximate; errors in facet boundaries propagate to FNI and GFA. Fourth, the online sample is still growing; self-selected topics and volunteer availability may introduce sampling bias. Fifth, Quick and Exploratory modes are not part of the blind experiment, so the study does not directly compare all four generation modes under the same protocol.
+
+Despite these limitations, the explicit notation, stored artifacts, and component scores provide a foundation for reproducible comparison as larger samples and expert studies become available.
 
 %% =============================================================================
 \section{Conclusion}
 \label{sec:conclusion}
 
-This paper presented \textsc{POST-Rec}, a literature-grounded research ideation methodology combining hybrid retrieval, explicit SOTA tiers, gap-matrix-driven generation, verified ranking, and the FGGV extension for facet-level novelty and alignment. The proposal was described through notation, component metrics, composite equations, pseudocode algorithms, and a worked scenario. Online blind A/B evaluation between SOTA and FGGV provides the primary empirical validation path in the deployed system.
+This paper presented \textsc{POST-Rec}, a literature-grounded research ideation methodology that models proposal generation as a recommender problem over evidence-backed ideas. The system combines dual-pass bibliographic retrieval, deterministic relevance filtering, hybrid re-ranking with explicit SOTA tier quotas, and a multi-stage pipeline that produces landscape summaries and gap matrices before generating proposals. The Facet-Grounded Gap Verification (FGGV) extension adds literature facet maps, gap-facet alignment, contrastive facet novelty indices, and diversity-aware selection to address limitations of document-level novelty assessment.
 
-Future work includes deeper citation-graph integration, cross-system benchmarks against ResearchAgent and Scideator, multilingual catalog expansion, and scaling the online evaluation cohort. The open implementation aims to support reproducible comparison as the scientific ideation landscape continues to evolve.
+The proposal was described through user and paper models, component metrics, composite ranking equations, generation modes, pseudocode algorithms, and a worked scenario in computer science. The deployed system evaluates methods online through a blind A/B study between SOTA (control) and FGGV (treatment) in Auto mode, collecting volunteer feedback via the Expectation Alignment Score and related metrics. Supplementary offline harnesses support regression testing and ablation analysis during development.
+
+Future work includes scaling the online evaluation cohort, conducting blind expert studies on matched topics, integrating citation-graph features for retrieval expansion, and comparing directly against external systems such as ResearchAgent and Scideator on shared topic sets. Multilingual catalog support and calibration of ranking weights from logged feedback are also planned. The open implementation aims to support reproducible comparison as the field of literature-grounded ideation continues to develop.
 
 %% =============================================================================
 \section*{Acknowledgements}

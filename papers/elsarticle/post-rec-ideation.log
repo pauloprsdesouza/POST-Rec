@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.1) (preloaded format=pdflatex 2026.2.17)  1 JUL 2026 17:55
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.1) (preloaded format=pdflatex 2026.2.17)  6 JUL 2026 15:19
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -654,66 +654,78 @@ Underfull \hbox (badness 10000) in paragraph at lines 103--103
 \T1/cmr/bx/n/10.95 FNI +
  []
 
-[3] [4] [5] [6]
-Overfull \hbox (18.44072pt too wide) in paragraph at lines 213--214
-[]\T1/cmr/m/n/12 Each $\OML/cmm/m/it/12 p \OMS/cmsy/m/n/12 2 P$ \T1/cmr/m/n/12 
-re-ceives a sparse score $\OML/cmm/m/it/12 s[]\OT1/cmr/m/n/12 (\OML/cmm/m/it/12
- p; Q\OT1/cmr/m/n/12 )$ \T1/cmr/m/n/12 and a dense score $\OML/cmm/m/it/12 s[]\
-OT1/cmr/m/n/12 (\OML/cmm/m/it/12 p; Q\OT1/cmr/m/n/12 ) =
+[3] [4] [5] [6] [7] [8]
+Underfull \hbox (badness 10000) in paragraph at lines 257--257
+[]\T1/cmr/m/n/10.95 Single-pass
  []
 
 
-Overfull \hbox (82.43144pt too wide) in paragraph at lines 221--222
-[]\T1/cmr/m/n/12 builds gap ma-trix $\OML/cmm/m/it/12 G$ \T1/cmr/m/n/12 with ro
-ws as sub-problems and columns as method/data/evaluation
+Underfull \hbox (badness 10000) in paragraph at lines 258--258
+[]\T1/cmr/m/n/10.95 Landscape $\OMS/cmsy/m/n/10.95 !$
  []
 
-
-Overfull \hbox (138.00989pt too wide) in paragraph at lines 234--235
-[]\T1/cmr/m/n/12 FGGV ex-tends Eq. [] with facet-level struc-ture. For facets $
-\OML/cmm/m/it/12 f \OMS/cmsy/m/n/12 2 f[]\OML/cmm/m/it/12 ; []; []; []\OMS/cmsy
-/m/n/12 g$\T1/cmr/m/n/12 , 
+[9] [10] [11]
+Overfull \hbox (7.7453pt too wide) in paragraph at lines 332--333
+\T1/cmr/m/n/12 re-quests. Facet Di-ver-sity Se-lec-tion ap-plies max-i-mal marg
+inal rel-e-vance (MMR)
  []
 
-[7]
-Overfull \hbox (5.87836pt too wide) in paragraph at lines 249--250
-[]\T1/cmr/m/n/12 To demon-strate the util-ity of the pro-posed method, this sub
--sec-tion presents
- []
-
-
-Overfull \hbox (32.95702pt too wide) in paragraph at lines 253--254
+[12]
+Overfull \hbox (32.95702pt too wide) in paragraph at lines 354--355
 []$\OML/cmm/m/it/12 T[] \OT1/cmr/m/n/12 = \OMS/cmsy/m/n/12 f$\T1/cmtt/m/n/12 re
 trieval-augmented generation\T1/cmr/m/n/12 , \T1/cmtt/m/n/12 research ideation 
 agents$\OMS/cmsy/m/n/12 g$\T1/cmr/m/n/12 ; 
  []
 
-
-Overfull \hbox (46.9421pt too wide) in paragraph at lines 272--279
+[13]
+Overfull \hbox (46.9421pt too wide) in paragraph at lines 379--386
  [][] 
  []
 
+[14]
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 288.
-[8] [9] [10]
-Overfull \hbox (9.17188pt too wide) in paragraph at lines 391--392
-[]\T1/cmr/m/n/12 Future work in-cludes deeper citation-graph in-te-gra-tion, cr
-oss-system bench-
+put line 403.
+ [15] [16]
+Underfull \hbox (badness 10000) in paragraph at lines 490--491
+[]\T1/cmr/m/n/10.95 Ablation with-out con-trastive
  []
 
-[11] (post-rec-ideation.bbl [12]) [13] (post-rec-ideation.aux)
+
+Underfull \hbox (badness 10000) in paragraph at lines 491--492
+[]\T1/cmr/m/n/10.95 Ablation with-out saturation-
+ []
+
+[17] [18]
+Overfull \hbox (51.53941pt too wide) in paragraph at lines 537--538
+[]\T1/cmr/m/n/12 The repos-i-tory pro-vides an of-fline har-ness (\T1/cmtt/m/n/
+12 scripts/run_offline_evaluation.py\T1/cmr/m/n/12 )
+ []
+
+
+Overfull \hbox (1.9627pt too wide) in paragraph at lines 549--550
+[]\T1/cmr/m/n/12 The pro-posed sys-tem ad-dresses literature-grounded ideation 
+through three
+ []
+
+[19]
+Overfull \hbox (5.0161pt too wide) in paragraph at lines 559--560
+\T1/cmr/m/n/12 (SOTA) is com-pared with a treat-ment that adds a spe-cific in-n
+o-va-tion (FGGV).
+ []
+
+[20] (post-rec-ideation.bbl [21] [22]) [23] (post-rec-ideation.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `post-rec-ideation.out' has not changed.
-(rerunfilecheck)             Checksum: BCE19EE2ACF645F93963E64CF3A32177;3238.
+(rerunfilecheck)             Checksum: 82B3A5E959BCD5B728683D7E62FFED43;6119.
  ) 
 Here is how much of TeX's memory you used:
- 11628 strings out of 467866
- 176723 string characters out of 5418325
- 589565 words of memory out of 5000000
- 40276 multiletter control sequences out of 15000+600000
+ 11675 strings out of 467866
+ 177383 string characters out of 5418325
+ 589749 words of memory out of 5000000
+ 40294 multiletter control sequences out of 15000+600000
  648253 words of font info for 91 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,11n,79p,1540b,697s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -745,9 +757,9 @@ s/paulo/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb
 ><C:/Users/paulo/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/c
 msy7.pfb><C:/Users/paulo/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfo
 nts/cm/cmsy8.pfb>
-Output written on post-rec-ideation.pdf (14 pages, 376927 bytes).
+Output written on post-rec-ideation.pdf (24 pages, 446729 bytes).
 PDF statistics:
- 844 PDF objects out of 1000 (max. 8388607)
- 78 named destinations out of 1000 (max. 500000)
- 161 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1005 PDF objects out of 1200 (max. 8388607)
+ 107 named destinations out of 1000 (max. 500000)
+ 281 words of extra memory for PDF output out of 10000 (max. 10000000)
 
