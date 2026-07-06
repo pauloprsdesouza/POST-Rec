@@ -15,8 +15,8 @@ from apps.api.shared.schemas.common import (
     ProjectExportResponse,
     ProjectListItem,
     ProjectResponse,
-    ProjectTaskUpdate,
     ProjectTaskResponse,
+    ProjectTaskUpdate,
 )
 
 router = APIRouter(prefix="/api/v1")

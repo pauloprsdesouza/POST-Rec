@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import HTTPException
@@ -73,8 +73,13 @@ def _fallback_roadmap(recommendation: RecommendationCandidate) -> dict[str, Any]
         [
             {
                 "title": "Read and annotate all evidence papers",
-                "description": f"Review each paper cited for “{title}” and note methods, limitations, and how they relate to {gap}.",
-                "guidance": "Strong literature grounding prevents rework later and strengthens your related-work section.",
+                "description": (
+                    f'Review each paper cited for "{title}" and note methods, limitations, '
+                    f"and how they relate to {gap}."
+                ),
+                "guidance": (
+                    "Strong literature grounding prevents rework later and strengthens your related-work section."
+                ),
                 "effort": "M",
                 "linked_fields": ["evidence_papers", "related_work_summary"],
                 "linked_paper_ids": paper_ids[:5],
@@ -129,7 +134,9 @@ def _fallback_roadmap(recommendation: RecommendationCandidate) -> dict[str, Any]
             },
             {
                 "title": "Define evaluation protocol",
-                "description": f"Lock metrics and splits: {_format_list(metrics) if metrics else 'primary and secondary metrics'}",
+                "description": (
+                    f"Lock metrics and splits: {_format_list(metrics) if metrics else 'primary and secondary metrics'}"
+                ),
                 "guidance": "Pre-registering metrics reduces bias when interpreting results.",
                 "effort": "M",
                 "linked_fields": ["evaluation_metrics"],
@@ -138,7 +145,9 @@ def _fallback_roadmap(recommendation: RecommendationCandidate) -> dict[str, Any]
             },
             {
                 "title": "Plan ethics and compliance",
-                "description": "Check IRB, data privacy, or institutional requirements if human or sensitive data is involved.",
+                "description": (
+                    "Check IRB, data privacy, or institutional requirements if human or sensitive data is involved."
+                ),
                 "guidance": "Address compliance early to avoid delays before submission.",
                 "effort": "S",
                 "linked_fields": ["risks"],
@@ -569,7 +578,7 @@ class ProjectService:
             if status not in VALID_TASK_STATUSES:
                 raise HTTPException(status_code=400, detail="Invalid task status")
             task.status = status
-            task.completed_at = datetime.now(timezone.utc) if status == "done" else None
+            task.completed_at = datetime.now(UTC) if status == "done" else None
 
         if user_notes is not None:
             task.user_notes = user_notes

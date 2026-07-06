@@ -20,11 +20,7 @@ class NotificationService:
 
     def _should_use_whatsapp(self, user: User) -> bool:
         settings = get_settings()
-        return bool(
-            settings.whatsapp_notifications_enabled
-            and user.phone_number
-            and user.whatsapp_opt_in
-        )
+        return bool(settings.whatsapp_notifications_enabled and user.phone_number and user.whatsapp_opt_in)
 
     def _run_url(self, run_id: str) -> str:
         settings = get_settings()

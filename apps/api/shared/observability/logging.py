@@ -32,11 +32,7 @@ def configure_logging() -> None:
     formatter = structlog.stdlib.ProcessorFormatter(
         processors=[
             structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-            (
-                structlog.processors.JSONRenderer()
-                if settings.log_format == "json"
-                else structlog.dev.ConsoleRenderer()
-            ),
+            (structlog.processors.JSONRenderer() if settings.log_format == "json" else structlog.dev.ConsoleRenderer()),
         ],
     )
     handler = logging.StreamHandler(sys.stdout)
