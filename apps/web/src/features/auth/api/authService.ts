@@ -51,3 +51,7 @@ export class AuthService implements IAuthService {
     return this.client.get("/api/v1/health");
   }
 }
+
+import { httpClient } from "@/shared/api/httpClient";
+
+export const authService = new AuthService(httpClient);

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -28,7 +29,13 @@ function StatusPill({ outcome, run }: { outcome: RunOutcome; run: Recommendation
   return <span className={`run-card__status run-card__status--${outcome}`}>{label}</span>;
 }
 
-export function RunListCard({ run, recommendationCount, showSearchMeta = false }: RunListCardProps) {
+const StatusPillMemo = memo(StatusPill);
+
+export const RunListCard = memo(function RunListCard({
+  run,
+  recommendationCount,
+  showSearchMeta = false,
+}: RunListCardProps) {
   const { t, i18n } = useTranslation();
   const runId = String(run.id);
   const count = recommendationCount ?? run.recommendation_count ?? 0;
@@ -63,7 +70,7 @@ export function RunListCard({ run, recommendationCount, showSearchMeta = false }
             <h3 className="run-card__title">{title}</h3>
 
             <div className="run-card__meta-row">
-              <StatusPill outcome={outcome} run={run} />
+              <StatusPillMemo outcome={outcome} run={run} />
               {isReady && count > 0 ? (
                 <span className="run-card__ideas-count">{t("runs.ideasReady", { count })}</span>
               ) : null}
@@ -113,4 +120,4 @@ export function RunListCard({ run, recommendationCount, showSearchMeta = false }
       </Link>
     </li>
   );
-}
+});

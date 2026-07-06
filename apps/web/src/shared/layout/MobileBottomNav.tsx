@@ -97,7 +97,13 @@ export function MobileBottomNav() {
           .join(" ");
 
         return (
-          <NavLink key={item.to} to={item.to} end={item.to === "/runs"} className={classNames}>
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === "/runs"}
+            className={classNames}
+            {...(item.primary ? { "data-coach": "coach-runs-new-run" } : {})}
+          >
             <span className={item.primary ? "bottom-nav__fab" : undefined}>
               <NavIcon name={item.icon} />
             </span>

@@ -167,29 +167,29 @@ export function NewRunPage() {
         ) : null}
       </div>
 
-      <div className="sticky-form-cta d-lg-none" data-coach="coach-newrun-submit">
-        <div className="sticky-form-cta__row">
-          <div className="sticky-form-cta__mode" data-coach="coach-newrun-mode">
-            <RunModeSelector
-              value={runMode}
-              onChange={setRunMode}
-              disabled={submitting}
-              layout="compact"
-              menuPlacement="top"
-              showLabel={false}
-            />
-          </div>
-          <Button
-            type="submit"
-            form="new-run-form"
-            variant="primary"
-            size="lg"
-            className="sticky-form-cta__submit"
+      <div className="sticky-form-cta d-lg-none">
+        <div className="sticky-form-cta__mode" data-coach="coach-newrun-mode">
+          <span className="sticky-form-cta__mode-label">{t("newRun.runMode.label")}</span>
+          <RunModeSelector
+            value={runMode}
+            onChange={setRunMode}
             disabled={submitting}
-          >
-            {submitting ? t("newRun.starting") : t("newRun.generate")}
-          </Button>
+            layout="compact"
+            menuPlacement="top"
+            showLabel={false}
+            hideHint
+          />
         </div>
+        <Button
+          type="submit"
+          form="new-run-form"
+          variant="primary"
+          className="sticky-form-cta__submit"
+          disabled={submitting}
+          data-coach="coach-newrun-submit"
+        >
+          {submitting ? t("newRun.starting") : t("newRun.generateShort")}
+        </Button>
         <p className="sticky-form-cta__hint">{t("newRun.stickyHint")}</p>
       </div>
     </div>

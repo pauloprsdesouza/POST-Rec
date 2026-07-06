@@ -1,10 +1,10 @@
 """Authentication routes."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from apps.api.features.auth.roles import has_researcher_access, is_admin
-from apps.api.features.auth.service import AuthError, auth_service
+from apps.api.features.auth.service import AuthError, OtpDeliveryTask, auth_service
 from apps.api.shared.database import get_db
 from apps.api.shared.dependencies import get_current_user_required
 from apps.api.shared.models import User
@@ -36,28 +36,36 @@ def _otp_response(
     expires_in: int,
     dev_code: str | None,
     email_hint: str | None,
+    phone_hint: str | None,
     *,
     action: str,
 ) -> OtpRequestResponse:
     if dev_code:
-        message = "Email is not configured; use the development code shown below."
+        message = "Messaging is not configured; use the development code shown below."
+    elif phone_hint:
+        message = f"Verification code sent to WhatsApp {phone_hint}."
     elif email_hint:
         message = f"Verification code sent to {email_hint}."
     else:
-        message = f"Verification code sent to your email ({action})."
+        message = f"Verification code sent ({action})."
     return OtpRequestResponse(
         message=message,
         expires_in_seconds=expires_in,
         dev_code=dev_code,
         email_hint=email_hint,
-        phone_hint=None,
+        phone_hint=phone_hint,
     )
 
 
+def _schedule_otp_delivery(background_tasks: BackgroundTasks, delivery: OtpDeliveryTask | None) -> None:
+    if delivery is not None:
+        background_tasks.add_task(delivery)
+
+
 @router.post("/register", response_model=OtpRequestResponse)
-def register(payload: RegisterRequest, db: Session = Depends(get_db)):
+def register(payload: RegisterRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     try:
-        expires_in, dev_code, email_hint = auth_service.register_and_request_otp(
+        expires_in, dev_code, email_hint, phone_hint, delivery = auth_service.register_and_request_otp_with_delivery(
             db,
             full_name=payload.full_name,
             email=payload.email,
@@ -67,20 +75,22 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     except AuthError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
-    return _otp_response(expires_in, dev_code, email_hint, action="registration")
+    _schedule_otp_delivery(background_tasks, delivery)
+    return _otp_response(expires_in, dev_code, email_hint, phone_hint, action="registration")
 
 
 @router.post("/login/otp/request", response_model=OtpRequestResponse)
-def request_login_otp(payload: LoginOtpRequest, db: Session = Depends(get_db)):
+def request_login_otp(payload: LoginOtpRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     try:
-        expires_in, dev_code, email_hint = auth_service.request_login_otp(
+        expires_in, dev_code, email_hint, phone_hint, delivery = auth_service.request_login_otp_with_delivery(
             db,
             email=payload.email,
         )
     except AuthError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
-    return _otp_response(expires_in, dev_code, email_hint, action="sign-in")
+    _schedule_otp_delivery(background_tasks, delivery)
+    return _otp_response(expires_in, dev_code, email_hint, phone_hint, action="sign-in")
 
 
 @router.post("/otp/verify", response_model=AuthResponse)

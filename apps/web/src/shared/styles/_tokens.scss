@@ -83,15 +83,19 @@
   --researchly-nav-height: 3.5rem;
   --researchly-nav-height-compact: 3.25rem;
   --researchly-bottom-nav-height: 4.25rem;
-  --researchly-sticky-cta-height: 4.25rem;
+  --researchly-sticky-cta-height: 7.25rem;
   --researchly-safe-bottom: env(safe-area-inset-bottom, 0px);
   --researchly-safe-top: env(safe-area-inset-top, 0px);
   --researchly-page-gutter: var(--researchly-space-4);
   --researchly-page-gutter-md: var(--researchly-space-5);
   --researchly-mobile-chrome-bottom: calc(var(--researchly-bottom-nav-height) + var(--researchly-safe-bottom));
   --researchly-touch-min: 2.75rem;
+  --researchly-touch-target: var(--researchly-touch-min);
+  --researchly-coach-z: 11000;
   --researchly-text-body-mobile: 1rem;
   --researchly-text-caption-mobile: 0.8125rem;
+  --researchly-radius-sheet: 0.75rem;
+  --researchly-separator: var(--researchly-border-subtle);
 
   // Shape — crisp corners, border-led depth
   --researchly-radius: 0.5rem;

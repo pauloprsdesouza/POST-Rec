@@ -1,12 +1,17 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import { AppLayout } from "@/shared/layout/AppLayout";
 import { ProtectedRoute } from "@/features/routing/ProtectedRoute";
 import { AdminRoute } from "@/features/routing/AdminRoute";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
 import { useTranslation } from "react-i18next";
+
+const AuthenticatedShell = lazy(() =>
+  import("@/shared/layout/AuthenticatedShell").then((module) => ({
+    default: module.AuthenticatedShell,
+  })),
+);
 
 const SignInPage = lazy(() =>
   import("@/features/auth/pages/SignInPage").then((module) => ({ default: module.SignInPage })),
@@ -110,7 +115,7 @@ export function AppRoutes() {
         <Route
           element={
             <ProtectedRoute requireConsent={false} requireProfile={false}>
-              <AppLayout />
+              <AuthenticatedShell />
             </ProtectedRoute>
           }
         >

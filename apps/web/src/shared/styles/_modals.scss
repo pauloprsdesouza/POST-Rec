@@ -1,0 +1,49 @@
+@use "./breakpoints" as *;
+
+// Bootstrap modals — app-wide polish.
+
+.app-modal .modal-content {
+  border: 1px solid var(--researchly-border-subtle);
+  border-radius: var(--researchly-radius-lg);
+  box-shadow: var(--researchly-shadow-lg);
+}
+
+.app-modal .modal-header {
+  border-bottom-color: var(--researchly-border-subtle);
+  padding: var(--researchly-space-4) var(--researchly-space-5);
+}
+
+.app-modal .modal-title {
+  font-size: var(--researchly-text-lg);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.app-modal .modal-body {
+  color: var(--researchly-text-secondary);
+  font-size: var(--researchly-text-sm);
+  line-height: 1.5;
+  padding: var(--researchly-space-4) var(--researchly-space-5);
+}
+
+.app-modal .modal-footer {
+  border-top-color: var(--researchly-border-subtle);
+  gap: var(--researchly-space-2);
+  padding: var(--researchly-space-3) var(--researchly-space-5) var(--researchly-space-4);
+}
+
+@include down(md) {
+  .app-modal .modal-dialog {
+    margin-inline: var(--researchly-space-3);
+  }
+
+  .app-modal .modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .app-modal .modal-footer .btn {
+    margin: 0;
+    min-height: var(--researchly-touch-min);
+    width: 100%;
+  }
+}

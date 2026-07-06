@@ -9,7 +9,7 @@ from apps.api.features.validation.metrics import compute_sota_quality_metrics
 from apps.api.shared.infra.cache import CacheKeys, CacheTTL, cache_service
 from apps.api.shared.models import RecommendationFeedback, RecommendationRun, SessionFinalSurvey
 from packages.postrec_core.domain.enums import RunStatus
-from packages.postrec_core.evaluation.human_metrics import all_dimension_statistics, mean_field, rate
+from packages.postrec_core.evaluation.human_metrics import all_dimension_statistics
 
 
 class ValidationMetricsService:
@@ -71,15 +71,18 @@ class ValidationMetricsService:
             "experiment": experiment_metrics,
         }
 
-        surveys = db.query(SessionFinalSurvey).all()
+        surveys = db.query(
+            func.count(SessionFinalSurvey.id).label("count"),
+            func.avg(SessionFinalSurvey.expectation_met_score).label("expectation_met_mean"),
+            func.sum(case((SessionFinalSurvey.would_use_again.is_(True), 1), else_=0)).label("would_use_again"),
+            func.sum(case((SessionFinalSurvey.would_recommend.is_(True), 1), else_=0)).label("would_recommend"),
+        ).one()
+        survey_count = int(surveys.count or 0)
         survey_metrics = {
-            "count": len(surveys),
-            "expectation_met_mean": mean_field(
-                [{"expectation_met_score": s.expectation_met_score} for s in surveys],
-                "expectation_met_score",
-            ),
-            "would_use_again_rate": rate(surveys, lambda s: bool(s.would_use_again)),
-            "would_recommend_rate": rate(surveys, lambda s: bool(s.would_recommend)),
+            "count": survey_count,
+            "expectation_met_mean": float(surveys.expectation_met_mean or 0.0) if survey_count else 0.0,
+            "would_use_again_rate": int(surveys.would_use_again or 0) / survey_count if survey_count else 0.0,
+            "would_recommend_rate": int(surveys.would_recommend or 0) / survey_count if survey_count else 0.0,
         }
 
         if not total_feedback:
@@ -126,7 +129,7 @@ class ValidationMetricsService:
             for f in db.query(RecommendationFeedback).all()
         ]
 
-        report = analysis_data_service.build_report(db)
+        report = self.get_research_report(db)
 
         return {
             **base,

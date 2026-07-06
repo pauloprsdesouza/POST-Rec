@@ -64,3 +64,7 @@ export class AdminService implements IAdminService {
     return this.client.patch(`/api/v1/admin/users/${userId}/role`, { role }, { token });
   }
 }
+
+import { httpClient } from "@/shared/api/httpClient";
+
+export const adminService = new AdminService(httpClient);

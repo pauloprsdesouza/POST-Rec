@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client";
 import App from "@/app/App";
 import "@/shared/i18n";
 import { initTheme } from "@/shared/theme/themeStorage";
-import "@/shared/styles/app.scss";
+import "@/shared/styles/sign-in.scss";
 
 initTheme();
 

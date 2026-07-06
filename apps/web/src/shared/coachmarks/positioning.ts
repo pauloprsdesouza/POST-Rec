@@ -16,12 +16,15 @@ export interface PopoverLayout {
   placement: "top" | "bottom" | "left" | "right";
   arrowOffset: number;
   docked: boolean;
+  /** Distance from viewport bottom for docked sheets (above tab bar / sticky chrome). */
+  dockBottom?: number;
 }
 
 const GAP = 16;
 const DEFAULT_POPOVER_WIDTH = 304;
 const DEFAULT_POPOVER_HEIGHT = 220;
-const MOBILE_DOCK_BREAKPOINT = 640;
+/** Align with SCSS `$bp-md` — mobile uses bottom-sheet coach UI (Apple HIG). */
+export const MOBILE_SHEET_BREAKPOINT = 768;
 
 export function isElementVisible(element: HTMLElement): boolean {
   const rect = element.getBoundingClientRect();
@@ -41,7 +44,7 @@ export function findTargetElement(
   const visible = elements.filter(isElementVisible);
 
   if (!visible.length) {
-    return elements[0] ?? null;
+    return null;
   }
 
   if (visible.length === 1 || preference === "first-visible") {
@@ -236,28 +239,42 @@ function scoreLayout(
   return score;
 }
 
-export function shouldUseDockedPopover(target: TargetRect, insets: ViewportInsets): boolean {
-  if (window.innerWidth >= MOBILE_DOCK_BREAKPOINT) {
-    return false;
-  }
-
-  const usableHeight = window.innerHeight - insets.top - insets.bottom;
-  const lowerHalf = insets.top + usableHeight * 0.52;
-  return target.top >= lowerHalf || target.height >= usableHeight * 0.42;
+export function shouldUseDockedPopover(_target: TargetRect, _insets: ViewportInsets): boolean {
+  return window.innerWidth < MOBILE_SHEET_BREAKPOINT;
 }
 
 export function computeDockedLayout(
   insets: ViewportInsets,
   popoverHeight: number,
+  target?: TargetRect | null,
 ): PopoverLayout {
+  const gap = 12;
   const width = window.innerWidth - insets.left - insets.right;
+  const chromeTop = window.innerHeight - insets.bottom;
+
+  let dockBottom = insets.bottom;
+
+  if (target) {
+    const targetCenterY = target.top + target.height / 2;
+    const targetInLowerChrome = targetCenterY >= chromeTop - 48;
+
+    if (targetInLowerChrome) {
+      dockBottom = Math.max(insets.bottom, window.innerHeight - target.top + gap);
+    } else if (target.top + target.height + gap + popoverHeight > chromeTop) {
+      dockBottom = Math.max(insets.bottom, window.innerHeight - target.top + gap);
+    }
+  }
+
+  const top = window.innerHeight - dockBottom - popoverHeight - gap;
+
   return {
-    top: window.innerHeight - insets.bottom - popoverHeight - 10,
+    top: Math.max(insets.top, top),
     left: insets.left,
     width,
     placement: "top",
-    arrowOffset: width / 2,
+    arrowOffset: insets.left + width / 2,
     docked: true,
+    dockBottom,
   };
 }
 
@@ -270,7 +287,7 @@ export function computePopoverLayout(
   popoverHeight = DEFAULT_POPOVER_HEIGHT,
 ): PopoverLayout {
   if (shouldUseDockedPopover(target, insets)) {
-    return computeDockedLayout(insets, popoverHeight);
+    return computeDockedLayout(insets, popoverHeight, target);
   }
 
   const boundedWidth = Math.min(popoverWidth, window.innerWidth - insets.left - insets.right);

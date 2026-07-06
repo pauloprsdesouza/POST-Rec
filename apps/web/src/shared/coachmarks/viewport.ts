@@ -12,10 +12,11 @@ export function getViewportInsets(): ViewportInsets {
     window.innerWidth < 992
       ? Number.parseFloat(root.getPropertyValue("--researchly-bottom-nav-height")) || 64
       : 0;
+  const safeTop = Number.parseFloat(root.getPropertyValue("--researchly-safe-top")) || 0;
   const safeBottom = Number.parseFloat(root.getPropertyValue("--researchly-safe-bottom")) || 0;
 
   return {
-    top: navHeight + 12,
+    top: navHeight + safeTop + 12,
     right: 16,
     bottom: bottomNavHeight + safeBottom + 16,
     left: 16,

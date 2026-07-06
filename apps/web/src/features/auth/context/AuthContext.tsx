@@ -7,8 +7,12 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { profileService, sessionService, authService } from "@/shared/api";
+import { authService } from "@/features/auth/api/authService";
+import { profileService } from "@/features/profile/api/profileService";
+import { sessionService } from "@/features/session/api/sessionService";
+import { queryKeys } from "@/shared/query/keys";
 import type { AuthResponse, UserRole } from "@/shared/types/api";
 
 const STORAGE_KEY = "researchly.auth";
@@ -31,7 +35,7 @@ interface StoredAuth {
   selectedRunId?: string | null;
 }
 
-interface AuthContextValue {
+interface AuthStateValue {
   accessToken: string | null;
   user: AuthUser | null;
   isAuthenticated: boolean;
@@ -40,6 +44,9 @@ interface AuthContextValue {
   profileDone: boolean;
   sessionId: string | null;
   selectedRunId: string | null;
+}
+
+interface AuthActionsValue {
   signIn: (response: AuthResponse) => Promise<void>;
   signOut: () => void;
   updateUser: (partial: Partial<AuthUser>) => void;
@@ -49,7 +56,10 @@ interface AuthContextValue {
   setSelectedRunId: (runId: string) => void;
 }
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+type AuthContextValue = AuthStateValue & AuthActionsValue;
+
+const AuthStateContext = createContext<AuthStateValue | undefined>(undefined);
+const AuthActionsContext = createContext<AuthActionsValue | undefined>(undefined);
 
 function readStorage(): StoredAuth | null {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -88,93 +98,102 @@ async function resolveOnboardingFlags(accessToken: string) {
     consentDone: consentResult.status === "fulfilled" ? consentResult.value.accepted : null,
     role: meResult.status === "fulfilled" ? meResult.value.role : null,
     isAdmin: meResult.status === "fulfilled" ? Boolean(meResult.value.is_admin) : null,
-    canUseResearchFeatures:
-      meResult.status === "fulfilled" ? meResult.value.can_use_research_features !== false : null,
   };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [stored, setStored] = useState<StoredAuth | null>(() => readStorage());
+  const queryClient = useQueryClient();
+  const accessToken = stored?.accessToken ?? null;
+
+  const { data: onboardingFlags } = useQuery({
+    queryKey: queryKeys.onboarding(accessToken),
+    queryFn: () => resolveOnboardingFlags(accessToken!),
+    enabled: Boolean(accessToken),
+    staleTime: 5 * 60_000,
+  });
 
   useEffect(() => {
     writeStorage(stored);
   }, [stored]);
 
   useEffect(() => {
-    const accessToken = stored?.accessToken;
-    if (!accessToken) {
+    if (!onboardingFlags || !accessToken) {
       return;
     }
 
-    let cancelled = false;
-
-    void (async () => {
-      const flags = await resolveOnboardingFlags(accessToken);
-      if (cancelled) {
-        return;
+    setStored((current) => {
+      if (!current || current.accessToken !== accessToken) {
+        return current;
       }
 
-      setStored((current) => {
-        if (!current || current.accessToken !== accessToken) {
-          return current;
-        }
+      const profileDone = onboardingFlags.profileDone ?? current.profileDone;
+      const consentDone = onboardingFlags.consentDone ?? current.consentDone;
+      const role = onboardingFlags.isAdmin
+        ? "admin"
+        : (onboardingFlags.role ?? current.user?.role ?? "researcher");
 
-        const profileDone = flags.profileDone ?? current.profileDone;
-        const consentDone = flags.consentDone ?? current.consentDone;
-        const role = flags.isAdmin ? "admin" : (flags.role ?? current.user?.role ?? "researcher");
-
-        if (
-          profileDone === current.profileDone &&
-          consentDone === current.consentDone &&
-          role === current.user?.role
-        ) {
-          return current;
-        }
-
-        return {
-          ...current,
-          profileDone,
-          consentDone,
-          user: current.user ? { ...current.user, role } : current.user,
-        };
-      });
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [stored?.accessToken]);
-
-  const signIn = useCallback(async (response: AuthResponse) => {
-    const flags = await resolveOnboardingFlags(response.access_token);
-
-    const user: AuthUser = {
-      userId: response.user_id,
-      phoneNumber: response.phone_number,
-      fullName: response.full_name,
-      email: response.email,
-      whatsappOptIn: response.whatsapp_opt_in,
-      role: flags.isAdmin || response.role === "admin" ? "admin" : (response.role ?? flags.role ?? "researcher"),
-    };
-
-    setStored((previous) => {
-      const consentDone = flags.consentDone ?? previous?.consentDone ?? false;
-      const profileDone = flags.profileDone ?? previous?.profileDone ?? false;
+      if (
+        profileDone === current.profileDone &&
+        consentDone === current.consentDone &&
+        role === current.user?.role
+      ) {
+        return current;
+      }
 
       return {
-        accessToken: response.access_token,
-        user,
-        consentDone,
+        ...current,
         profileDone,
-        sessionId: consentDone ? (previous?.sessionId ?? null) : null,
-        selectedRunId: previous?.selectedRunId ?? null,
+        consentDone,
+        user: current.user ? { ...current.user, role } : current.user,
       };
     });
-  }, []);
+  }, [accessToken, onboardingFlags]);
+
+  const signIn = useCallback(
+    async (response: AuthResponse) => {
+      const flags = await resolveOnboardingFlags(response.access_token);
+      void queryClient.prefetchQuery({
+        queryKey: queryKeys.onboarding(response.access_token),
+        queryFn: () => Promise.resolve(flags),
+        staleTime: 5 * 60_000,
+      });
+
+      const user: AuthUser = {
+        userId: response.user_id,
+        phoneNumber: response.phone_number,
+        fullName: response.full_name,
+        email: response.email,
+        whatsappOptIn: response.whatsapp_opt_in,
+        role:
+          flags.isAdmin || response.role === "admin"
+            ? "admin"
+            : (response.role ?? flags.role ?? "researcher"),
+      };
+
+      setStored((previous) => {
+        const consentDone = flags.consentDone ?? previous?.consentDone ?? false;
+        const profileDone = flags.profileDone ?? previous?.profileDone ?? false;
+
+        return {
+          accessToken: response.access_token,
+          user,
+          consentDone,
+          profileDone,
+          sessionId: consentDone ? (previous?.sessionId ?? null) : null,
+          selectedRunId: previous?.selectedRunId ?? null,
+        };
+      });
+
+      void import("@/features/runs/pages/RunsPage");
+    },
+    [queryClient],
+  );
 
   const signOut = useCallback(() => {
     setStored(null);
-  }, []);
+    queryClient.clear();
+  }, [queryClient]);
 
   const updateUser = useCallback((partial: Partial<AuthUser>) => {
     setStored((current) =>
@@ -211,16 +230,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStored((current) => (current ? { ...current, selectedRunId: runId } : current));
   }, []);
 
-  const value = useMemo<AuthContextValue>(
+  const stateValue = useMemo<AuthStateValue>(
     () => ({
-      accessToken: stored?.accessToken ?? null,
+      accessToken,
       user: stored?.user ?? null,
-      isAuthenticated: Boolean(stored?.accessToken),
+      isAuthenticated: Boolean(accessToken),
       isAdmin: stored?.user?.role === "admin",
       consentDone: stored?.consentDone ?? false,
       profileDone: stored?.profileDone ?? false,
       sessionId: stored?.sessionId ?? null,
       selectedRunId: stored?.selectedRunId ?? null,
+    }),
+    [accessToken, stored],
+  );
+
+  const actionsValue = useMemo<AuthActionsValue>(
+    () => ({
       signIn,
       signOut,
       updateUser,
@@ -229,16 +254,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSessionId,
       setSelectedRunId,
     }),
-    [stored, signIn, signOut, updateUser, completeConsent, completeProfile, setSessionId, setSelectedRunId],
+    [signIn, signOut, updateUser, completeConsent, completeProfile, setSessionId, setSelectedRunId],
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthActionsContext.Provider value={actionsValue}>
+      <AuthStateContext.Provider value={stateValue}>{children}</AuthStateContext.Provider>
+    </AuthActionsContext.Provider>
+  );
+}
+
+export function useAuthState(): AuthStateValue {
+  const context = useContext(AuthStateContext);
+  if (!context) {
+    throw new Error("useAuthState must be used within AuthProvider");
+  }
+  return context;
+}
+
+export function useAuthActions(): AuthActionsValue {
+  const context = useContext(AuthActionsContext);
+  if (!context) {
+    throw new Error("useAuthActions must be used within AuthProvider");
+  }
+  return context;
 }
 
 export function useAuth(): AuthContextValue {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within AuthProvider");
-  }
-  return context;
+  return { ...useAuthState(), ...useAuthActions() };
 }

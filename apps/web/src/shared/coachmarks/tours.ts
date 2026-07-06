@@ -8,9 +8,10 @@ export const COACH_MARK_TOURS: Record<string, CoachMarkTour> = {
         target: "coach-runs-new-run",
         titleKey: "coachmarks.runsHome.newRun.title",
         bodyKey: "coachmarks.runsHome.newRun.body",
-        placement: "bottom",
-        align: "end",
-        spotlightPadding: 6,
+        placement: "top",
+        align: "center",
+        targetPreference: "first-visible",
+        spotlightPadding: 8,
       },
       {
         target: "coach-runs-filters",
@@ -163,7 +164,7 @@ export function tourForPath(pathname: string): CoachMarkTour | null {
   if (pathname.startsWith("/profile")) {
     return COACH_MARK_TOURS.profile;
   }
-  if (pathname === "/insights") {
+  if (pathname === "/insights" || pathname.startsWith("/admin/evaluation")) {
     return COACH_MARK_TOURS.insights;
   }
   return null;

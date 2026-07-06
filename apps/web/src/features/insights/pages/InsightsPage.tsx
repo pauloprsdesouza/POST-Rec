@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { lazy, Suspense, useMemo, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
@@ -7,10 +8,25 @@ import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { useAuth } from "@/features/auth/context/AuthContext";
-import { adminService } from "@/shared/api";
-import type { ValidationDashboard } from "@/shared/types/api";
+import { adminService } from "@/features/admin/api/adminService";
+import { queryKeys } from "@/shared/query/keys";
+import type { ExperimentVariantMetrics } from "@/shared/types/api";
 import { formatDecimal, formatPercent } from "@/features/runs/utils/runs";
-import { GroupedBarChart, TrendLineChart } from "@/features/insights/components/InsightCharts";
+
+const LazyGroupedBarChart = lazy(() =>
+  import("@/features/insights/components/InsightCharts").then((module) => ({
+    default: module.GroupedBarChart,
+  })),
+);
+const LazyTrendLineChart = lazy(() =>
+  import("@/features/insights/components/InsightCharts").then((module) => ({
+    default: module.TrendLineChart,
+  })),
+);
+
+function ChartFallback() {
+  return <div className="insight-chart-skeleton" aria-hidden />;
+}
 
 function InsightMetric({
   label,
@@ -43,25 +59,18 @@ function InsightSection({ title, children }: { title: string; children: ReactNod
 export function InsightsPage() {
   const { t, i18n } = useTranslation();
   const { accessToken } = useAuth();
-  const [dashboard, setDashboard] = useState<ValidationDashboard | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const locale = i18n.language;
 
-  useEffect(() => {
-    if (!accessToken) {
-      return;
-    }
-    adminService
-      .getEvaluationDashboard(accessToken)
-      .then(setDashboard)
-      .catch((err) => setError(err instanceof Error ? err.message : t("common.couldNotLoadMetrics")))
-      .finally(() => setLoading(false));
-  }, [accessToken, t]);
+  const { data: dashboard, isLoading, error } = useQuery({
+    queryKey: queryKeys.validationDashboard(accessToken),
+    queryFn: () => adminService.getEvaluationDashboard(accessToken!),
+    enabled: Boolean(accessToken),
+    staleTime: 5 * 60_000,
+  });
 
   const experimentChartData = useMemo(() => {
     const variants = dashboard?.experiment?.variants ?? [];
-    return variants.map((variant) => ({
+    return variants.map((variant: ExperimentVariantMetrics) => ({
       label: variant.variant,
       eas: variant.average_eas,
       approval: variant.approval_rate * 100,
@@ -69,7 +78,7 @@ export function InsightsPage() {
     }));
   }, [dashboard?.experiment?.variants]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="page-shell">
         <LoadingSpinner label={t("common.loadingInsights")} />
@@ -78,10 +87,11 @@ export function InsightsPage() {
   }
 
   if (error || !dashboard) {
+    const message = error instanceof Error ? error.message : t("common.couldNotLoadMetrics");
     return (
       <div className="page-shell">
         <PageHeader title={t("insights.title")} subtitle={t("insights.subtitle")} />
-        <InlineAlert variant="danger">{error ?? t("common.metricsUnavailable")}</InlineAlert>
+        <InlineAlert variant="danger">{message}</InlineAlert>
       </div>
     );
   }
@@ -218,7 +228,7 @@ export function InsightsPage() {
               <p className="panel__subtitle text-muted mb-0">{dashboard.experiment.experiment_id}</p>
             </div>
             <div className="insight-section__grid">
-              {dashboard.experiment.variants.map((variant) => (
+              {dashboard.experiment.variants.map((variant: ExperimentVariantMetrics) => (
                 <InsightMetric
                   key={variant.variant}
                   label={`${variant.variant} · EAS`}
@@ -226,7 +236,7 @@ export function InsightsPage() {
                   highlight={variant.variant === "treatment"}
                 />
               ))}
-              {dashboard.experiment.variants.map((variant) => (
+              {dashboard.experiment.variants.map((variant: ExperimentVariantMetrics) => (
                 <InsightMetric
                   key={`${variant.variant}-approval`}
                   label={`${variant.variant} · ${t("insights.approvalRate")}`}
@@ -235,15 +245,17 @@ export function InsightsPage() {
               ))}
             </div>
             {experimentChartData.length > 0 ? (
-              <GroupedBarChart
-                data={experimentChartData}
-                keys={["eas", "approval", "would_use"]}
-                labels={{
-                  eas: t("insights.avgEas"),
-                  approval: t("insights.approvalRate"),
-                  would_use: t("insights.wouldUseRate"),
-                }}
-              />
+              <Suspense fallback={<ChartFallback />}>
+                <LazyGroupedBarChart
+                  data={experimentChartData}
+                  keys={["eas", "approval", "would_use"]}
+                  labels={{
+                    eas: t("insights.avgEas"),
+                    approval: t("insights.approvalRate"),
+                    would_use: t("insights.wouldUseRate"),
+                  }}
+                />
+              </Suspense>
             ) : null}
           </section>
         ) : null}
@@ -253,11 +265,13 @@ export function InsightsPage() {
             <div className="panel__header">
               <h2 className="panel__title">{t("insights.trends")}</h2>
             </div>
-            <TrendLineChart
-              data={dashboard.weekly_trends ?? []}
-              dataKey="average_eas"
-              label={t("insights.avgEas")}
-            />
+            <Suspense fallback={<ChartFallback />}>
+              <LazyTrendLineChart
+                data={dashboard.weekly_trends ?? []}
+                dataKey="average_eas"
+                label={t("insights.avgEas")}
+              />
+            </Suspense>
           </section>
         ) : null}
 

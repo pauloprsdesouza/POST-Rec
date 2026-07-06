@@ -21,3 +21,7 @@ export class AccountService implements IAccountService {
     return this.client.put("/api/v1/users/me/account", data, { token });
   }
 }
+
+import { httpClient } from "@/shared/api/httpClient";
+
+export const accountService = new AccountService(httpClient);

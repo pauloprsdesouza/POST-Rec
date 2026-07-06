@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { runService } from "@/shared/api";
 import type { RecommendationRun } from "@/shared/types/api";
+import { ConfirmModal } from "@/shared/ui/ConfirmModal";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { canCancelRun, canDismissRun, canRetryRun } from "@/features/runs/utils/runs";
 
@@ -23,6 +24,7 @@ export function RunManageActions({ token, run, onRunUpdated, onRunsChanged }: Ru
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [learnedTopics, setLearnedTopics] = useState<string[]>([]);
   const [selectedTopics, setSelectedTopics] = useState<Set<string>>(new Set());
@@ -70,10 +72,7 @@ export function RunManageActions({ token, run, onRunUpdated, onRunsChanged }: Ru
     });
   }, []);
 
-  const handleCancel = useCallback(async () => {
-    if (!window.confirm(t("runs.actions.cancelConfirm"))) {
-      return;
-    }
+  const confirmCancel = useCallback(async () => {
     setBusy(true);
     setError(null);
     try {
@@ -81,6 +80,7 @@ export function RunManageActions({ token, run, onRunUpdated, onRunsChanged }: Ru
       const updated = await runService.getRun(token, runId);
       onRunUpdated?.(updated);
       onRunsChanged?.();
+      setCancelConfirmOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("runs.actions.error"));
     } finally {
@@ -129,14 +129,77 @@ export function RunManageActions({ token, run, onRunUpdated, onRunsChanged }: Ru
     return null;
   }
 
+  const dismissTitle =
+    pendingAction === "archive" ? t("runs.actions.archive") : t("runs.actions.remove");
+  const dismissConfirmLabel =
+    pendingAction === "archive" ? t("runs.actions.archive") : t("runs.actions.remove");
+
   return (
     <section className="run-manage panel" aria-label={t("runs.actions.title")}>
       <h2 className="run-manage__title">{t("runs.actions.title")}</h2>
 
       {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
 
-      {pendingAction ? (
-        <div className="run-manage__confirm" role="dialog" aria-modal="true">
+      <div className="run-manage__actions">
+        {showRetry ? (
+          <button type="button" className="btn btn-primary" onClick={() => void handleRetry()} disabled={busy}>
+            {t("runs.actions.retry")}
+          </button>
+        ) : null}
+        {showCancel ? (
+          <button
+            type="button"
+            className="btn btn-outline-secondary"
+            onClick={() => setCancelConfirmOpen(true)}
+            disabled={busy}
+          >
+            {t("runs.actions.cancel")}
+          </button>
+        ) : null}
+        {showDismiss ? (
+          <>
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={() => void openDismissFlow("archive")}
+              disabled={busy}
+            >
+              {t("runs.actions.archive")}
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline-danger"
+              onClick={() => void openDismissFlow("remove")}
+              disabled={busy}
+            >
+              {t("runs.actions.remove")}
+            </button>
+          </>
+        ) : null}
+      </div>
+
+      <ConfirmModal
+        show={cancelConfirmOpen}
+        onHide={() => setCancelConfirmOpen(false)}
+        title={t("runs.actions.cancel")}
+        confirmLabel={t("runs.actions.cancel")}
+        confirmVariant="danger"
+        loading={busy}
+        onConfirm={() => void confirmCancel()}
+      >
+        <p className="mb-0">{t("runs.actions.cancelConfirm")}</p>
+      </ConfirmModal>
+
+      <ConfirmModal
+        show={pendingAction !== null}
+        onHide={resetPending}
+        title={dismissTitle}
+        confirmLabel={dismissConfirmLabel}
+        confirmVariant={pendingAction === "remove" ? "danger" : "primary"}
+        loading={busy || loadingPreview}
+        onConfirm={() => void confirmDismiss()}
+      >
+        <div className="run-manage__confirm">
           <p className="run-manage__confirm-text">
             {pendingAction === "archive"
               ? t("runs.actions.archiveConfirm")
@@ -166,55 +229,8 @@ export function RunManageActions({ token, run, onRunUpdated, onRunsChanged }: Ru
               </ul>
             </fieldset>
           ) : null}
-
-          <div className="run-manage__confirm-actions">
-            <button type="button" className="btn btn-outline-secondary" onClick={resetPending} disabled={busy}>
-              {t("common.cancel")}
-            </button>
-            <button
-              type="button"
-              className={`btn ${pendingAction === "remove" ? "btn-danger" : "btn-primary"}`}
-              onClick={() => void confirmDismiss()}
-              disabled={busy || loadingPreview}
-            >
-              {pendingAction === "archive" ? t("runs.actions.archive") : t("runs.actions.remove")}
-            </button>
-          </div>
         </div>
-      ) : (
-        <div className="run-manage__actions">
-          {showRetry ? (
-            <button type="button" className="btn btn-primary" onClick={() => void handleRetry()} disabled={busy}>
-              {t("runs.actions.retry")}
-            </button>
-          ) : null}
-          {showCancel ? (
-            <button type="button" className="btn btn-outline-secondary" onClick={() => void handleCancel()} disabled={busy}>
-              {t("runs.actions.cancel")}
-            </button>
-          ) : null}
-          {showDismiss ? (
-            <>
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={() => void openDismissFlow("archive")}
-                disabled={busy}
-              >
-                {t("runs.actions.archive")}
-              </button>
-              <button
-                type="button"
-                className="btn btn-outline-danger"
-                onClick={() => void openDismissFlow("remove")}
-                disabled={busy}
-              >
-                {t("runs.actions.remove")}
-              </button>
-            </>
-          ) : null}
-        </div>
-      )}
+      </ConfirmModal>
     </section>
   );
 }

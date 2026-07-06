@@ -16,6 +16,7 @@ import { useRuns } from "@/features/runs/context/RunsContext";
 import { runService } from "@/shared/api";
 import type { RecommendationRun } from "@/shared/types/api";
 import { groupRuns } from "@/features/runs/utils/runs";
+import { filterRunsLocally, LOCAL_SEARCH_RUN_LIMIT } from "@/features/runs/utils/searchRuns";
 
 const SEARCH_DEBOUNCE_MS = 300;
 const MIN_SEARCH_LENGTH = 2;
@@ -62,9 +63,18 @@ export function RunsPage() {
     return () => window.clearTimeout(timer);
   }, [searchQuery]);
 
+  const canSearchLocally = loaded && runs.length > 0 && runs.length <= LOCAL_SEARCH_RUN_LIMIT;
+
   useEffect(() => {
     if (!accessToken || debouncedQuery.length < MIN_SEARCH_LENGTH) {
       setSearchResults(null);
+      setSearchLoading(false);
+      setSearchError(null);
+      return;
+    }
+
+    if (canSearchLocally) {
+      setSearchResults(filterRunsLocally(runs, debouncedQuery));
       setSearchLoading(false);
       setSearchError(null);
       return;
@@ -96,7 +106,7 @@ export function RunsPage() {
     return () => {
       cancelled = true;
     };
-  }, [accessToken, debouncedQuery, t]);
+  }, [accessToken, canSearchLocally, debouncedQuery, runs, t]);
 
   const isSearching = debouncedQuery.length >= MIN_SEARCH_LENGTH;
   const groups = useMemo(() => groupRuns(runs), [runs]);

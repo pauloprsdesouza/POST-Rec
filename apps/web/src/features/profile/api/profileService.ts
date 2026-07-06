@@ -32,3 +32,7 @@ export class ProfileService implements IProfileService {
     return this.client.post("/api/v1/profiles", payload, { token });
   }
 }
+
+import { httpClient } from "@/shared/api/httpClient";
+
+export const profileService = new ProfileService(httpClient);

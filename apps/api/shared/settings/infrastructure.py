@@ -10,6 +10,9 @@ class InfrastructureSettings(BaseSettings):
     model_config = SHARED_SETTINGS_CONFIG
 
     database_url: str = "postgresql+psycopg://postrec:postrec@localhost:5432/postrec"
+    db_pool_size: int = 10
+    db_max_overflow: int = 20
+    db_pool_recycle: int = 1800
 
     rabbitmq_host: str = "localhost"
     rabbitmq_port: int = 5672

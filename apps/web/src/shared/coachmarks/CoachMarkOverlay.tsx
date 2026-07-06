@@ -13,6 +13,7 @@ import {
   type TargetRect,
 } from "./positioning";
 import type { CoachMarkStep, CoachMarkTourId } from "./types";
+import { releaseOverflowClipping } from "./targetElevation";
 import { getViewportInsets } from "./viewport";
 
 interface CoachMarkOverlayProps {
@@ -146,10 +147,17 @@ export function CoachMarkOverlay({
     document
       .querySelectorAll("[data-coach].coach-mark-target--active")
       .forEach((node) => node.classList.remove("coach-mark-target--active"));
-    element?.classList.add("coach-mark-target--active");
+
+    if (!element) {
+      return;
+    }
+
+    element.classList.add("coach-mark-target--active");
+    const releaseOverflow = releaseOverflowClipping(element);
 
     return () => {
-      element?.classList.remove("coach-mark-target--active");
+      element.classList.remove("coach-mark-target--active");
+      releaseOverflow();
     };
   }, [step, stepIndex]);
 
@@ -183,9 +191,11 @@ export function CoachMarkOverlay({
   }, [updateLayout]);
 
   useEffect(() => {
+    document.body.classList.add("coach-mark-active");
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
+      document.body.classList.remove("coach-mark-active");
       document.body.style.overflow = previous;
     };
   }, []);
@@ -227,14 +237,17 @@ export function CoachMarkOverlay({
   const isLast = stepIndex === steps.length - 1;
   const placement = popoverLayout?.placement ?? "bottom";
   const docked = popoverLayout?.docked ?? false;
-
   const insets = getViewportInsets();
+
   const popoverStyle: React.CSSProperties = popoverLayout
     ? docked
       ? {
           left: insets.left,
           right: insets.right,
-          bottom: insets.bottom + 10,
+          bottom: popoverLayout.dockBottom ?? insets.bottom,
+          width: "auto",
+          maxHeight: `min(70dvh, calc(100dvh - ${insets.top}px - ${(popoverLayout.dockBottom ?? insets.bottom) + 12}px))`,
+          overflowY: "auto",
           visibility: ready ? "visible" : "hidden",
         }
       : {
@@ -279,6 +292,7 @@ export function CoachMarkOverlay({
           .join(" ")}
         style={popoverStyle}
       >
+        {docked ? <div className="coach-mark__grabber" aria-hidden /> : null}
         {!docked && popoverLayout ? (
           <span
             className="coach-mark__arrow"
@@ -326,14 +340,14 @@ export function CoachMarkOverlay({
           </button>
           <div className="coach-mark__nav">
             {!isFirst ? (
-              <button type="button" className="btn btn-outline-secondary btn-sm" onClick={onBack}>
+              <button type="button" className="btn btn-outline-secondary coach-mark__btn" onClick={onBack}>
                 {t("coachmarks.back")}
               </button>
             ) : null}
             <button
               ref={nextButtonRef}
               type="button"
-              className="btn btn-primary btn-sm"
+              className="btn btn-primary coach-mark__btn"
               onClick={onNext}
             >
               {isLast ? t("coachmarks.done") : t("coachmarks.next")}

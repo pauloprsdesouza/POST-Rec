@@ -9,7 +9,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from apps.api.shared.models import RecommendationCandidate, RecommendationFeedback
+from apps.api.shared.models import RecommendationCandidate, RecommendationFeedback, RecommendationRun
 from apps.api.shared.observability.logging import get_logger
 from packages.postrec_core.domain.run_mode import RunMode
 from packages.postrec_core.scoring.ranking_weights import RankingWeights, weights_for_mode
@@ -44,18 +44,22 @@ class RankingCalibrationService:
             return None
 
     def calibrate(self, db: Session) -> dict[str, Any]:
-        feedback_rows = db.query(RecommendationFeedback).all()
-        if not feedback_rows:
+        rows = (
+            db.query(RecommendationFeedback, RecommendationCandidate, RecommendationRun)
+            .join(RecommendationCandidate, RecommendationFeedback.recommendation_id == RecommendationCandidate.id)
+            .join(RecommendationRun, RecommendationCandidate.run_id == RecommendationRun.id)
+            .filter(RecommendationCandidate.scores.isnot(None))
+            .all()
+        )
+        if not rows:
             return {"updated": False, "reason": "no_feedback"}
 
         by_mode: dict[str, list[tuple[float, float, float, bool]]] = {}
-        for feedback in feedback_rows:
-            candidate = db.query(RecommendationCandidate).filter_by(id=feedback.recommendation_id).first()
-            if not candidate or not candidate.scores:
-                continue
-            run = candidate.run
-            mode = run.mode if run else "quick"
+        for feedback, candidate, run in rows:
             scores = candidate.scores
+            if not scores:
+                continue
+            mode = run.mode if run else "quick"
             novelty_verified = float(scores.get("novelty_verified") or 0) / 100.0
             sota_fit = float(scores.get("sota_fit") or 0) / 100.0
             feasibility = float(scores.get("feasibility") or 0) / 100.0

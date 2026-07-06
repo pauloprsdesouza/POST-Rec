@@ -26,7 +26,7 @@ async def stream_run_updates(db: Session, run: RecommendationRun) -> AsyncIterat
     run_id = str(run.id)
     channel = f"{CHANNEL_PREFIX}{run_id}"
 
-    snapshot = run_stream_payload(db, run)
+    snapshot = await asyncio.to_thread(run_stream_payload, db, run)
     yield format_sse("run_update", json.dumps(snapshot, default=str))
 
     if is_terminal_run(run.status):

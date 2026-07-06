@@ -10,6 +10,7 @@ interface RunModeSelectorProps {
   layout?: "default" | "compact";
   menuPlacement?: "top" | "bottom";
   showLabel?: boolean;
+  hideHint?: boolean;
 }
 
 const MODE_OPTIONS: RunModeSelection[] = ["auto", "sota", "quick", "exploratory", "fggv"];
@@ -21,6 +22,7 @@ export function RunModeSelector({
   layout = "default",
   menuPlacement = "bottom",
   showLabel = true,
+  hideHint = false,
 }: RunModeSelectorProps) {
   const { t } = useTranslation();
   const menuId = useId();
@@ -130,7 +132,9 @@ export function RunModeSelector({
         </div>
       ) : null}
 
-      <p className={`run-mode-picker__hint ${compact ? "run-mode-picker__hint--compact" : ""}`}>{modeHint}</p>
+      {!hideHint ? (
+        <p className={`run-mode-picker__hint ${compact ? "run-mode-picker__hint--compact" : ""}`}>{modeHint}</p>
+      ) : null}
     </div>
   );
 }

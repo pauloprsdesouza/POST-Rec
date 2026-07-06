@@ -39,3 +39,7 @@ export class SessionService implements ISessionService {
     return this.client.post("/api/v1/session-final-surveys", payload, { token });
   }
 }
+
+import { httpClient } from "@/shared/api/httpClient";
+
+export const sessionService = new SessionService(httpClient);

@@ -376,15 +376,10 @@
   width: 100%;
 }
 
-.sticky-form-cta__mode {
-  flex: 1 1 9rem;
-  min-width: 0;
-}
-
 .sticky-form-cta__mode .run-mode-picker__menu {
   left: 0;
-  right: auto;
-  width: min(20rem, calc(100vw - 2rem));
+  right: 0;
+  width: auto;
 }
 
 .idea-feedback-prompt {

@@ -39,6 +39,7 @@ class CacheTTL:
     SOURCE_DOCUMENTS = 604_800  # 7d — paper metadata is stable
     VALIDATION_DASHBOARD = 600  # 10min — aggregate metrics, expensive to compute
     RESEARCH_REPORT = 600  # 10min — full statistical report
+    ADMIN_OVERVIEW = 60  # 1min — operator dashboard aggregates
 
 
 class CacheKeys:
@@ -81,6 +82,10 @@ class CacheKeys:
     @staticmethod
     def research_report() -> str:
         return "validation:research_report"
+
+    @staticmethod
+    def admin_overview() -> str:
+        return "admin:overview"
 
 
 def run_detail_ttl(status: str) -> int:

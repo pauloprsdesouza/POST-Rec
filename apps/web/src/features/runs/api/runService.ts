@@ -105,3 +105,7 @@ export class RunService implements IRunService {
     return this.client.post(`/api/v1/recommendation-runs/${runId}/remove`, payload, { token });
   }
 }
+
+import { httpClient } from "@/shared/api/httpClient";
+
+export const runService = new RunService(httpClient);

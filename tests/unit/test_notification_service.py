@@ -68,12 +68,11 @@ def test_notify_run_completed_sends_whatsapp_when_opted_in(mock_logger, mock_evo
     assert "event" not in kwargs
 
 
-@patch("apps.api.features.notifications.service.email_service")
 @patch("apps.api.features.notifications.service.get_settings")
 @patch("apps.api.features.notifications.service.evolution_service")
 @patch("apps.api.features.notifications.service.logger")
-def test_notify_run_completed_falls_back_to_email_when_whatsapp_fails(
-    mock_logger, mock_evolution, mock_get_settings, mock_email
+def test_notify_run_completed_does_not_fallback_to_email_when_whatsapp_fails(
+    mock_logger, mock_evolution, mock_get_settings
 ):
     from apps.api.features.auth.evolution import EvolutionError
 
@@ -96,10 +95,12 @@ def test_notify_run_completed_falls_back_to_email_when_whatsapp_fails(
     run.id = "00000000-0000-0000-0000-000000000002"
     run.input = {"topics": ["AI in education"]}
 
-    notification_service.notify_run_completed(db, run, recommendation_count=3)
+    with patch("apps.api.features.notifications.service.email_service") as mock_email:
+        notification_service.notify_run_completed(db, run, recommendation_count=3)
+        mock_email.send_text.assert_not_called()
 
-    mock_email.send_text.assert_called_once()
-    assert mock_logger.info.call_args[1]["notification_type"] == "run_completed"
+    mock_logger.info.assert_not_called()
+    mock_logger.warning.assert_called_once()
 
 
 @patch("apps.api.features.notifications.service.email_service")

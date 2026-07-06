@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
 
 from apps.api.shared.models import (
     LLMUsage,
@@ -60,7 +60,9 @@ class AnalysisDataService:
                 "started_at": s.started_at.isoformat() if s.started_at else None,
                 "finished_at": s.finished_at.isoformat() if s.finished_at else None,
             }
-            for s in db.query(StudySession).all()
+            for s in db.query(StudySession)
+            .options(load_only(StudySession.id, StudySession.status, StudySession.started_at, StudySession.finished_at))
+            .yield_per(500)
         ]
 
         runs = [
@@ -77,7 +79,23 @@ class AnalysisDataService:
                 "started_at": r.started_at.isoformat() if r.started_at else None,
                 "finished_at": r.finished_at.isoformat() if r.finished_at else None,
             }
-            for r in db.query(RecommendationRun).all()
+            for r in db.query(RecommendationRun)
+            .options(
+                load_only(
+                    RecommendationRun.id,
+                    RecommendationRun.mode,
+                    RecommendationRun.assigned_mode,
+                    RecommendationRun.status,
+                    RecommendationRun.experiment_id,
+                    RecommendationRun.experiment_variant,
+                    RecommendationRun.estimated_cost_usd,
+                    RecommendationRun.max_recommendations,
+                    RecommendationRun.created_at,
+                    RecommendationRun.started_at,
+                    RecommendationRun.finished_at,
+                )
+            )
+            .yield_per(500)
         ]
 
         llm_usage = [
@@ -91,7 +109,20 @@ class AnalysisDataService:
                 "total_tokens": row.total_tokens,
                 "estimated_cost_usd": float(row.estimated_cost_usd or 0),
             }
-            for row in db.query(LLMUsage).all()
+            for row in db.query(LLMUsage)
+            .options(
+                load_only(
+                    LLMUsage.run_id,
+                    LLMUsage.provider,
+                    LLMUsage.model,
+                    LLMUsage.operation,
+                    LLMUsage.input_tokens,
+                    LLMUsage.output_tokens,
+                    LLMUsage.total_tokens,
+                    LLMUsage.estimated_cost_usd,
+                )
+            )
+            .yield_per(500)
         ]
 
         feedback = [
@@ -112,7 +143,27 @@ class AnalysisDataService:
                 "expectation_alignment_score": float(f.expectation_alignment_score or 0),
                 "created_at": f.created_at.isoformat() if f.created_at else None,
             }
-            for f in db.query(RecommendationFeedback).all()
+            for f in db.query(RecommendationFeedback)
+            .options(
+                load_only(
+                    RecommendationFeedback.id,
+                    RecommendationFeedback.run_id,
+                    RecommendationFeedback.recommendation_id,
+                    RecommendationFeedback.session_id,
+                    RecommendationFeedback.relevance_score,
+                    RecommendationFeedback.originality_score,
+                    RecommendationFeedback.clarity_score,
+                    RecommendationFeedback.feasibility_score,
+                    RecommendationFeedback.trust_score,
+                    RecommendationFeedback.usefulness_score,
+                    RecommendationFeedback.would_use_in_real_paper,
+                    RecommendationFeedback.decision,
+                    RecommendationFeedback.comment,
+                    RecommendationFeedback.expectation_alignment_score,
+                    RecommendationFeedback.created_at,
+                )
+            )
+            .yield_per(500)
         ]
 
         surveys = [
@@ -132,10 +183,42 @@ class AnalysisDataService:
                 "free_comment": s.free_comment,
                 "created_at": s.created_at.isoformat() if s.created_at else None,
             }
-            for s in db.query(SessionFinalSurvey).all()
+            for s in db.query(SessionFinalSurvey)
+            .options(
+                load_only(
+                    SessionFinalSurvey.id,
+                    SessionFinalSurvey.session_id,
+                    SessionFinalSurvey.run_id,
+                    SessionFinalSurvey.expectation_met_score,
+                    SessionFinalSurvey.would_use_again,
+                    SessionFinalSurvey.would_recommend,
+                    SessionFinalSurvey.would_use_any_recommendation_in_real_paper,
+                    SessionFinalSurvey.most_useful_recommendation_id,
+                    SessionFinalSurvey.what_helped_most,
+                    SessionFinalSurvey.what_hurt_most,
+                    SessionFinalSurvey.free_comment,
+                    SessionFinalSurvey.created_at,
+                )
+            )
+            .yield_per(500)
         ]
 
-        candidates = [_flatten_candidate(c) for c in db.query(RecommendationCandidate).all()]
+        candidates = [
+            _flatten_candidate(c)
+            for c in db.query(RecommendationCandidate)
+            .options(
+                load_only(
+                    RecommendationCandidate.id,
+                    RecommendationCandidate.run_id,
+                    RecommendationCandidate.title,
+                    RecommendationCandidate.status,
+                    RecommendationCandidate.final_score,
+                    RecommendationCandidate.scores,
+                    RecommendationCandidate.created_at,
+                )
+            )
+            .yield_per(500)
+        ]
         expert_labels = self._load_expert_labels()
 
         return {

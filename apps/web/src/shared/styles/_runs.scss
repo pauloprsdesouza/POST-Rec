@@ -1192,8 +1192,7 @@
   margin: 0;
 }
 
-.run-manage__actions,
-.run-manage__confirm-actions {
+.run-manage__actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--researchly-space-2);

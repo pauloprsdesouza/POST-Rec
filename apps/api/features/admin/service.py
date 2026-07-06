@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from apps.api.features.auth.roles import is_admin
 from apps.api.features.health.service import check_readiness, readiness_status
 from apps.api.features.validation.service import validation_metrics_service
+from apps.api.shared.infra.cache import CacheKeys, CacheTTL, cache_service
 from apps.api.shared.models import LLMUsage, RecommendationFeedback, RecommendationRun, User
 from apps.api.shared.settings import Settings, get_settings
 from packages.postrec_core.domain.enums import RunStatus, UserRole
@@ -18,6 +19,14 @@ from packages.postrec_core.domain.enums import RunStatus, UserRole
 
 class AdminService:
     def get_overview(self, db: Session) -> dict:
+        key = CacheKeys.admin_overview()
+
+        def load() -> dict:
+            return self._compute_overview(db)
+
+        return cache_service.get_or_load(key, CacheTTL.ADMIN_OVERVIEW, load)
+
+    def _compute_overview(self, db: Session) -> dict:
         user_stats = db.query(
             func.count(User.id).label("total"),
             func.sum(case((User.is_active.is_(True), 1), else_=0)).label("active"),

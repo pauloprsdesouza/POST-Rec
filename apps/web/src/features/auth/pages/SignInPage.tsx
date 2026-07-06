@@ -10,7 +10,7 @@ import { OtpInput } from "@/shared/ui/OtpInput";
 import { PhoneInput } from "@/shared/ui/PhoneInput";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useApiHealth } from "@/shared/hooks/useApiHealth";
-import { authService } from "@/shared/api";
+import { authService } from "@/features/auth/api/authService";
 import { getErrorMessage } from "@/shared/api/errors";
 
 type AuthMode = "signin" | "register";
@@ -32,6 +32,8 @@ export function SignInPage() {
   const [code, setCode] = useState("");
 
   const [devCode, setDevCode] = useState<string | null>(null);
+  const [deliveryHint, setDeliveryHint] = useState<string | null>(null);
+  const [deliveryChannel, setDeliveryChannel] = useState<"email" | "whatsapp">("email");
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -41,6 +43,8 @@ export function SignInPage() {
     setStep("credentials");
     setCode("");
     setDevCode(null);
+    setDeliveryHint(null);
+    setDeliveryChannel("email");
     setInfoMessage(null);
     setError(null);
   };
@@ -68,6 +72,8 @@ export function SignInPage() {
           : await authService.requestLoginOtp(email.trim());
 
       setDevCode(response.dev_code ?? null);
+      setDeliveryHint(response.phone_hint ?? response.email_hint ?? null);
+      setDeliveryChannel(response.phone_hint ? "whatsapp" : "email");
       setInfoMessage(response.message);
       setStep("otp");
     } catch (err) {
@@ -109,6 +115,8 @@ export function SignInPage() {
     try {
       const response = await authService.requestLoginOtp(email.trim());
       setDevCode(response.dev_code ?? null);
+      setDeliveryHint(response.phone_hint ?? response.email_hint ?? null);
+      setDeliveryChannel(response.phone_hint ? "whatsapp" : "email");
       setInfoMessage(response.message);
     } catch (err) {
       setError(getErrorMessage(err, t("auth.errorResend")));
@@ -250,7 +258,12 @@ export function SignInPage() {
 
           <div className="auth-otp-step__destination">
             <span className="auth-otp-step__destination-label">{t("auth.otpSentTo")}</span>
-            <span className="auth-otp-step__destination-value">{email}</span>
+            <span className="auth-otp-step__destination-value">{deliveryHint ?? email}</span>
+            {deliveryChannel === "whatsapp" ? (
+              <span className="auth-otp-step__destination-meta">{t("auth.otpWhatsappChannel")}</span>
+            ) : (
+              <span className="auth-otp-step__destination-meta">{t("auth.otpEmailChannel")}</span>
+            )}
           </div>
 
           {(error || infoMessage || devCode) && (

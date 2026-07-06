@@ -1,24 +1,14 @@
-// Researchly application styles — entry point.
-// Foundation loads design tokens and shared primitives first.
-@use "./foundation";
-@use "./layout";
 @use "./navbar";
 @use "./onboarding";
 @use "./coachmarks";
 @use "./profile";
-@use "./auth";
 @use "./layout-mobile";
 @use "./runs";
 @use "./ideas";
 @use "./feedback";
-@use "./empty";
-@use "./theme-toggle";
-@use "./conversion";
 @use "./insights";
 @use "./research-report";
-@use "./language";
 @use "./transparency";
 @use "./admin";
 @use "./mobile-refinements";
 @use "./mobile-hig-final";
-@use "./modals";

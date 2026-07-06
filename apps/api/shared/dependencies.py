@@ -88,7 +88,7 @@ def get_run_stream_access(
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
-    run = db.query(RecommendationRun).filter_by(id=run_id).first()
+    run = db.get(RecommendationRun, run_id)
     if not run:
         raise HTTPException(status_code=404, detail="Run not found")
 

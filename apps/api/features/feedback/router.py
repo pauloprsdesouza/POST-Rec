@@ -2,7 +2,7 @@
 
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 
 from apps.api.features.feedback.service import feedback_service
@@ -19,10 +19,11 @@ router = APIRouter(prefix="/api/v1")
 def submit_feedback(
     recommendation_id: uuid.UUID,
     payload: FeedbackCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User | None = Depends(get_current_user_optional),
 ):
-    feedback = feedback_service.create_feedback(
+    feedback, calibration_task = feedback_service.create_feedback(
         db,
         recommendation_id,
         payload.session_id,
@@ -30,4 +31,6 @@ def submit_feedback(
         payload.model_dump(),
         user_id=user_id_optional(current_user),
     )
+    if calibration_task is not None:
+        background_tasks.add_task(calibration_task)
     return FeedbackResponse(id=feedback.id, expectation_alignment_score=float(feedback.expectation_alignment_score))

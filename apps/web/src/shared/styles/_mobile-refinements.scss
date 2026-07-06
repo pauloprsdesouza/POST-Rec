@@ -162,16 +162,18 @@
 
   .theme-toggle,
   .language-switcher--navbar .language-switcher__toggle {
-    height: 2.25rem;
-    min-width: 2.25rem;
+    height: var(--researchly-touch-min);
+    min-width: var(--researchly-touch-min);
   }
 
   .language-switcher--navbar .language-switcher__toggle {
-    font-size: 0.6875rem;
-    padding-inline: 0.4375rem;
+    font-size: 0.75rem;
+    padding-inline: 0.5rem;
   }
 
   .user-dropdown__toggle {
+    min-height: var(--researchly-touch-min);
+    min-width: var(--researchly-touch-min);
     padding: 0.125rem !important;
   }
 
@@ -181,8 +183,8 @@
 
   .user-dropdown__avatar {
     font-size: 0.875rem;
-    height: 2.25rem;
-    width: 2.25rem;
+    height: var(--researchly-touch-min);
+    width: var(--researchly-touch-min);
   }
 
   .user-dropdown__menu {
@@ -227,10 +229,10 @@
   }
 
   .bottom-nav__label {
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.015em;
-    line-height: 1.15;
+    letter-spacing: 0.01em;
+    line-height: 1.2;
     max-width: 4.75rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -240,12 +242,6 @@
   .bottom-nav__svg {
     height: 1.5rem;
     width: 1.5rem;
-  }
-
-  .bottom-nav__item--active::before {
-    height: 2px;
-    top: 0.3125rem;
-    width: 1.125rem;
   }
 
   .bottom-nav__fab {
@@ -440,5 +436,10 @@
   .quick-rating__star:active,
   .quick-rating__chip:active {
     opacity: 0.8;
+  }
+
+  .btn-sm {
+    min-height: var(--researchly-touch-min);
+    padding: 0.5rem 0.875rem;
   }
 }

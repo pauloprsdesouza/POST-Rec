@@ -60,8 +60,8 @@ class NotificationService:
                 f"Topics: {topic_line}\n\n"
                 f"Open the app to review: {self._run_url(str(run.id))}"
             )
-            if self._send_whatsapp(user.phone_number, text, notification_type="run_completed", run_id=str(run.id)):
-                return
+            self._send_whatsapp(user.phone_number, text, notification_type="run_completed", run_id=str(run.id))
+            return
 
         if not user.email:
             return
@@ -95,8 +95,8 @@ class NotificationService:
                 f"Reason: {short_error}\n\n"
                 f"Open the app to try again: {self._runs_url()}"
             )
-            if self._send_whatsapp(user.phone_number, text, notification_type="run_failed", run_id=str(run.id)):
-                return
+            self._send_whatsapp(user.phone_number, text, notification_type="run_failed", run_id=str(run.id))
+            return
 
         if not user.email:
             return
@@ -109,7 +109,7 @@ class NotificationService:
         )
         self._send_email(user.email, subject, plain, html, notification_type="run_failed", run_id=str(run.id))
 
-    def _send_whatsapp(self, phone_number: str, text: str, *, notification_type: str, run_id: str) -> bool:
+    def _send_whatsapp(self, phone_number: str, text: str, *, notification_type: str, run_id: str) -> None:
         try:
             evolution_service.send_text(phone_number, text)
             logger.info(
@@ -117,7 +117,6 @@ class NotificationService:
                 notification_type=notification_type,
                 run_id=run_id,
             )
-            return True
         except EvolutionError as exc:
             logger.warning(
                 "whatsapp_notification_failed",
@@ -125,7 +124,6 @@ class NotificationService:
                 run_id=run_id,
                 error=str(exc),
             )
-            return False
 
     def _send_email(
         self,
