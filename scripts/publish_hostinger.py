@@ -79,7 +79,14 @@ def upsert_env_line(text: str, key: str, value: str) -> str:
     return text + line + "\n"
 
 
-def merge_remote_env(remote: str, local: dict[str, str], *, app_url: str, domain: str) -> str:
+def merge_remote_env(
+    remote: str,
+    local: dict[str, str],
+    *,
+    app_url: str,
+    domain: str,
+    grafana_password_fallback: str = "",
+) -> str:
     env = remote
     for key in SYNC_KEYS:
         if key in SKIP_SYNC_KEYS:
@@ -97,7 +104,7 @@ def merge_remote_env(remote: str, local: dict[str, str], *, app_url: str, domain
         grafana_root += "/"
     env = upsert_env_line(env, "GRAFANA_ROOT_URL", grafana_root)
     if "GRAFANA_ADMIN_PASSWORD=" not in env:
-        grafana_password = local.get("GRAFANA_ADMIN_PASSWORD", "").strip()
+        grafana_password = local.get("GRAFANA_ADMIN_PASSWORD", "").strip() or grafana_password_fallback.strip()
         if grafana_password:
             env = upsert_env_line(env, "GRAFANA_ADMIN_PASSWORD", grafana_password)
     if "GRAFANA_ADMIN_USER=" not in env:
@@ -223,7 +230,23 @@ def main() -> int:
     except FileNotFoundError:
         remote_env = (PROJECT_ROOT / ".env.production.example").read_text(encoding="utf-8")
 
-    merged = merge_remote_env(remote_env, local_env, app_url=app_url, domain=domain)
+    grafana_password_fallback = ""
+    if "GRAFANA_ADMIN_PASSWORD=" not in remote_env:
+        _, grafana_password_fallback = ssh_run(
+            client,
+            "docker inspect postrec-grafana --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null "
+            "| grep '^GF_SECURITY_ADMIN_PASSWORD=' | cut -d= -f2-",
+            timeout=30,
+        )
+        grafana_password_fallback = grafana_password_fallback.strip()
+
+    merged = merge_remote_env(
+        remote_env,
+        local_env,
+        app_url=app_url,
+        domain=domain,
+        grafana_password_fallback=grafana_password_fallback,
+    )
     with sftp.open(f"{REMOTE_DIR}/.env", "w") as f:
         f.write(merged)
     synced = [k for k in SYNC_KEYS if k not in SKIP_SYNC_KEYS and local_env.get(k, "").strip()]
