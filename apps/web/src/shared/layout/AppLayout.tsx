@@ -15,6 +15,7 @@ import { SetupBanner } from "./SetupBanner";
 const DESKTOP_NAV = [
   { to: "/runs/new", labelKey: "nav.newRun" as const },
   { to: "/runs", labelKey: "nav.runs" as const },
+  { to: "/projects", labelKey: "nav.projects" as const },
   { to: "/how-it-works", labelKey: "nav.howItWorks" as const },
 ] as const;
 

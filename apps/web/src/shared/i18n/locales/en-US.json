@@ -43,6 +43,7 @@
     "mainNavigation": "Main navigation",
     "newRun": "New run",
     "runs": "Runs",
+    "projects": "Projects",
     "insights": "Insights",
     "howItWorks": "How it works",
     "profile": "Profile",
@@ -1280,6 +1281,169 @@
       "inactive": "Inactive",
       "roleFor": "Role for {{name}}",
       "updateError": "Could not update user role."
+    }
+  },
+  "projects": {
+    "pageTitle": "Research projects",
+    "pageSubtitle": "Turn an approved idea into a published paper — one clear step at a time.",
+    "workspaceLabel": "Roadmap",
+    "breadcrumb": "Project navigation",
+    "loading": "Loading project…",
+    "loadError": "Could not load projects.",
+    "createError": "Could not create the implementation roadmap.",
+    "updateError": "Could not update the task.",
+    "exportError": "Could not export the roadmap.",
+    "exportDone": "Roadmap exported as Markdown.",
+    "exporting": "Exporting…",
+    "exportMarkdown": "Export Markdown",
+    "backToProjects": "Back to projects",
+    "viewSourceRun": "View source run",
+    "overallProgress": "Overall progress",
+    "progressRingLabel": "done",
+    "activeProject": "Active roadmap",
+    "journeyLabel": "Research journey",
+    "phaseProgressLabel": "Phase progress",
+    "phaseProgressCount": "{{done}} of {{total}} tasks",
+    "taskDoneToast": "Task completed: {{title}}",
+    "taskDoneFallback": "Task",
+    "ctaPhasesDetailLabel": "Phase details",
+    "progressSummary": "{{progress}}% complete · {{phase}}",
+    "headerPhase": "Phase {{current}} of {{total}} · {{phase}}",
+    "headerStats": "{{done}} of {{total}} tasks done · {{progress}}% overall",
+    "headerStatsShort": "{{done}} of {{total}} tasks done",
+    "noPhase": "No active phase",
+    "phaseNav": "Project phases",
+    "phaseLegend": "Your journey",
+    "recommendedPhase": "Suggested",
+    "taskProgress": "{{done}}/{{total}} tasks",
+    "taskStatus": "Task status",
+    "checklistLabel": "Suggested sub-steps",
+    "whyItMatters": "Why it matters",
+    "linkedPapers": "Linked papers",
+    "source": {
+      "exploreIdea": "Explore source idea",
+      "showPanel": "Show recommendation",
+      "hidePanel": "Hide recommendation",
+      "panelTitle": "Source recommendation",
+      "panelSubtitle": "Sections and evidence from the approved idea this roadmap is based on.",
+      "viewInRun": "Open in run review",
+      "loading": "Loading recommendation references…",
+      "linkedFields": "From the recommendation",
+      "paperUnavailable": "Paper details not found in this run",
+      "sections": {
+        "about": "About the idea",
+        "summary": "Summary",
+        "method": "Method & plan",
+        "evidence": "Evidence ({{count}} papers)"
+      },
+      "fields": {
+        "evidence": "Evidence papers"
+      }
+    },
+    "notes": "Your notes",
+    "notesPlaceholder": "Add notes for this step…",
+    "guidanceSummary": "What is this roadmap?",
+    "disclaimer": "This roadmap is structured guidance based on your approved idea and retrieved literature. Adapt it to your advisor, ethics board, and institutional requirements.",
+    "completeMessage": "Congratulations — you completed every task in this roadmap. Consider exporting your notes and moving to submission.",
+    "showCompleted": "Show completed tasks",
+    "hideCompleted": "Hide completed tasks",
+    "phaseTaskCount": "{{visible}} of {{total}} tasks shown",
+    "showCompletedCount": "Show {{count}} completed",
+    "phaseComplete": "All tasks in this phase are done. Select the next phase or show completed tasks.",
+    "ctaLabel": "Implementation roadmap",
+    "ctaBadgeNew": "Next step",
+    "ctaBadgeReady": "Roadmap ready",
+    "ctaTitle": "Ready to implement this idea?",
+    "ctaExistingTitle": "Continue your implementation roadmap",
+    "ctaBody": "Researchly will organize your work into six phases — from literature review to publication — with concrete tasks grounded in your recommendation.",
+    "ctaHint": "You stay in control: complete tasks at your own pace and skip steps that do not apply.",
+    "ctaPhasesLabel": "Roadmap phases",
+    "startRoadmap": "Start implementation roadmap",
+    "openRoadmap": "Continue roadmap",
+    "viewProject": "View project",
+    "creating": "Creating roadmap…",
+    "emptyTitle": "No projects yet",
+    "emptyBody": "When you approve an idea from a run, start a roadmap here to guide your work through publication.",
+    "emptyAction": "Browse runs",
+    "empty": {
+      "eyebrow": "From idea to paper",
+      "step1": "Review ideas in a run and mark one you would use in a real paper.",
+      "step2": "Start an implementation roadmap tailored to that recommendation.",
+      "step3": "Work through phases, track progress, and export your plan."
+    },
+    "howItWorks": {
+      "eyebrow": "How it works",
+      "title": "A guided path, not autopilot",
+      "subtitle": "Research projects help you stay organized after you choose an idea — without doing the research for you.",
+      "step1": "Each project follows six phases that mirror a real research lifecycle.",
+      "step2": "Tasks are grounded in your recommendation: methods, papers, metrics, and risks.",
+      "step3": "Track progress, add notes, and export a Markdown checklist for your workflow."
+    },
+    "statsLabel": "Project statistics",
+    "stats": {
+      "total": "Total",
+      "active": "Active",
+      "completed": "Completed"
+    },
+    "list": {
+      "continue": "Continue roadmap",
+      "viewCompleted": "Review completed project",
+      "progress": "{{pct}}% · {{phase}}",
+      "progressShort": "{{pct}}% complete",
+      "complete": "{{pct}}% · Completed"
+    },
+    "listPhase": "Current phase: {{phase}}",
+    "phasePreview": {
+      "foundation": "Foundation & literature",
+      "design": "Study design",
+      "execution": "Execution",
+      "analysis": "Analysis & validation",
+      "writing": "Writing",
+      "publication": "Publication"
+    },
+    "phaseShort": {
+      "foundation": "Literature",
+      "design": "Design",
+      "execution": "Execute",
+      "analysis": "Analysis",
+      "writing": "Writing",
+      "publication": "Publish"
+    },
+    "completion": {
+      "eyebrow": "Roadmap complete",
+      "title": "You finished the full roadmap",
+      "body": "Every task is done. Export your notes and checklist, then move toward submission with confidence.",
+      "export": "Export your roadmap"
+    },
+    "nextStep": {
+      "badge": "Suggested next step",
+      "meta": "Phase {{phaseNumber}} · {{phase}}",
+      "viewDetails": "View full task"
+    },
+    "actions": {
+      "start": "Start task",
+      "done": "Done",
+      "markDone": "Mark done",
+      "markTodo": "Mark as to do",
+      "skip": "Skip",
+      "restore": "Restore"
+    },
+    "status": {
+      "todo": "To do",
+      "in_progress": "In progress",
+      "done": "Done",
+      "skipped": "Skipped"
+    },
+    "effort": {
+      "S": "Small",
+      "M": "Medium",
+      "L": "Large"
+    },
+    "projectStatus": {
+      "active": "Active",
+      "paused": "Paused",
+      "completed": "Completed",
+      "archived": "Archived"
     }
   }
 }

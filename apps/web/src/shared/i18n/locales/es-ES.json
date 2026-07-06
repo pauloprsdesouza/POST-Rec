@@ -43,6 +43,7 @@
     "mainNavigation": "Navegación principal",
     "newRun": "Nueva ejecución",
     "runs": "Ejecuciones",
+    "projects": "Proyectos",
     "insights": "Métricas",
     "howItWorks": "Cómo funciona",
     "profile": "Perfil",
@@ -1280,6 +1281,169 @@
       "inactive": "Inactivo",
       "roleFor": "Rol de {{name}}",
       "updateError": "No se pudo actualizar el rol del usuario."
+    }
+  },
+  "projects": {
+    "pageTitle": "Proyectos de investigación",
+    "pageSubtitle": "Convierte una idea aprobada en un artículo publicado — un paso claro a la vez.",
+    "workspaceLabel": "Hoja de ruta",
+    "breadcrumb": "Navegación del proyecto",
+    "loading": "Cargando proyecto…",
+    "loadError": "No se pudieron cargar los proyectos.",
+    "createError": "No se pudo crear la hoja de ruta de implementación.",
+    "updateError": "No se pudo actualizar la tarea.",
+    "exportError": "No se pudo exportar la hoja de ruta.",
+    "exportDone": "Hoja de ruta exportada en Markdown.",
+    "exporting": "Exportando…",
+    "exportMarkdown": "Exportar Markdown",
+    "backToProjects": "Volver a proyectos",
+    "viewSourceRun": "Ver ejecución de origen",
+    "overallProgress": "Progreso general",
+    "progressRingLabel": "hecho",
+    "activeProject": "Hoja de ruta activa",
+    "journeyLabel": "Recorrido de investigación",
+    "phaseProgressLabel": "Progreso de la fase",
+    "phaseProgressCount": "{{done}} de {{total}} tareas",
+    "taskDoneToast": "Tarea completada: {{title}}",
+    "taskDoneFallback": "Tarea",
+    "ctaPhasesDetailLabel": "Detalles de las fases",
+    "progressSummary": "{{progress}}% completado · {{phase}}",
+    "headerPhase": "Fase {{current}} de {{total}} · {{phase}}",
+    "headerStats": "{{done}} de {{total}} tareas hechas · {{progress}}% en total",
+    "headerStatsShort": "{{done}} de {{total}} tareas hechas",
+    "noPhase": "Ninguna fase activa",
+    "phaseNav": "Fases del proyecto",
+    "phaseLegend": "Tu recorrido",
+    "recommendedPhase": "Sugerida",
+    "taskProgress": "{{done}}/{{total}} tareas",
+    "taskStatus": "Estado de la tarea",
+    "checklistLabel": "Subpasos sugeridos",
+    "whyItMatters": "Por qué importa",
+    "linkedPapers": "Artículos vinculados",
+    "source": {
+      "exploreIdea": "Explorar idea de origen",
+      "showPanel": "Mostrar recomendación",
+      "hidePanel": "Ocultar recomendación",
+      "panelTitle": "Recomendación de origen",
+      "panelSubtitle": "Secciones y evidencias de la idea aprobada en la que se basa esta hoja de ruta.",
+      "viewInRun": "Abrir en revisión de la ejecución",
+      "loading": "Cargando referencias de la recomendación…",
+      "linkedFields": "De la recomendación",
+      "paperUnavailable": "No se encontraron detalles del artículo en esta ejecución",
+      "sections": {
+        "about": "Sobre la idea",
+        "summary": "Resumen",
+        "method": "Método y plan",
+        "evidence": "Evidencias ({{count}} artículos)"
+      },
+      "fields": {
+        "evidence": "Artículos de evidencia"
+      }
+    },
+    "notes": "Tus notas",
+    "notesPlaceholder": "Añade notas para este paso…",
+    "guidanceSummary": "¿Qué es esta hoja de ruta?",
+    "disclaimer": "Esta hoja de ruta es orientación estructurada basada en tu idea aprobada y la literatura recuperada. Adáptala a tu asesor, comité de ética y requisitos institucionales.",
+    "completeMessage": "¡Felicitaciones — completaste todas las tareas de esta hoja de ruta! Considera exportar tus notas y avanzar hacia la sumisión.",
+    "showCompleted": "Mostrar tareas completadas",
+    "hideCompleted": "Ocultar tareas completadas",
+    "phaseTaskCount": "{{visible}} de {{total}} tareas visibles",
+    "showCompletedCount": "Mostrar {{count}} completadas",
+    "phaseComplete": "Todas las tareas de esta fase están hechas. Selecciona la siguiente fase o muestra las completadas.",
+    "ctaLabel": "Hoja de ruta de implementación",
+    "ctaBadgeNew": "Siguiente paso",
+    "ctaBadgeReady": "Hoja de ruta lista",
+    "ctaTitle": "¿Listo para implementar esta idea?",
+    "ctaExistingTitle": "Continúa tu hoja de ruta de implementación",
+    "ctaBody": "Researchly organizará tu trabajo en seis fases — desde la revisión bibliográfica hasta la publicación — con tareas concretas basadas en tu recomendación.",
+    "ctaHint": "Tú mantienes el control: completa tareas a tu ritmo y omite pasos que no apliquen.",
+    "ctaPhasesLabel": "Fases de la hoja de ruta",
+    "startRoadmap": "Iniciar hoja de ruta",
+    "openRoadmap": "Continuar hoja de ruta",
+    "viewProject": "Ver proyecto",
+    "creating": "Creando hoja de ruta…",
+    "emptyTitle": "Aún no hay proyectos",
+    "emptyBody": "Cuando apruebes una idea en una ejecución, inicia una hoja de ruta aquí para guiar tu trabajo hasta la publicación.",
+    "emptyAction": "Ver ejecuciones",
+    "empty": {
+      "eyebrow": "De la idea al artículo",
+      "step1": "Revisa ideas en una ejecución y marca una que usarías en un artículo real.",
+      "step2": "Inicia una hoja de ruta de implementación adaptada a esa recomendación.",
+      "step3": "Avanza por las fases, sigue el progreso y exporta tu plan."
+    },
+    "howItWorks": {
+      "eyebrow": "Cómo funciona",
+      "title": "Un camino guiado, no piloto automático",
+      "subtitle": "Los proyectos de investigación te ayudan a organizarte después de elegir una idea — sin hacer la investigación por ti.",
+      "step1": "Cada proyecto sigue seis fases que reflejan un ciclo real de investigación.",
+      "step2": "Las tareas se basan en tu recomendación: métodos, artículos, métricas y riesgos.",
+      "step3": "Sigue el progreso, añade notas y exporta un checklist en Markdown."
+    },
+    "statsLabel": "Estadísticas de proyectos",
+    "stats": {
+      "total": "Total",
+      "active": "Activos",
+      "completed": "Completados"
+    },
+    "list": {
+      "continue": "Continuar hoja de ruta",
+      "viewCompleted": "Ver proyecto completado",
+      "progress": "{{pct}}% · {{phase}}",
+      "progressShort": "{{pct}}% completado",
+      "complete": "{{pct}}% · Completado"
+    },
+    "listPhase": "Fase actual: {{phase}}",
+    "phasePreview": {
+      "foundation": "Fundamentos y literatura",
+      "design": "Diseño del estudio",
+      "execution": "Ejecución",
+      "analysis": "Análisis y validación",
+      "writing": "Redacción",
+      "publication": "Publicación"
+    },
+    "phaseShort": {
+      "foundation": "Literatura",
+      "design": "Diseño",
+      "execution": "Ejecutar",
+      "analysis": "Análisis",
+      "writing": "Redacción",
+      "publication": "Publicar"
+    },
+    "completion": {
+      "eyebrow": "Hoja de ruta completada",
+      "title": "Completaste toda la hoja de ruta",
+      "body": "Todas las tareas están hechas. Exporta tus notas y checklist, y avanza hacia la sumisión con confianza.",
+      "export": "Exportar tu hoja de ruta"
+    },
+    "nextStep": {
+      "badge": "Siguiente paso sugerido",
+      "meta": "Fase {{phaseNumber}} · {{phase}}",
+      "viewDetails": "Ver tarea completa"
+    },
+    "actions": {
+      "start": "Iniciar tarea",
+      "done": "Hecha",
+      "markDone": "Marcar como hecha",
+      "markTodo": "Marcar como pendiente",
+      "skip": "Omitir",
+      "restore": "Restaurar"
+    },
+    "status": {
+      "todo": "Por hacer",
+      "in_progress": "En progreso",
+      "done": "Hecha",
+      "skipped": "Omitida"
+    },
+    "effort": {
+      "S": "Pequeño",
+      "M": "Medio",
+      "L": "Grande"
+    },
+    "projectStatus": {
+      "active": "Activo",
+      "paused": "Pausado",
+      "completed": "Completado",
+      "archived": "Archivado"
     }
   }
 }

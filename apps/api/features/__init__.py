@@ -9,6 +9,7 @@ from apps.api.features.experiments.router import router as experiments_router
 from apps.api.features.feedback.router import router as feedback_router
 from apps.api.features.health.router import router as health_router
 from apps.api.features.profile.router import router as profile_router
+from apps.api.features.projects.router import router as projects_router
 from apps.api.features.recommendations.router import router as recommendations_router
 from apps.api.features.runs.router import router as runs_router
 from apps.api.features.sessions.router import router as sessions_router
@@ -22,6 +23,7 @@ for feature_router in (
     sessions_router,
     consent_router,
     profile_router,
+    projects_router,
     runs_router,
     recommendations_router,
     feedback_router,

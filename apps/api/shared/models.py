@@ -385,6 +385,87 @@ class LLMUsage(Base):
     run: Mapped["RecommendationRun | None"] = relationship()
 
 
+class ResearchProject(Base):
+    __tablename__ = "research_project"
+    __table_args__ = (UniqueConstraint("user_id", "recommendation_id", name="uq_research_project_user_recommendation"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("app_user.id", ondelete="CASCADE"), nullable=False
+    )
+    run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("recommendation_run.id", ondelete="CASCADE"), nullable=False
+    )
+    recommendation_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("recommendation_candidate.id", ondelete="CASCADE"), nullable=False
+    )
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="active")
+    progress_pct: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    current_phase_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    roadmap_version: Mapped[str] = mapped_column(Text, nullable=False, default="v1")
+    locale: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    user: Mapped["User"] = relationship()
+    run: Mapped["RecommendationRun"] = relationship()
+    recommendation: Mapped["RecommendationCandidate"] = relationship()
+    phases: Mapped[list["ProjectPhase"]] = relationship(
+        back_populates="project", order_by="ProjectPhase.order_index", cascade="all, delete-orphan"
+    )
+
+
+class ProjectPhase(Base):
+    __tablename__ = "project_phase"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("research_project.id", ondelete="CASCADE"), nullable=False
+    )
+    order_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="todo")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    project: Mapped["ResearchProject"] = relationship(back_populates="phases")
+    tasks: Mapped[list["ProjectTask"]] = relationship(
+        back_populates="phase", order_by="ProjectTask.order_index", cascade="all, delete-orphan"
+    )
+
+
+class ProjectTask(Base):
+    __tablename__ = "project_task"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    phase_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("project_phase.id", ondelete="CASCADE"), nullable=False
+    )
+    order_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    guidance: Mapped[str | None] = mapped_column(Text, nullable=True)
+    effort: Mapped[str | None] = mapped_column(Text, nullable=True)
+    linked_fields: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    linked_paper_ids: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    checklist: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="todo")
+    user_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    phase: Mapped["ProjectPhase"] = relationship(back_populates="tasks")
+
+
 Index("idx_app_user_phone_number", User.phone_number, unique=True)
 Index("idx_app_user_email", User.email, unique=True)
 Index("idx_auth_otp_phone_created", AuthOtpChallenge.phone_number, AuthOtpChallenge.created_at)
@@ -405,6 +486,11 @@ Index("idx_recommendation_feedback_session_id", RecommendationFeedback.session_i
 Index("idx_source_document_doi", SourceDocument.doi)
 Index("idx_source_document_content_hash", SourceDocument.content_hash)
 Index("idx_llm_usage_run_id", LLMUsage.run_id)
+Index("idx_research_project_user_id", ResearchProject.user_id)
+Index("idx_research_project_run_id", ResearchProject.run_id)
+Index("idx_research_project_recommendation_id", ResearchProject.recommendation_id)
+Index("idx_project_phase_project_id", ProjectPhase.project_id)
+Index("idx_project_task_phase_id", ProjectTask.phase_id)
 
 
 class QualisEvaluationPeriod(Base):

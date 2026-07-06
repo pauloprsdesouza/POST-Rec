@@ -1,4 +1,4 @@
-type NavIconName = "new" | "runs" | "profile" | "insights" | "setup" | "help";
+type NavIconName = "new" | "runs" | "projects" | "profile" | "insights" | "setup" | "help";
 
 interface NavIconProps {
   name: NavIconName;
@@ -28,6 +28,17 @@ export function NavIcon({ name, className = "bottom-nav__svg" }: NavIconProps) {
             stroke="currentColor"
             strokeWidth="1.75"
             strokeLinecap="round"
+          />
+        </svg>
+      );
+    case "projects":
+      return (
+        <svg {...common}>
+          <path
+            d="M5 5h5v5H5V5Zm9 0h5v5h-5V5ZM5 14h5v5H5v-5Zm9 3h5v2h-5v-2Z"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinejoin="round"
           />
         </svg>
       );

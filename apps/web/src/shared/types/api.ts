@@ -481,3 +481,55 @@ export interface AdminUserList {
   total: number;
   items: AdminUserRecord[];
 }
+
+export type ProjectTaskStatus = "todo" | "in_progress" | "done" | "skipped";
+
+export interface ProjectTask {
+  id: string;
+  order_index: number;
+  title: string;
+  description?: string | null;
+  guidance?: string | null;
+  effort?: string | null;
+  linked_fields?: string[];
+  linked_paper_ids?: string[];
+  checklist?: string[];
+  status: ProjectTaskStatus;
+  user_notes?: string | null;
+  completed_at?: string | null;
+}
+
+export interface ProjectPhase {
+  id: string;
+  order_index: number;
+  title: string;
+  description?: string | null;
+  status: string;
+  tasks: ProjectTask[];
+}
+
+export interface ResearchProject {
+  id: string;
+  run_id: string;
+  recommendation_id: string;
+  title: string;
+  status: string;
+  progress_pct: number;
+  current_phase_id?: string | null;
+  locale?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  phases: ProjectPhase[];
+}
+
+export interface ProjectListItem {
+  id: string;
+  run_id: string;
+  recommendation_id: string;
+  title: string;
+  status: string;
+  progress_pct: number;
+  current_phase_title?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}

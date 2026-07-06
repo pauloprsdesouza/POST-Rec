@@ -567,3 +567,74 @@ class AdminUserRoleUpdate(BaseModel):
 class ReadyResponse(BaseModel):
     status: str
     checks: dict[str, str]
+
+
+class ProjectCreate(BaseModel):
+    recommendation_id: UUID
+
+
+class ProjectTaskResponse(BaseModel):
+    id: UUID
+    status: str
+    user_notes: str | None = None
+    completed_at: datetime | None = None
+
+
+class ProjectTaskUpdate(BaseModel):
+    status: str | None = Field(default=None, pattern="^(todo|in_progress|done|skipped)$")
+    user_notes: str | None = None
+
+
+class ProjectTaskItem(BaseModel):
+    id: UUID
+    order_index: int
+    title: str
+    description: str | None = None
+    guidance: str | None = None
+    effort: str | None = None
+    linked_fields: list[str] = Field(default_factory=list)
+    linked_paper_ids: list[str] = Field(default_factory=list)
+    checklist: list[str] = Field(default_factory=list)
+    status: str
+    user_notes: str | None = None
+    completed_at: datetime | None = None
+
+
+class ProjectPhaseItem(BaseModel):
+    id: UUID
+    order_index: int
+    title: str
+    description: str | None = None
+    status: str
+    tasks: list[ProjectTaskItem] = Field(default_factory=list)
+
+
+class ProjectResponse(BaseModel):
+    id: UUID
+    run_id: UUID
+    recommendation_id: UUID
+    title: str
+    status: str
+    progress_pct: int
+    current_phase_id: UUID | None = None
+    locale: str | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+    phases: list[ProjectPhaseItem] = Field(default_factory=list)
+
+
+class ProjectListItem(BaseModel):
+    id: UUID
+    run_id: UUID
+    recommendation_id: UUID
+    title: str
+    status: str
+    progress_pct: int
+    current_phase_title: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class ProjectExportResponse(BaseModel):
+    content: str
+    format: str = "markdown"

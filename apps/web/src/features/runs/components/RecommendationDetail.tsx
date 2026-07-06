@@ -8,6 +8,7 @@ import { PaperRefProvider } from "./PaperRefContext";
 import { PaperRefText } from "./PaperRefText";
 import { EvidenceList } from "./EvidenceList";
 import { QuickFeedbackPanel, type WouldUse } from "./QuickFeedbackPanel";
+import { StartProjectCTA } from "@/features/projects/components/StartProjectCTA";
 import { ScoreBar } from "./ScoreBar";
 import { SotaVerificationPanel } from "./SotaVerificationPanel";
 import { buildPaperRefIndex, normalizePaperId } from "@/features/runs/utils/paperRefs";
@@ -262,6 +263,12 @@ export function RecommendationDetail({
               void submitRating(savedRating, value);
             }
           }}
+        />
+        <StartProjectCTA
+          token={token}
+          recommendationId={recommendation.id}
+          rating={savedRating}
+          wouldUse={wouldUse}
         />
       </div>
       </article>
