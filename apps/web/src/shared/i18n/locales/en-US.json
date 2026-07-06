@@ -76,6 +76,7 @@
     "installBadge": "Install app",
     "installTitle": "Use Researchly like a native app",
     "installMessage": "Save Researchly to your home screen for quick access and the mobile tab bar.",
+    "installMessageShort": "Add to your home screen for the full mobile experience.",
     "installAction": "Install",
     "dismiss": "Not now",
     "iosTitle": "Add to Home Screen",

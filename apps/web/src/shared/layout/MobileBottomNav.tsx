@@ -70,14 +70,18 @@ export function MobileBottomNav() {
           to={setupTo}
           className={`bottom-nav__item bottom-nav__item--setup ${setupActive ? "bottom-nav__item--active" : ""}`}
         >
-          <NavIcon name="setup" />
+          <span className="bottom-nav__icon-slot">
+            <NavIcon name="setup" />
+          </span>
           <span className="bottom-nav__label">{t("nav.completeSetup")}</span>
         </NavLink>
         <NavLink
           to="/how-it-works"
           className={`bottom-nav__item ${pathname.startsWith("/how-it-works") ? "bottom-nav__item--active" : ""}`}
         >
-          <NavIcon name="help" />
+          <span className="bottom-nav__icon-slot">
+            <NavIcon name="help" />
+          </span>
           <span className="bottom-nav__label">{t("nav.howItWorks")}</span>
         </NavLink>
       </nav>
@@ -104,8 +108,14 @@ export function MobileBottomNav() {
             className={classNames}
             {...(item.primary ? { "data-coach": "coach-runs-new-run" } : {})}
           >
-            <span className={item.primary ? "bottom-nav__fab" : undefined}>
-              <NavIcon name={item.icon} />
+            <span className="bottom-nav__icon-slot">
+              {item.primary ? (
+                <span className="bottom-nav__fab">
+                  <NavIcon name={item.icon} />
+                </span>
+              ) : (
+                <NavIcon name={item.icon} />
+              )}
             </span>
             <span className="bottom-nav__label">{t(item.labelKey)}</span>
           </NavLink>

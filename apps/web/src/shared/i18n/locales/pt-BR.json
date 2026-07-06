@@ -76,6 +76,7 @@
     "installBadge": "Instalar app",
     "installTitle": "Use o Researchly como um app nativo",
     "installMessage": "Salve o Researchly na tela inicial para acesso rápido e a barra de abas no celular.",
+    "installMessageShort": "Adicione à tela inicial para a experiência mobile completa.",
     "installAction": "Instalar",
     "dismiss": "Agora não",
     "iosTitle": "Adicionar à Tela de Início",

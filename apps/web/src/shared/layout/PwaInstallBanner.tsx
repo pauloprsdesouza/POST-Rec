@@ -15,20 +15,25 @@ export function PwaInstallBanner() {
     <>
       <aside className="pwa-install-banner" aria-labelledby="pwa-install-banner-heading">
         <div className="pwa-install-banner__inner">
-          <div className="pwa-install-banner__copy">
-            <span className="pwa-install-banner__badge">{t("pwa.installBadge")}</span>
-            <p id="pwa-install-banner-heading" className="pwa-install-banner__title">
-              {t("pwa.installTitle")}
-            </p>
-            <p className="pwa-install-banner__message">{t("pwa.installMessage")}</p>
-          </div>
-          <div className="pwa-install-banner__actions">
-            <button type="button" className="btn btn-primary pwa-install-banner__install" onClick={() => void install()}>
-              {t("pwa.installAction")}
-            </button>
-            <button type="button" className="btn btn-outline-secondary pwa-install-banner__dismiss" onClick={dismiss}>
-              {t("pwa.dismiss")}
-            </button>
+          <div className="pwa-install-banner__row">
+            <div className="pwa-install-banner__copy">
+              <span className="pwa-install-banner__badge">{t("pwa.installBadge")}</span>
+              <p id="pwa-install-banner-heading" className="pwa-install-banner__message">
+                {t("pwa.installMessage")}
+              </p>
+            </div>
+            <div className="pwa-install-banner__actions">
+              <button
+                type="button"
+                className="btn btn-primary pwa-install-banner__cta"
+                onClick={() => void install()}
+              >
+                {t("pwa.installAction")}
+              </button>
+              <button type="button" className="btn btn-link pwa-install-banner__dismiss" onClick={dismiss}>
+                {t("pwa.dismiss")}
+              </button>
+            </div>
           </div>
         </div>
       </aside>

@@ -81,9 +81,10 @@
   --researchly-page-narrow: 560px;
   --researchly-page-wide: 1120px;
   --researchly-nav-height: 3.5rem;
-  --researchly-nav-height-compact: 3.25rem;
-  --researchly-bottom-nav-height: 4.25rem;
-  --researchly-sticky-cta-height: 7.25rem;
+  --researchly-nav-height-compact: 3rem;
+  --researchly-bottom-nav-content: 3rem;
+  --researchly-bottom-nav-height: var(--researchly-bottom-nav-content);
+  --researchly-sticky-cta-height: 6.5rem;
   --researchly-safe-bottom: env(safe-area-inset-bottom, 0px);
   --researchly-safe-top: env(safe-area-inset-top, 0px);
   --researchly-page-gutter: var(--researchly-space-4);
