@@ -72,9 +72,14 @@ SYNC_KEYS = (
 SKIP_SYNC_KEYS = frozenset({"JWT_SECRET"})
 
 
+def escape_compose_env_value(value: str) -> str:
+    """Escape dollar signs for docker compose .env interpolation."""
+    return value.replace("$", "$$")
+
+
 def upsert_env_line(text: str, key: str, value: str) -> str:
     pattern = re.compile(rf"^{re.escape(key)}=.*$", re.MULTILINE)
-    line = f"{key}={value}"
+    line = f"{key}={escape_compose_env_value(value)}"
     if pattern.search(text):
         return pattern.sub(line, text)
     if text and not text.endswith("\n"):
