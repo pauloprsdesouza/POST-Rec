@@ -1,17 +1,22 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
+import { isRoadmapEligible } from "@/features/projects/utils/roadmapEligibility";
+import type { WouldUse } from "@/features/runs/components/QuickFeedbackPanel";
 import { projectService } from "@/shared/api";
 import { getErrorMessage } from "@/shared/api/errors";
+import { getPwaMode } from "@/shared/pwa/detect";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 
 interface StartProjectCTAProps {
   token: string;
   recommendationId: string;
   rating: number | null;
-  wouldUse: "yes" | "maybe" | "no";
+  wouldUse: WouldUse;
+  decision?: string | null;
   locale?: string;
+  onEligibleChange?: (eligible: boolean) => void;
 }
 
 export function StartProjectCTA({
@@ -19,18 +24,24 @@ export function StartProjectCTA({
   recommendationId,
   rating,
   wouldUse,
+  decision,
   locale: localeProp,
+  onEligibleChange,
 }: StartProjectCTAProps) {
   const { t, i18n } = useTranslation();
   const locale = localeProp ?? i18n.language;
   const navigate = useNavigate();
+  const sectionRef = useRef<HTMLElement>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [loadingLookup, setLoadingLookup] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isApproved = rating != null && rating >= 4;
-  const isCommitted = wouldUse === "yes" || isApproved;
+  const isCommitted = isRoadmapEligible(rating, wouldUse, decision);
+
+  useEffect(() => {
+    onEligibleChange?.(isCommitted);
+  }, [isCommitted, onEligibleChange]);
 
   useEffect(() => {
     if (!token || !isCommitted) {
@@ -39,6 +50,7 @@ export function StartProjectCTA({
     }
 
     let active = true;
+    setLoadingLookup(true);
     void (async () => {
       try {
         const existing = await projectService.getProjectByRecommendation(token, recommendationId);
@@ -58,6 +70,22 @@ export function StartProjectCTA({
       active = false;
     };
   }, [token, recommendationId, isCommitted]);
+
+  useEffect(() => {
+    if (!isCommitted || loadingLookup) {
+      return;
+    }
+
+    const isMobilePwa = getPwaMode() === "standalone" && window.innerWidth < 992;
+    if (!isMobilePwa) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [isCommitted, loadingLookup, projectId]);
 
   const openProject = useCallback(
     (id: string) => {
@@ -91,14 +119,29 @@ export function StartProjectCTA({
 
   if (loadingLookup) {
     return (
-      <section className="start-project-cta start-project-cta--loading" aria-busy="true">
+      <section
+        ref={sectionRef}
+        className="start-project-cta start-project-cta--loading"
+        aria-busy="true"
+      >
         <div className="start-project-cta__skeleton" />
       </section>
     );
   }
 
+  const buttonLabel = creating
+    ? t("projects.creating")
+    : projectId
+      ? t("projects.openRoadmap")
+      : t("projects.startRoadmap");
+
   return (
-    <section className="start-project-cta" aria-label={t("projects.ctaLabel")}>
+    <section
+      ref={sectionRef}
+      className="start-project-cta start-project-cta--eligible"
+      aria-label={t("projects.ctaLabel")}
+      data-coach="coach-run-roadmap"
+    >
       <div className={`start-project-cta__card${projectId ? " start-project-cta__card--existing" : ""}`}>
         <div className="start-project-cta__layout">
           <div className="start-project-cta__copy">
@@ -111,15 +154,11 @@ export function StartProjectCTA({
           <div className="start-project-cta__actions">
             <button
               type="button"
-              className="btn btn-primary"
+              className="btn btn-primary start-project-cta__button"
               disabled={creating}
               onClick={() => void handleStart()}
             >
-              {creating
-                ? t("projects.creating")
-                : projectId
-                  ? t("projects.openRoadmap")
-                  : t("projects.startRoadmap")}
+              {buttonLabel}
             </button>
           </div>
         </div>

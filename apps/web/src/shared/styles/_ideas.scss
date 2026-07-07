@@ -393,6 +393,10 @@
     padding: var(--researchly-space-5);
   }
 
+  html[data-pwa-mode="standalone"] .idea-detail--roadmap-ready {
+    padding-bottom: calc(5.5rem + var(--researchly-pwa-bottom-inset, 0px));
+  }
+
   .idea-detail__actions {
     margin-top: var(--researchly-space-5);
     padding-top: var(--researchly-space-4);

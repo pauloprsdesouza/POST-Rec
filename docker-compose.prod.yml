@@ -25,11 +25,11 @@ services:
         aliases:
           - postrec-evolution-api
     environment:
-      SERVER_URL: https://paulorobertosouza.com.br/evolution
+      SERVER_URL: https://${DEPLOY_DOMAIN:?set DEPLOY_DOMAIN}/evolution
       SERVER_DISABLE_MANAGER: "false"
       AUTHENTICATION_TYPE: apikey
-      AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES: "true"
-      CORS_ORIGIN: "*"
+      AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES: "false"
+      CORS_ORIGIN: ${EVOLUTION_CORS_ORIGIN:-}
       CORS_METHODS: GET,POST,PUT,DELETE,PATCH
       CORS_CREDENTIALS: "false"
 
@@ -82,8 +82,8 @@ services:
       - -H
       - unix:///var/run/docker.sock
       - --http-enabled
-      - --trusted-origins=paulorobertosouza.com.br,www.paulorobertosouza.com.br
-      - --admin-password=$$2b$$12$$gQ5EzADHy65eghgRUozkCOJyycgjrLKbB4B7b57usypWeIobqgp1y
+      - --trusted-origins=${DEPLOY_DOMAIN:?set DEPLOY_DOMAIN},www.${DEPLOY_DOMAIN}
+      - --admin-password=${PORTAINER_ADMIN_PASSWORD_HASH:?set PORTAINER_ADMIN_PASSWORD_HASH}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - postrec_portainer_data:/data

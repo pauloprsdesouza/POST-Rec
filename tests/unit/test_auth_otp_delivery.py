@@ -104,6 +104,24 @@ def test_send_otp_email_required_in_production(mock_email, db, settings):
         service._send_otp(db, email="user@example.com", purpose="login", whatsapp_opt_in=False)
 
 
+@patch("apps.api.features.auth.service.evolution_service")
+@patch("apps.api.features.auth.service.email_service")
+def test_send_otp_with_delivery_rejects_unconfigured_messaging_in_production(
+    mock_email, mock_evolution, db, settings
+):
+    mock_email.is_configured.return_value = False
+    mock_evolution.is_configured.return_value = False
+
+    service = AuthService()
+    with pytest.raises(AuthError, match="Messaging is not configured"):
+        service._send_otp_with_delivery(
+            db,
+            email="user@example.com",
+            purpose="login",
+            whatsapp_opt_in=False,
+        )
+
+
 @patch("apps.api.features.auth.service.auth_service._send_otp_with_delivery")
 @patch("apps.api.features.auth.service.get_settings")
 def test_register_passes_whatsapp_preference(mock_get_settings, mock_send_otp, db):

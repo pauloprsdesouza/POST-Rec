@@ -2,7 +2,7 @@
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse, Response
@@ -14,6 +14,8 @@ from apps.api.shared.observability.logging import configure_logging, get_logger
 from apps.api.shared.observability.metrics import metrics_payload
 from apps.api.shared.observability.middleware import RequestContextMiddleware
 from apps.api.shared.observability.telemetry import setup_observability
+from apps.api.shared.security.headers import SecurityHeadersMiddleware
+from apps.api.shared.security.rate_limit import RateLimitMiddleware, metrics_access_allowed
 from apps.api.shared.settings import get_settings
 
 configure_logging()
@@ -33,11 +35,17 @@ async def lifespan(app: FastAPI):
     logger.info("app_stop")
 
 
+_settings = get_settings()
+_docs_enabled = _settings.app_env != "production"
+
 app = FastAPI(
     title="Researchly API",
     description="Research smarter — literature-grounded research ideas",
     version="0.1.0",
     lifespan=lifespan,
+    docs_url="/docs" if _docs_enabled else None,
+    redoc_url="/redoc" if _docs_enabled else None,
+    openapi_url="/openapi.json" if _docs_enabled else None,
 )
 
 settings = get_settings()
@@ -46,17 +54,21 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
     allow_credentials="*" not in cors_origins,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-Metrics-Token"],
 )
 app.add_middleware(GZipMiddleware, minimum_size=500)
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RateLimitMiddleware)
 app.add_middleware(RequestContextMiddleware)
 
 app.include_router(api_router)
 
 
 @app.get("/metrics", include_in_schema=False)
-def prometheus_metrics() -> Response:
+def prometheus_metrics(request: Request) -> Response:
+    if not metrics_access_allowed(request):
+        raise HTTPException(status_code=403, detail="Metrics access denied")
     payload, content_type = metrics_payload()
     return Response(content=payload, media_type=content_type)
 

@@ -130,7 +130,7 @@ def main() -> int:
     print("=" * 60)
     print(f"URL:      https://{domain}/portainer/")
     print("Username: admin")
-    print("Password: (configured in docker-compose.prod.yml / PORTAINER_ADMIN_PASSWORD)")
+    print("Password: (set PORTAINER_ADMIN_PASSWORD_HASH in .env — bcrypt hash, not plaintext)")
     return 0
 
 

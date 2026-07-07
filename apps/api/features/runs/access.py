@@ -13,8 +13,11 @@ def user_id_optional(user: User | None) -> uuid.UUID | None:
 
 
 def ensure_run_access(run: RecommendationRun, user: User | None) -> None:
-    if user and run.user_id and run.user_id != user.id:
-        raise HTTPException(status_code=403, detail="Not allowed to access this run")
+    if run.user_id:
+        if not user:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        if run.user_id != user.id:
+            raise HTTPException(status_code=403, detail="Not allowed to access this run")
 
 
 def get_run_or_404(db: Session, run_id: uuid.UUID) -> RecommendationRun:

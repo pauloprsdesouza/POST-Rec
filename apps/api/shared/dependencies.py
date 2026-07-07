@@ -92,7 +92,10 @@ def get_run_stream_access(
     if not run:
         raise HTTPException(status_code=404, detail="Run not found")
 
-    if run.user_id and run.user_id != user.id:
-        raise HTTPException(status_code=403, detail="Not allowed to access this run")
+    if run.user_id:
+        if not user:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
+        if run.user_id != user.id:
+            raise HTTPException(status_code=403, detail="Not allowed to access this run")
 
     return run

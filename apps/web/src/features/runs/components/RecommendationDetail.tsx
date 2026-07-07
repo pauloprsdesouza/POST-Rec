@@ -9,6 +9,10 @@ import { PaperRefText } from "./PaperRefText";
 import { EvidenceList } from "./EvidenceList";
 import { QuickFeedbackPanel, type WouldUse } from "./QuickFeedbackPanel";
 import { StartProjectCTA } from "@/features/projects/components/StartProjectCTA";
+import {
+  wouldUseFromFeedback,
+  wouldUseFromRating,
+} from "@/features/projects/utils/roadmapEligibility";
 import { ScoreBar } from "./ScoreBar";
 import { SotaVerificationPanel } from "./SotaVerificationPanel";
 import { buildPaperRefIndex, normalizePaperId } from "@/features/runs/utils/paperRefs";
@@ -39,12 +43,16 @@ export function RecommendationDetail({
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<IdeaTab>("about");
   const [savedRating, setSavedRating] = useState<number | null>(initialRating);
+  const [wouldUse, setWouldUse] = useState<WouldUse>(() =>
+    wouldUseFromFeedback(initialRating, recommendation.user_feedback?.decision),
+  );
+  const [roadmapPinned, setRoadmapPinned] = useState(false);
 
   useEffect(() => {
     setActiveTab("about");
     setSavedRating(initialRating);
-  }, [recommendation.id, initialRating]);
-  const [wouldUse, setWouldUse] = useState<WouldUse>("maybe");
+    setWouldUse(wouldUseFromFeedback(initialRating, recommendation.user_feedback?.decision));
+  }, [recommendation.id, initialRating, recommendation.user_feedback?.decision]);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -84,12 +92,6 @@ export function RecommendationDetail({
     return "rejected";
   };
 
-  const wouldUseFromRating = (rating: number): WouldUse => {
-    if (rating >= 4) return "yes";
-    if (rating >= 3) return "maybe";
-    return "no";
-  };
-
   const submitRating = async (rating: number, useInPaper = wouldUse) => {
     const isFirstRating = savedRating == null;
     setSubmitting(true);
@@ -119,16 +121,20 @@ export function RecommendationDetail({
   };
 
   const applyRating = (rating: number) => {
-    const useInPaper = savedRating == null ? wouldUseFromRating(rating) : wouldUse;
-    if (savedRating == null) {
-      setWouldUse(useInPaper);
-    }
+    const derived = wouldUseFromRating(rating);
+    const useInPaper = wouldUse === "yes" ? "yes" : derived;
+    setWouldUse(useInPaper);
     void submitRating(rating, useInPaper);
   };
 
+  const feedbackDecision = recommendation.user_feedback?.decision;
+
   return (
     <PaperRefProvider index={paperRefIndex} onNavigateToPaper={navigateToPaper}>
-      <article className="idea-detail" aria-labelledby={`idea-title-${recommendation.id}`}>
+      <article
+        className={`idea-detail${roadmapPinned ? " idea-detail--roadmap-ready" : ""}`}
+        aria-labelledby={`idea-title-${recommendation.id}`}
+      >
       <div className="idea-detail__meta">
         {scoreLabel != null ? (
           <span className="idea-detail__score" title={t("ideas.scoreHint")}>
@@ -264,6 +270,8 @@ export function RecommendationDetail({
           recommendationId={recommendation.id}
           rating={savedRating}
           wouldUse={wouldUse}
+          decision={feedbackDecision}
+          onEligibleChange={setRoadmapPinned}
         />
       </div>
       </article>

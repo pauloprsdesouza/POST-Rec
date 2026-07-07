@@ -47,3 +47,8 @@ class PlatformSettings(BaseSettings):
     smtp_use_tls: bool = True
     email_from: str = "noreply@paulorobertosouza.com.br"
     email_from_name: str = ""
+
+    api_rate_limit_enabled: bool = True
+    api_rate_limit_per_minute: int = 120
+    auth_rate_limit_per_minute: int = 20
+    metrics_token: str = ""

@@ -63,6 +63,9 @@ SYNC_KEYS = (
     "QUALIS_CACHE_TTL",
     "EXPERIMENT_FGGV_VS_SOTA_ID",
     "EXPERIMENT_TREATMENT_FRACTION",
+    "PORTAINER_ADMIN_PASSWORD_HASH",
+    "METRICS_TOKEN",
+    "EVOLUTION_CORS_ORIGIN",
 )
 
 # Never overwrite server-generated secrets from a developer .env.
@@ -118,6 +121,9 @@ def merge_remote_env(
         env = upsert_env_line(env, "QUALIS_ENABLED", "true")
     if "AUTH_ENABLED=" not in env:
         env = upsert_env_line(env, "AUTH_ENABLED", "true")
+    if "EVOLUTION_CORS_ORIGIN=" not in env:
+        cors_origin = local.get("EVOLUTION_CORS_ORIGIN", "").strip() or f"https://{domain}"
+        env = upsert_env_line(env, "EVOLUTION_CORS_ORIGIN", cors_origin)
     return env
 
 

@@ -146,7 +146,7 @@ class AuthService:
                 evolution_service.send_text(phone_normalized, message)
             except EvolutionError as exc:
                 whatsapp_error = str(exc).strip() or "Could not send WhatsApp message. Try again later."
-                if settings.app_env == "development" or not evolution_service.is_configured():
+                if settings.app_env == "development":
                     logger.warning(
                         "otp_whatsapp_fallback",
                         phone_number=phone_normalized,
@@ -168,7 +168,7 @@ class AuthService:
             email_service.send_text(request.email, subject, plain_body, html_body=html_body)
         except EmailError as exc:
             email_error = str(exc).strip() or "Could not send email. Try again later."
-            if settings.app_env == "development" or not email_service.is_configured():
+            if settings.app_env == "development":
                 logger.warning("otp_email_fallback", email=request.email, code=request.code, error=email_error)
                 return request.code, mask_email(request.email), None
             raise AuthError(email_error) from exc
@@ -255,9 +255,12 @@ class AuthService:
             whatsapp_opt_in=whatsapp_opt_in,
         )
 
-        if settings.app_env == "development" or not self._messaging_configured(use_whatsapp=delivery.use_whatsapp):
+        if settings.app_env == "development":
             dev_code, email_hint, phone_hint = self._deliver_otp_notification(delivery)
             return expires_in, dev_code, email_hint, phone_hint, None
+
+        if not self._messaging_configured(use_whatsapp=delivery.use_whatsapp):
+            raise AuthError("Messaging is not configured. Contact support.")
 
         def deliver() -> None:
             try:

@@ -1,21 +1,28 @@
 {
   "domain": "paulorobertosouza.com.br",
+  "landing": {
+    "show_apps": false,
+    "tagline": ""
+  },
   "apps": {
     "researchly": {
       "title": "Researchly",
       "description": "Research smarter — ideas grounded in real literature",
       "service_host": "postrec-web",
       "service_port": 80,
-      "base_path": "/researchly"
+      "base_path": "/researchly",
+      "list_publicly": false
     },
     "evolution": {
       "title": "Evolution API",
-      "description": "WhatsApp manager — open /evolution/manager/ to pair devices",
+      "description": "WhatsApp manager",
       "service_host": "postrec-evolution-api",
       "service_port": 8080,
       "base_path": "/evolution",
       "strip_prefix": true,
-      "root_paths": ["/manager", "/assets"]
+      "root_paths": ["/manager", "/assets"],
+      "list_publicly": false,
+      "internal": true
     },
     "portainer": {
       "title": "Portainer",
@@ -23,14 +30,18 @@
       "service_host": "postrec-portainer-proxy",
       "service_port": 80,
       "base_path": "/portainer",
-      "root_paths": ["/locales", "/api"]
+      "root_paths": ["/locales", "/api"],
+      "list_publicly": false,
+      "internal": true
     },
     "grafana": {
       "title": "Grafana",
-      "description": "Metrics, logs, and Researchly operations dashboards",
+      "description": "Metrics and operations dashboards",
       "service_host": "postrec-grafana-proxy",
       "service_port": 80,
-      "base_path": "/grafana"
+      "base_path": "/grafana",
+      "list_publicly": false,
+      "internal": true
     }
   }
 }
