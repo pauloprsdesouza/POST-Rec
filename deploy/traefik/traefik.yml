@@ -21,7 +21,7 @@ providers:
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: "${LETSENCRYPT_EMAIL:-admin@paulorobertosouza.com.br}"
+      email: "${LETSENCRYPT_EMAIL}"
       storage: /etc/traefik/acme/acme.json
       httpChallenge:
         entryPoint: http

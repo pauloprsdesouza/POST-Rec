@@ -99,6 +99,9 @@ def merge_remote_env(
     env = upsert_env_line(env, "API_BASE_URL", app_url)
     env = upsert_env_line(env, "FRONTEND_APP_URL", app_url)
     env = upsert_env_line(env, "DEPLOY_DOMAIN", domain)
+    if "LETSENCRYPT_EMAIL=" not in env:
+        email = local.get("LETSENCRYPT_EMAIL", "").strip() or f"admin@{domain}"
+        env = upsert_env_line(env, "LETSENCRYPT_EMAIL", email)
     grafana_root = local.get("GRAFANA_ROOT_URL", "").strip() or f"https://{domain}/grafana/"
     if not grafana_root.endswith("/"):
         grafana_root += "/"
