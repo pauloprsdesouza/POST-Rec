@@ -30,6 +30,10 @@ import type { RecommendationDefaults, UserAccount, UserConsentStatus, UserProfil
 const TABS = ["account", "research", "preferences", "consent"] as const;
 type ProfileTab = (typeof TABS)[number];
 
+const PROFILE_ACCOUNT_FORM_ID = "profile-account-form";
+const PROFILE_RESEARCH_FORM_ID = "profile-research-form";
+const PROFILE_PREFERENCES_FORM_ID = "profile-preferences-form";
+
 function isValidTab(value: string | null): value is ProfileTab {
   return TABS.includes(value as ProfileTab);
 }
@@ -38,7 +42,7 @@ export function ProfilePage() {
   const { t } = useTranslation();
   const academicLabel = useEnumLabel("enums.academicLevel");
   const experienceLabel = useEnumLabel("enums.experience");
-  const { accessToken, user, sessionId, setSessionId, completeProfile, updateUser, consentDone, profileDone } =
+  const { accessToken, user, sessionId, setSessionId, completeProfile, updateUser, profileDone } =
     useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -209,18 +213,35 @@ export function ProfilePage() {
     (profile.preferred_techniques?.length ?? 0) > 0 ||
     (profile.avoided_topics?.length ?? 0) > 0;
 
-  const setupIncomplete = !consentDone || !profileDone;
+  const mobileStickySubmit =
+    activeTab === "account"
+      ? {
+          formId: PROFILE_ACCOUNT_FORM_ID,
+          label: savingAccount ? t("common.saving") : t("profile.saveAccount"),
+          disabled: savingAccount,
+        }
+      : activeTab === "research"
+        ? {
+            formId: PROFILE_RESEARCH_FORM_ID,
+            label: savingProfile
+              ? t("common.saving")
+              : profileDone
+                ? t("profile.saveResearchProfile")
+                : t("profile.saveAndContinue"),
+            disabled: savingProfile,
+          }
+        : activeTab === "preferences"
+          ? {
+              formId: PROFILE_PREFERENCES_FORM_ID,
+              label: savingPreferences ? t("common.saving") : t("profile.savePreferences"),
+              disabled: savingPreferences,
+            }
+          : null;
 
   return (
-    <PageShell pageClass="profile-page">
+    <PageShell pageClass="profile-page" withStickyFooter={Boolean(mobileStickySubmit)}>
       <div className="page-stack page-stack--tight">
-        <PageHeader title={t("profile.title")} subtitle={t("profile.subtitle")} />
-
-        {setupIncomplete && activeTab === "research" ? (
-          <Panel as="p" className="profile-setup__hint">
-            {t("profile.researchSetupHint")}
-          </Panel>
-        ) : null}
+        <PageHeader title={t("profile.title")} />
 
         {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
 
@@ -258,11 +279,11 @@ export function ProfilePage() {
               <Tab.Content>
               <Tab.Pane eventKey="account">
                 {accountSuccess ? <InlineAlert variant="success">{accountSuccess}</InlineAlert> : null}
-                <SectionGroup title={t("profile.tabAccount")} intro={t("profile.accountIntro")}>
+                <SectionGroup title={t("profile.tabAccount")}>
                 <div className="mb-4">
                   <LanguageSwitcher variant="inline" />
                 </div>
-                <Form onSubmit={handleAccountSubmit} className="form-stack">
+                <Form id={PROFILE_ACCOUNT_FORM_ID} onSubmit={handleAccountSubmit} className="form-stack">
                   <Row className="g-3">
                     <Col md={6}>
                       <Form.Group className="field-group">
@@ -301,7 +322,6 @@ export function ProfilePage() {
                       placeholder={t("auth.whatsappPlaceholder")}
                       required={account.whatsapp_opt_in === true}
                     />
-                    <Form.Text>{t("profile.whatsappHint")}</Form.Text>
                   </Form.Group>
 
                   <Form.Check
@@ -312,15 +332,8 @@ export function ProfilePage() {
                     disabled={!account.phone_number?.trim()}
                     onChange={(e) => setAccount({ ...account, whatsapp_opt_in: e.target.checked })}
                   />
-                  <Form.Text className="d-block">
-                    {account.phone_number?.trim()
-                      ? account.whatsapp_opt_in
-                        ? t("profile.whatsappOptInEnabledHint")
-                        : t("profile.whatsappOptInDisabledHint")
-                      : t("profile.whatsappOptInRequiresPhone")}
-                  </Form.Text>
 
-                  <StickyFooter variant="dock">
+                  <StickyFooter variant="dock" className="d-none d-lg-flex">
                     <Button type="submit" variant="primary" disabled={savingAccount} className="w-100 w-md-auto">
                       {savingAccount ? t("common.saving") : t("profile.saveAccount")}
                     </Button>
@@ -330,15 +343,10 @@ export function ProfilePage() {
               </Tab.Pane>
 
               <Tab.Pane eventKey="research">
-                {(profile.learned_topics?.length ?? 0) > 0 ? (
-                  <InlineAlert variant="info" className="small">
-                    {t("profile.learnedTopicsHint", { count: profile.learned_topics?.length ?? 0 })}
-                  </InlineAlert>
-                ) : null}
                 {profileSuccess && !profileDone ? <InlineAlert variant="success">{profileSuccess}</InlineAlert> : null}
 
-                <SectionGroup title={t("profile.tabResearch")} intro={t("profile.researchIntro")}>
-                <Form onSubmit={handleProfileSubmit} className="form-stack">
+                <SectionGroup title={t("profile.tabResearch")}>
+                <Form id={PROFILE_RESEARCH_FORM_ID} onSubmit={handleProfileSubmit} className="form-stack">
                   <Form.Group className="field-group">
                     <Form.Label>{t("profile.researchArea")}</Form.Label>
                     <Form.Control
@@ -410,7 +418,7 @@ export function ProfilePage() {
                     />
                   </Form.Group>
 
-                  <StickyFooter variant="dock">
+                  <StickyFooter variant="dock" className="d-none d-lg-flex">
                     <Button type="submit" variant="primary" disabled={savingProfile} className="w-100 w-md-auto">
                       {savingProfile
                         ? t("common.saving")
@@ -429,15 +437,18 @@ export function ProfilePage() {
               </Tab.Pane>
 
               <Tab.Pane eventKey="preferences">
-                <SectionGroup title={t("profile.tabPreferences")} intro={t("profile.preferencesIntro")}>
+                <SectionGroup title={t("profile.tabPreferences")}>
                 {preferencesSuccess ? <InlineAlert variant="success">{preferencesSuccess}</InlineAlert> : null}
 
                 <RecommendationPreferencesForm
+                  formId={PROFILE_PREFERENCES_FORM_ID}
                   defaults={preferences}
                   onChange={setPreferences}
                   onSubmit={handlePreferencesSubmit}
                   submitting={savingPreferences}
                   submitLabel={t("profile.savePreferences")}
+                  hideInlineSubmitOnMobile
+                  hintLevel="minimal"
                 />
 
                 {hasLearning ? (
@@ -474,6 +485,21 @@ export function ProfilePage() {
           </Panel>
         </Tab.Container>
       </div>
+
+      {mobileStickySubmit ? (
+        <StickyFooter variant="fixed" visibleClass="d-lg-none">
+          <Button
+            type="submit"
+            form={mobileStickySubmit.formId}
+            variant="primary"
+            size="lg"
+            className="sticky-footer__submit"
+            disabled={mobileStickySubmit.disabled}
+          >
+            {mobileStickySubmit.label}
+          </Button>
+        </StickyFooter>
+      ) : null}
     </PageShell>
   );
 }

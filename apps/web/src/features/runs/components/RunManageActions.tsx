@@ -16,9 +16,16 @@ interface RunManageActionsProps {
   run: RecommendationRun;
   onRunUpdated?: (run: RecommendationRun) => void;
   onRunsChanged?: () => void;
+  className?: string;
 }
 
-export function RunManageActions({ token, run, onRunUpdated, onRunsChanged }: RunManageActionsProps) {
+export function RunManageActions({
+  token,
+  run,
+  onRunUpdated,
+  onRunsChanged,
+  className,
+}: RunManageActionsProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const runId = String(run.id);
@@ -136,7 +143,7 @@ export function RunManageActions({ token, run, onRunUpdated, onRunsChanged }: Ru
     pendingAction === "archive" ? t("runs.actions.archive") : t("runs.actions.remove");
 
   return (
-    <Panel as="section" className="run-manage" aria-label={t("runs.actions.title")}>
+    <Panel as="section" className={`run-manage${className ? ` ${className}` : ""}`} aria-label={t("runs.actions.title")}>
       <h2 className="run-manage__title">{t("runs.actions.title")}</h2>
 
       {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
@@ -212,7 +219,6 @@ export function RunManageActions({ token, run, onRunUpdated, onRunsChanged }: Ru
           ) : learnedTopics.length > 0 ? (
             <fieldset className="run-manage__topics">
               <legend>{t("runs.actions.learnedTopicsLegend")}</legend>
-              <p className="run-manage__hint">{t("runs.actions.learnedTopicsHint")}</p>
               <ul className="run-manage__topic-list">
                 {learnedTopics.map((topic) => (
                   <li key={topic}>

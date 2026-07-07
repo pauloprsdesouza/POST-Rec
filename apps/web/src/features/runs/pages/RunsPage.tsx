@@ -114,7 +114,7 @@ export function RunsPage() {
   const { active, completed, other } = useMemo(() => filterRuns(filter, groups), [filter, groups]);
   const searchCount = searchResults?.length ?? 0;
   const firstReadyRunId = completed[0]?.id ? String(completed[0].id) : undefined;
-  const focusReadyFirst = filter === "all" && completed.length > 0;
+  const showReadyBanner = !isSearching && filter === "all" && completed.length > 0;
 
   const clearSearch = () => {
     setSearchQuery("");
@@ -138,7 +138,10 @@ export function RunsPage() {
   if (error && !runs.length) {
     return (
       <PageShell width="list" pageClass="runs-page">
-        <InlineAlert variant="danger">{error}</InlineAlert>
+        <div className="page-stack page-stack--tight">
+          <PageHeader title={t("runs.title")} />
+          <InlineAlert variant="danger">{error}</InlineAlert>
+        </div>
       </PageShell>
     );
   }
@@ -153,11 +156,10 @@ export function RunsPage() {
 
   return (
     <PageShell width="list" pageClass="runs-page">
-      <div className="page-stack">
+      <div className="page-stack page-stack--tight">
         <header className="page-stack__block runs-page__header">
           <PageHeader
             title={t("runs.title")}
-            subtitle={t("runs.subtitle")}
             action={
               <Link to="/runs/new" className="btn btn-primary d-none d-md-inline-flex" data-coach="coach-runs-new-run">
                 {t("common.newRun")}
@@ -191,7 +193,7 @@ export function RunsPage() {
         <main className="runs-page__main">
           {searchError ? <InlineAlert variant="danger">{searchError}</InlineAlert> : null}
 
-          {!isSearching && filter === "all" && completed.length > 0 ? (
+          {!isSearching && showReadyBanner ? (
             <RunsReadyBanner count={completed.length} firstRunId={firstReadyRunId} />
           ) : null}
 
@@ -230,23 +232,20 @@ export function RunsPage() {
               <div className="runs-page__sections">
                 <RunSection
                   title={t("runs.sectionReady")}
-                  description={
-                    filter === "all" && completed.length > 0 ? undefined : t("runs.sectionReadyDesc")
-                  }
                   count={completed.length}
-                  showCount={!(filter === "all" && completed.length > 0)}
+                  showCount={!showReadyBanner}
                   dataCoach="coach-runs-ready"
                 >
                   {completed.map((run) => (
-                    <RunListCard key={run.id} run={run} recommendationCount={run.recommendation_count} />
+                    <RunListCard
+                      key={run.id}
+                      run={run}
+                      recommendationCount={run.recommendation_count}
+                    />
                   ))}
                 </RunSection>
 
-                <RunSection
-                  title={t("runs.sectionInProgress")}
-                  description={t("runs.sectionInProgressDesc")}
-                  count={active.length}
-                >
+                <RunSection title={t("runs.sectionInProgress")} count={active.length}>
                   {active.map((run) => (
                     <RunListCard key={run.id} run={run} recommendationCount={run.recommendation_count} />
                   ))}
@@ -254,10 +253,9 @@ export function RunsPage() {
 
                 <RunSection
                   title={t("runs.sectionOtherCount", { count: other.length })}
-                  description={t("runs.sectionOtherDesc")}
                   count={other.length}
-                  collapsible={focusReadyFirst}
-                  defaultOpen={!focusReadyFirst}
+                  collapsible={showReadyBanner}
+                  defaultOpen={!showReadyBanner}
                 >
                   {other.map((run) => (
                     <RunListCard key={run.id} run={run} recommendationCount={run.recommendation_count} />

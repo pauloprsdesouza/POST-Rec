@@ -12,3 +12,46 @@
   overflow-wrap: anywhere;
   word-break: break-word;
 }
+
+@mixin focus-ring($offset: 2px) {
+  box-shadow: var(--researchly-shadow-focus);
+  outline: none;
+  outline-offset: $offset;
+}
+
+@mixin touch-target {
+  min-height: var(--researchly-touch-min);
+  min-width: var(--researchly-touch-min);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@mixin interactive-surface {
+  background: var(--researchly-surface);
+  border: 1px solid var(--researchly-border-subtle);
+  border-radius: var(--researchly-radius-lg);
+  transition:
+    border-color var(--researchly-duration) var(--researchly-ease),
+    background-color var(--researchly-duration) var(--researchly-ease);
+}
+
+@mixin interactive-surface-hover {
+  border-color: var(--researchly-primary);
+}
+
+@mixin brand-emphasis-surface {
+  background: var(--researchly-primary-light);
+  border: 1px solid color-mix(in srgb, var(--researchly-primary) 18%, transparent);
+  border-radius: var(--researchly-radius-lg);
+}
+
+@mixin success-emphasis-surface {
+  background: var(--researchly-success-bg);
+  border: 1px solid var(--researchly-success-border);
+  border-radius: var(--researchly-radius-lg);
+}
+
+@mixin chrome-blur {
+  backdrop-filter: blur(var(--researchly-chrome-blur));
+  -webkit-backdrop-filter: blur(var(--researchly-chrome-blur));
+  background: var(--researchly-chrome-surface);
+}

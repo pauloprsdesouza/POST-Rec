@@ -40,7 +40,6 @@ export function SotaVerificationPanel({
           <h3 className="idea-verification__title" id="idea-verification-title">
             {t("ideas.ideaVerification.title")}
           </h3>
-          <p className="idea-verification__intro">{t("ideas.ideaVerification.intro")}</p>
         </div>
         {recommendation.novelty_verified != null && recommendation.novelty_verified >= 0.6 ? (
           <span className="idea-verification__badge">{t("ideas.ideaVerification.verifiedBadge")}</span>

@@ -109,6 +109,9 @@ export function TaskCard({
               <span className={`task-card__title${isDone ? " task-card__title--done" : ""}`}>
                 <PaperRefText text={task.title} />
               </span>
+              <span className="task-card__chevron" aria-hidden>
+                ▸
+              </span>
             </span>
           </button>
 

@@ -70,7 +70,7 @@ export function ProjectSourcePanel({
     >
       <div className="project-source-panel__header">
         <h2 id={`${panelId}-title`} className="project-source-panel__title">
-          {t("projects.source.panelTitle")}
+          {recommendation.title}
         </h2>
         <div className="project-source-panel__actions">
           <button
@@ -90,8 +90,6 @@ export function ProjectSourcePanel({
 
       {open ? (
         <div id={`${panelId}-body`} className="project-source-panel__body">
-          <p className="project-source-panel__idea-title">{recommendation.title}</p>
-
           {SECTION_ORDER.map((section) => {
             if (section === "evidence") {
               const count = recommendation.evidence_papers?.length ?? 0;

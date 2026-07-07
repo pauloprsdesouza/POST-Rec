@@ -22,9 +22,9 @@ export function ProjectProgressHeader({
   const stats = countProjectProgress(project);
 
   return (
-    <header className="project-header">
+    <header className="page-stack__block project-header">
       <Link to="/projects" className="project-header__back">
-        ← {t("nav.projects")}
+        ← {t("projects.backToProjects")}
       </Link>
 
       <div className="project-header__hero">

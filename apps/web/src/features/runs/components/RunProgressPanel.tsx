@@ -21,14 +21,13 @@ import { Panel } from "@/shared/ui/Panel";
 interface RunProgressPanelProps {
   run: RecommendationRun;
   events: RunEvent[];
-  live?: boolean;
 }
 
 function humanizeStatus(status: string): string {
   return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export function RunProgressPanel({ run, events, live = true }: RunProgressPanelProps) {
+export function RunProgressPanel({ run, events }: RunProgressPanelProps) {
   const { t, i18n } = useTranslation();
   const outcome = getRunOutcome(run);
   const isTerminal = outcome !== "in_progress";
@@ -42,9 +41,6 @@ export function RunProgressPanel({ run, events, live = true }: RunProgressPanelP
 
   const stepKey = run.current_step ?? run.status;
   const stepLabel = t(`status.${stepKey}`, { defaultValue: humanizeStatus(stepKey) });
-  const stepDescription = t(`statusDescriptions.${stepKey}`, {
-    defaultValue: t("statusDescriptions.default", { step: stepLabel }),
-  });
   const isActive = outcome === "in_progress";
   const displayProgress = getRunDisplayProgress(run);
   const costFormatted = formatEstimatedCost(run.estimated_cost_usd ?? 0, i18n.language);
@@ -64,10 +60,7 @@ export function RunProgressPanel({ run, events, live = true }: RunProgressPanelP
   const elapsed = formatRunElapsed(run.started_at, i18n.language, nowMs);
 
   return (
-    <Panel className="run-progress">
-      {isActive ? (
-        <p className="run-progress__encourage">{t("progress.encourage")}</p>
-      ) : null}
+    <Panel className="run-progress page-stack__block">
       {isActive ? (
         <div className="run-progress__meta">
           {pipelineStep ? (
@@ -87,8 +80,6 @@ export function RunProgressPanel({ run, events, live = true }: RunProgressPanelP
       ) : null}
       <p className="run-progress__step">
         <strong className="run-progress__step-name">{stepLabel}</strong>
-        {" — "}
-        {stepDescription}
       </p>
 
       <RunProgressBar
@@ -108,13 +99,6 @@ export function RunProgressPanel({ run, events, live = true }: RunProgressPanelP
             <span className="run-progress__stat-value">{costFormatted}</span>
           </div>
         </div>
-      ) : null}
-
-      {!isTerminal && live ? (
-        <p className="run-progress__hint">{t("progress.liveUpdates")}</p>
-      ) : null}
-      {!isTerminal && !live ? (
-        <p className="run-progress__hint">{t("progress.updating")}</p>
       ) : null}
 
       {visibleEvents.length > 0 ? (
@@ -142,9 +126,6 @@ export function RunProgressPanel({ run, events, live = true }: RunProgressPanelP
               </li>
             ))}
           </ul>
-          {!isTerminal ? (
-            <p className="run-progress__log-note">{t("progress.recoverableHint")}</p>
-          ) : null}
         </details>
       ) : null}
     </Panel>

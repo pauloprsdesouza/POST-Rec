@@ -1,4 +1,5 @@
 @use "./breakpoints" as *;
+@use "./mixins" as *;
 
 // Coach marks — full-screen overlay above all app chrome; spotlight + sheet popover.
 
@@ -22,13 +23,13 @@
 }
 
 .coach-mark__backdrop--full {
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(var(--researchly-overlay-blur));
+  -webkit-backdrop-filter: blur(var(--researchly-overlay-blur));
+  background: var(--researchly-overlay);
 }
 
 [data-theme="dark"] .coach-mark__backdrop--full {
-  background: rgba(2, 6, 23, 0.68);
+  background: var(--researchly-overlay);
 }
 
 .coach-mark__backdrop-svg {
@@ -39,11 +40,11 @@
 }
 
 .coach-mark__backdrop-fill {
-  fill: rgba(15, 23, 42, 0.52);
+  fill: var(--researchly-overlay);
 }
 
 [data-theme="dark"] .coach-mark__backdrop-fill {
-  fill: rgba(2, 6, 23, 0.68);
+  fill: var(--researchly-overlay);
 }
 
 .coach-mark__ring {
@@ -95,20 +96,20 @@
   border: 1px solid var(--researchly-border);
   border-radius: var(--researchly-radius-lg);
   box-shadow: var(--researchly-shadow-lg);
-  max-width: 19rem;
+  max-width: 20rem;
   opacity: 0;
   padding: var(--researchly-space-5);
   pointer-events: auto;
   position: fixed;
   transform: translateY(6px);
   transition:
-    top 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-    left 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-    bottom 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-    width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.2s ease,
-    transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-  width: min(19rem, calc(100vw - 2rem));
+    top var(--researchly-duration-medium) var(--researchly-ease),
+    left var(--researchly-duration-medium) var(--researchly-ease),
+    bottom var(--researchly-duration-medium) var(--researchly-ease),
+    width var(--researchly-duration-medium) var(--researchly-ease),
+    opacity var(--researchly-duration) var(--researchly-ease),
+    transform var(--researchly-duration-medium) var(--researchly-ease);
+  width: min(20rem, calc(100vw - 2rem));
   z-index: 3;
 }
 
@@ -134,12 +135,10 @@
 }
 
 .coach-mark__popover--docked {
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  background: color-mix(in srgb, var(--researchly-surface) 96%, transparent);
+  @include chrome-blur;
   border: 1px solid var(--researchly-border-subtle);
-  border-radius: 1.125rem;
-  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+  border-radius: var(--researchly-radius-sheet);
+  box-shadow: var(--researchly-shadow-lg);
   max-width: none;
   padding:
     var(--researchly-space-3)
@@ -151,8 +150,19 @@
 }
 
 [data-theme="dark"] .coach-mark__popover--docked {
-  background: color-mix(in srgb, var(--researchly-surface) 98%, transparent);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--researchly-shadow-lg);
+}
+
+.coach-mark__popover--missing {
+  left: 50% !important;
+  max-width: min(22rem, calc(100vw - 2rem));
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: min(22rem, calc(100vw - 2rem));
+}
+
+.coach-mark__popover--missing.coach-mark__popover--ready {
+  transform: translate(-50%, -50%) !important;
 }
 
 .coach-mark__grabber {

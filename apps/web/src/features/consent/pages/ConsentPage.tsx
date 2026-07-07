@@ -1,17 +1,20 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { Navigate, useNavigate } from "react-router-dom";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { PageShell } from "@/shared/ui/PageShell";
 import { Panel } from "@/shared/ui/Panel";
+import { StickyFooter } from "@/shared/ui/StickyFooter";
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { useConsentStrings } from "@/shared/i18n/useConsentStrings";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { sessionService } from "@/shared/api";
 import { getErrorMessage } from "@/shared/api/errors";
+
+const CONSENT_FORM_ID = "consent-form";
 
 export function ConsentPage() {
   const { t } = useTranslation();
@@ -47,17 +50,16 @@ export function ConsentPage() {
     }
   };
 
-  return (
-    <PageShell width="narrow">
-      <div className="page-stack page-stack--tight">
-        <PageHeader title={t("consent.pageTitle")} subtitle={t("consent.pageSubtitle")} />
+  const submitLabel = loading ? t("common.saving") : t("consent.acceptAndContinue");
 
-        <p className="consent-time-badge consent-time-badge--solo">{t("setup.timeEstimate")}</p>
+  return (
+    <PageShell width="narrow" pageClass="consent-page" withStickyFooter>
+      <div className="page-stack page-stack--tight">
+        <header className="page-stack__block">
+          <PageHeader title={t("consent.pageTitle")} subtitle={t("consent.pageSubtitle")} />
+        </header>
 
         <Panel className="consent-page__panel">
-          <p className="lead-text mb-4">
-            <Trans i18nKey="consent.intro" components={{ strong: <strong /> }} />
-          </p>
           <ul className="consent-panel__list mb-4">
             {summary.map((item) => (
               <li key={item}>{item}</li>
@@ -66,7 +68,7 @@ export function ConsentPage() {
 
           {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
 
-          <Form onSubmit={handleSubmit} className="form-stack">
+          <Form id={CONSENT_FORM_ID} onSubmit={handleSubmit} className="form-stack">
             <details className="consent-details">
               <summary>{t("consent.readFullTerms")}</summary>
               <ul className="consent-panel__list mt-2 mb-0">
@@ -87,14 +89,27 @@ export function ConsentPage() {
               type="submit"
               variant="primary"
               size="lg"
-              className="w-100"
+              className="w-100 d-none d-lg-inline-flex"
               disabled={!agreed || loading}
             >
-              {loading ? t("common.saving") : t("consent.acceptAndContinue")}
+              {submitLabel}
             </Button>
           </Form>
         </Panel>
       </div>
+
+      <StickyFooter variant="fixed" visibleClass="d-lg-none">
+        <Button
+          type="submit"
+          form={CONSENT_FORM_ID}
+          variant="primary"
+          size="lg"
+          className="sticky-footer__submit"
+          disabled={!agreed || loading}
+        >
+          {submitLabel}
+        </Button>
+      </StickyFooter>
     </PageShell>
   );
 }

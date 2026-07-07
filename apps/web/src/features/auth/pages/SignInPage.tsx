@@ -126,7 +126,6 @@ export function SignInPage() {
   };
 
   const credentialsTitle = mode === "register" ? t("auth.registerTitle") : t("auth.signInTitle");
-  const credentialsSubtitle = mode === "register" ? t("auth.registerSubtitle") : t("auth.signInSubtitle");
 
   return (
     <AuthShell online={online}>
@@ -134,7 +133,6 @@ export function SignInPage() {
         <>
           <header className="auth-form__header">
             <h1 className="auth-form__title">{credentialsTitle}</h1>
-            <p className="auth-form__subtitle">{credentialsSubtitle}</p>
           </header>
 
           <div className="auth-mode-switch">
@@ -200,7 +198,6 @@ export function SignInPage() {
                     required={whatsappOptIn}
                     autoComplete="tel"
                   />
-                  <Form.Text>{t("auth.whatsappHintOptional")}</Form.Text>
                 </Form.Group>
                 <Form.Check
                   type="switch"
@@ -210,13 +207,6 @@ export function SignInPage() {
                   onChange={(e) => setWhatsappOptIn(e.target.checked)}
                   disabled={!phone.trim()}
                 />
-                <Form.Text className="d-block">
-                  {phone.trim()
-                    ? whatsappOptIn
-                      ? t("auth.whatsappOptInEnabledHint")
-                      : t("auth.whatsappOptInDisabledHint")
-                    : t("auth.whatsappOptInRequiresPhone")}
-                </Form.Text>
               </>
             ) : (
               <Form.Group className="field-group">
@@ -241,19 +231,22 @@ export function SignInPage() {
                     ? t("auth.createAccountAndSend")
                     : t("auth.sendSignInCode")}
               </Button>
-              <p className="auth-trust-line">{t("auth.trustLine")}</p>
             </div>
           </Form>
         </>
       ) : (
         <div className="auth-otp-step">
+          <div className="auth-step-dots" role="presentation" aria-hidden>
+            <span className="auth-step-dot" />
+            <span className="auth-step-dot auth-step-dot--active" />
+          </div>
+
           <button type="button" className="auth-otp-step__back" onClick={resetOtpStep} disabled={loading}>
             ← {t("common.back")}
           </button>
 
           <header className="auth-form__header">
             <h1 className="auth-form__title">{t("auth.otpTitle")}</h1>
-            <p className="auth-form__subtitle">{t("auth.otpSubtitle")}</p>
           </header>
 
           <div className="auth-otp-step__destination">

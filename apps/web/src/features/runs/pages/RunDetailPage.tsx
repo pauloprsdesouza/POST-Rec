@@ -47,7 +47,6 @@ export function RunDetailPage() {
     outcome,
     activeIndex,
     setActiveIndex,
-    usingFallbackPoll,
     patchRun,
     restartTracking,
   } = useRunDetail({
@@ -117,22 +116,26 @@ export function RunDetailPage() {
 
   if (error && !run) {
     return (
-      <PageShell>
-        <InlineAlert variant="danger">{error}</InlineAlert>
-        <Link to="/runs" className="btn btn-outline-primary">
-          {t("runs.backToRuns")}
-        </Link>
+      <PageShell pageClass="run-detail">
+        <div className="page-stack page-stack--tight">
+          <Link to="/runs" className="run-detail__back">
+            {t("runs.backToRuns")}
+          </Link>
+          <InlineAlert variant="danger">{error}</InlineAlert>
+        </div>
       </PageShell>
     );
   }
 
   if (!run) {
     return (
-      <PageShell>
-        <InlineAlert variant="warning">{t("common.runNotFound")}</InlineAlert>
-        <Link to="/runs" className="btn btn-outline-primary">
-          {t("runs.backToRuns")}
-        </Link>
+      <PageShell pageClass="run-detail">
+        <div className="page-stack page-stack--tight">
+          <Link to="/runs" className="run-detail__back">
+            {t("runs.backToRuns")}
+          </Link>
+          <InlineAlert variant="warning">{t("common.runNotFound")}</InlineAlert>
+        </div>
       </PageShell>
     );
   }
@@ -143,7 +146,7 @@ export function RunDetailPage() {
   return (
     <PageShell pageClass="run-detail">
       <div className="page-stack page-stack--tight">
-        <header className="run-detail__header">
+        <header className="page-stack__block run-detail__header">
         <Link to="/runs" className="run-detail__back">
           {t("runs.backToRuns")}
         </Link>
@@ -164,6 +167,7 @@ export function RunDetailPage() {
           run={run}
           onRunUpdated={handleRunUpdated}
           onRunsChanged={refreshRuns}
+          className="page-stack__block"
         />
 
         {loadingIdeasOnly ? (
@@ -184,7 +188,7 @@ export function RunDetailPage() {
         />
         ) : (
           <>
-            <RunProgressPanel run={run} events={events} live={!usingFallbackPoll} />
+            <RunProgressPanel run={run} events={events} />
 
             {outcome === "incomplete" ? (
               <InlineAlert variant="warning">

@@ -51,8 +51,10 @@ export function TransparencyPage() {
 
   return (
     <PageShell width="wide" pageClass="transparency-page">
-      <div className="page-stack">
-        <PageHeader title={t("transparency.title")} subtitle={t("transparency.subtitle")} />
+      <div className="page-stack page-stack--tight">
+        <header className="page-stack__block">
+          <PageHeader title={t("transparency.title")} subtitle={t("transparency.subtitle")} />
+        </header>
 
         <Panel as="nav" className="transparency-toc" aria-label={t("transparency.tocLabel")} title={t("transparency.tocLabel")} headingLevel="h2">
           <ol className="transparency-toc__list">

@@ -97,15 +97,6 @@ export const RunListCard = memo(function RunListCard({
               </div>
             ) : null}
 
-            {isReady ? <p className="run-card__hint">{t("runs.rateIdeasHint")}</p> : null}
-            {isActive ? (
-              <p className="run-card__hint">
-                {t(`statusDescriptions.${run.current_step ?? run.status}`, {
-                  defaultValue: t("runs.generatingHint"),
-                })}
-              </p>
-            ) : null}
-
             <span className="run-card__cta run-card__cta--mobile" aria-hidden>
               {actionLabel}
               <span className="run-card__arrow">→</span>

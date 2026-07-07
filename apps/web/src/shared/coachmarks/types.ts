@@ -1,4 +1,4 @@
-export type CoachMarkTourId = "runsHome" | "newRun" | "runReview" | "profile" | "insights";
+export type CoachMarkTourId = "runsHome" | "newRun" | "runReview" | "profile" | "insights" | "projects";
 
 export type CoachMarkPlacement = "top" | "bottom" | "left" | "right" | "auto";
 export type CoachMarkAlign = "start" | "center" | "end";

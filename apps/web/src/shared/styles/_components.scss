@@ -403,7 +403,7 @@
 
 @include down(lg) {
   html[data-pwa-mode="standalone"] .page-shell--with-sticky-footer {
-    padding-bottom: calc(var(--researchly-sticky-footer-height) + var(--researchly-space-4));
+    padding-bottom: calc(var(--researchly-sticky-footer-height) + var(--researchly-pwa-bottom-inset));
   }
 }
 

@@ -1,22 +1,13 @@
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { InlineAlert } from "@/shared/ui/InlineAlert";
 
-export type WouldUse = "yes" | "maybe" | "no";
+import { ChoiceChips } from "./feedback/ChoiceChips";
+import { FeedbackField } from "./feedback/FeedbackField";
+import { RatingStars } from "./feedback/RatingStars";
 
-function CheckIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path
-        d="M3 8.5 6.5 12 13 4"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+export type WouldUse = "yes" | "maybe" | "no";
 
 interface QuickFeedbackPanelProps {
   rating: number | null;
@@ -39,54 +30,43 @@ export function QuickFeedbackPanel({
 }: QuickFeedbackPanelProps) {
   const { t } = useTranslation();
 
+  const paperOptions = useMemo(
+    () =>
+      (["yes", "maybe", "no"] as const).map((value) => ({
+        value,
+        label: t(`common.${value}`),
+      })),
+    [t],
+  );
+
   return (
-    <section className="quick-feedback" aria-label={t("ideas.quickRatingLabel")}>
-      <div className="quick-feedback__card">
-        <div className="quick-feedback__field">
-          <span className="quick-feedback__field-label">{t("ideas.quickRatingLabel")}</span>
-          <div className="quick-rating__stars" role="group" aria-label={t("ideas.quickRatingLabel")}>
-            {[1, 2, 3, 4, 5].map((value) => (
-              <button
-                key={value}
-                type="button"
-                className={`quick-rating__star ${rating === value ? "quick-rating__star--selected" : ""} ${rating != null && rating >= value ? "quick-rating__star--filled" : ""}`}
-                disabled={submitting}
-                aria-label={t("ideas.rateValue", { value })}
-                aria-pressed={rating === value}
-                onClick={() => onStarClick(value)}
-              >
-                ★
-              </button>
-            ))}
-          </div>
-        </div>
+    <section className="idea-feedback" aria-label={t("ideas.rateIdea")}>
+      <FeedbackField label={t("ideas.quickRatingLabel")}>
+        <RatingStars
+          value={rating}
+          disabled={submitting}
+          ariaLabel={t("ideas.quickRatingLabel")}
+          getStarLabel={(star) => t("ideas.rateValue", { value: star })}
+          onChange={onStarClick}
+        />
+      </FeedbackField>
 
-        <div className="quick-feedback__field">
-          <span className="quick-feedback__field-label">{t("ideas.useInPaper")}</span>
-          <div className="quick-rating__chips quick-rating__chips--inline">
-            {(["yes", "maybe", "no"] as const).map((value) => (
-              <button
-                key={value}
-                type="button"
-                className={`quick-rating__chip ${wouldUse === value ? "quick-rating__chip--active" : ""}`}
-                disabled={submitting}
-                aria-pressed={wouldUse === value}
-                onClick={() => onWouldUseChange(value)}
-              >
-                {t(`common.${value}`)}
-              </button>
-            ))}
-          </div>
-        </div>
+      <FeedbackField label={t("ideas.useInPaper")}>
+        <ChoiceChips
+          options={paperOptions}
+          value={wouldUse}
+          disabled={submitting}
+          ariaLabel={t("ideas.useInPaper")}
+          onChange={onWouldUseChange}
+        />
+      </FeedbackField>
 
-        {message ? (
-          <span className="quick-feedback__saved">
-            <CheckIcon />
-            {message}
-          </span>
-        ) : null}
-        {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
-      </div>
+      {message ? (
+        <p className="idea-feedback__status" aria-live="polite">
+          {message}
+        </p>
+      ) : null}
+      {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
     </section>
   );
 }

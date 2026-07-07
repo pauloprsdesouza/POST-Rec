@@ -176,9 +176,10 @@ export function CoachMarkOverlay({
     if (!missingTarget) {
       return;
     }
-    const timer = window.setTimeout(onNext, 60);
-    return () => window.clearTimeout(timer);
-  }, [missingTarget, onNext]);
+    setReady(true);
+    setTargetRect(null);
+    setPopoverLayout(null);
+  }, [missingTarget]);
 
   useEffect(() => {
     const handleViewportChange = () => updateLayout();
@@ -236,32 +237,36 @@ export function CoachMarkOverlay({
   const isFirst = stepIndex === 0;
   const isLast = stepIndex === steps.length - 1;
   const placement = popoverLayout?.placement ?? "bottom";
-  const docked = popoverLayout?.docked ?? false;
+  const docked = !missingTarget && (popoverLayout?.docked ?? false);
   const insets = getViewportInsets();
+  const titleKey = missingTarget ? "coachmarks.targetMissingTitle" : step.titleKey;
+  const bodyKey = missingTarget ? "coachmarks.targetMissing" : step.bodyKey;
 
-  const popoverStyle: React.CSSProperties = popoverLayout
-    ? docked
-      ? {
-          left: insets.left,
-          right: insets.right,
-          bottom: popoverLayout.dockBottom ?? insets.bottom,
-          width: "auto",
-          maxHeight: `min(70dvh, calc(100dvh - ${insets.top}px - ${(popoverLayout.dockBottom ?? insets.bottom) + 12}px))`,
-          overflowY: "auto",
-          visibility: ready ? "visible" : "hidden",
-        }
+  const popoverStyle: React.CSSProperties = missingTarget
+    ? { visibility: "visible" }
+    : popoverLayout
+      ? docked
+        ? {
+            left: insets.left,
+            right: insets.right,
+            bottom: popoverLayout.dockBottom ?? insets.bottom,
+            width: "auto",
+            maxHeight: `min(70dvh, calc(100dvh - ${insets.top}px - ${(popoverLayout.dockBottom ?? insets.bottom) + 12}px))`,
+            overflowY: "auto",
+            visibility: ready ? "visible" : "hidden",
+          }
+        : {
+            top: popoverLayout.top,
+            left: popoverLayout.left,
+            width: popoverLayout.width,
+            visibility: ready ? "visible" : "hidden",
+          }
       : {
-          top: popoverLayout.top,
-          left: popoverLayout.left,
-          width: popoverLayout.width,
-          visibility: ready ? "visible" : "hidden",
-        }
-    : {
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        visibility: missingTarget ? "hidden" : "visible",
-      };
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          visibility: "hidden",
+        };
 
   return createPortal(
     <div className="coach-mark" role="dialog" aria-modal="true" aria-labelledby="coach-mark-title">
@@ -283,10 +288,10 @@ export function CoachMarkOverlay({
         ref={popoverRef}
         className={[
           "coach-mark__popover",
-          `coach-mark__popover--${placement}`,
+          missingTarget ? "coach-mark__popover--missing" : `coach-mark__popover--${placement}`,
           docked ? "coach-mark__popover--docked" : "",
-          animating ? "coach-mark__popover--enter" : "",
-          ready ? "coach-mark__popover--ready" : "",
+          animating && !missingTarget ? "coach-mark__popover--enter" : "",
+          ready || missingTarget ? "coach-mark__popover--ready" : "",
         ]
           .filter(Boolean)
           .join(" ")}
@@ -330,9 +335,9 @@ export function CoachMarkOverlay({
         </div>
         <div key={`${tourId}-${stepIndex}`} className="coach-mark__content">
           <h2 id="coach-mark-title" className="coach-mark__title">
-            {t(step.titleKey)}
+            {t(titleKey)}
           </h2>
-          <p className="coach-mark__body">{t(step.bodyKey)}</p>
+          <p className="coach-mark__body">{t(bodyKey)}</p>
         </div>
         <div className="coach-mark__actions">
           <button type="button" className="coach-mark__skip" onClick={onSkip}>

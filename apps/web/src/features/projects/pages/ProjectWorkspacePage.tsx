@@ -4,14 +4,14 @@ import { Link, useParams } from "react-router-dom";
 
 import { PhaseTimeline } from "@/features/projects/components/PhaseTimeline";
 import { ProjectCompletionBanner } from "@/features/projects/components/ProjectCompletionBanner";
+import { ProjectPhaseSection } from "@/features/projects/components/ProjectPhaseSection";
 import { ProjectProgressHeader } from "@/features/projects/components/ProjectProgressHeader";
 import { ProjectSourcePanel } from "@/features/projects/components/ProjectSourcePanel";
 import { ProjectWorkspaceSkeleton } from "@/features/projects/components/ProjectWorkspaceSkeleton";
-import { TaskCard } from "@/features/projects/components/TaskCard";
 import {
   countProjectProgress,
   resolveActivePhaseId,
-  sortTasks,
+  sortPhases,
 } from "@/features/projects/utils/projectUtils";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { projectService, runService } from "@/shared/api";
@@ -34,7 +34,6 @@ export function ProjectWorkspacePage() {
   const [error, setError] = useState<string | null>(null);
   const [activePhaseId, setActivePhaseId] = useState<string | null>(null);
   const [justCompletedTaskId, setJustCompletedTaskId] = useState<string | null>(null);
-  const [showCompleted, setShowCompleted] = useState(false);
   const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [sourcePanelOpen, setSourcePanelOpen] = useState(false);
@@ -129,6 +128,7 @@ export function ProjectWorkspacePage() {
   }, []);
 
   const progress = useMemo(() => (project ? countProjectProgress(project) : null), [project]);
+  const sortedPhases = useMemo(() => (project ? sortPhases(project.phases) : []), [project]);
 
   const activePhase = useMemo(() => {
     if (!project || !activePhaseId) {
@@ -137,23 +137,12 @@ export function ProjectWorkspacePage() {
     return project.phases.find((phase) => phase.id === activePhaseId) ?? null;
   }, [project, activePhaseId]);
 
-  const visibleTasks = useMemo(() => {
+  const activePhaseIndex = useMemo(() => {
     if (!activePhase) {
-      return [];
-    }
-    const tasks = sortTasks(activePhase.tasks);
-    if (showCompleted) {
-      return tasks;
-    }
-    return tasks.filter((task) => task.status !== "done" && task.status !== "skipped");
-  }, [activePhase, showCompleted]);
-
-  const hiddenCompletedCount = useMemo(() => {
-    if (!activePhase || showCompleted) {
       return 0;
     }
-    return activePhase.tasks.filter((task) => task.status === "done" || task.status === "skipped").length;
-  }, [activePhase, showCompleted]);
+    return sortedPhases.findIndex((phase) => phase.id === activePhase.id);
+  }, [activePhase, sortedPhases]);
 
   const updateTaskStatus = async (taskId: string, status: ProjectTaskStatus) => {
     if (!accessToken || !projectId) {
@@ -234,18 +223,26 @@ export function ProjectWorkspacePage() {
   if (loading) {
     return (
       <PageShell pageClass="project-workspace-page" width="wide">
-        <ProjectWorkspaceSkeleton />
+        <div className="page-stack page-stack--tight">
+          <ProjectWorkspaceSkeleton />
+        </div>
       </PageShell>
     );
   }
 
   if (error && !project) {
     return (
-      <PageShell pageClass="project-workspace-page">
-        <InlineAlert variant="danger">{error}</InlineAlert>
-        <Link to="/projects" className="btn btn-outline-secondary btn-sm mt-3">
-          {t("projects.backToProjects")}
-        </Link>
+      <PageShell pageClass="project-workspace-page" width="wide">
+        <div className="page-stack page-stack--tight">
+          <header className="page-stack__block project-header">
+            <Link to="/projects" className="project-header__back">
+              ← {t("projects.backToProjects")}
+            </Link>
+          </header>
+          <div className="page-stack__block">
+            <InlineAlert variant="danger">{error}</InlineAlert>
+          </div>
+        </div>
       </PageShell>
     );
   }
@@ -255,6 +252,15 @@ export function ProjectWorkspacePage() {
   }
 
   const isComplete = progress != null && progress.total > 0 && progress.done >= progress.total;
+
+  const phaseSectionProps = {
+    currentPhaseId: project.current_phase_id,
+    justCompletedTaskId,
+    updatingTaskId,
+    onStatusChange: (taskId: string, status: ProjectTaskStatus) => void updateTaskStatus(taskId, status),
+    onNotesChange: (taskId: string, notes: string) => void handleNotesChange(taskId, notes),
+    onNavigateToField: recommendation ? navigateToField : undefined,
+  };
 
   const workspaceBody = (
     <>
@@ -266,25 +272,46 @@ export function ProjectWorkspacePage() {
       />
 
       {recommendation ? (
-        <ProjectSourcePanel
-          recommendation={recommendation}
-          runId={project.run_id}
-          open={sourcePanelOpen}
-          onOpenChange={setSourcePanelOpen}
-          focusField={sourceFocusField}
-          onFocusHandled={() => setSourceFocusField(null)}
-        />
+        <div className="page-stack__block">
+          <ProjectSourcePanel
+            recommendation={recommendation}
+            runId={project.run_id}
+            open={sourcePanelOpen}
+            onOpenChange={setSourcePanelOpen}
+            focusField={sourceFocusField}
+            onFocusHandled={() => setSourceFocusField(null)}
+          />
+        </div>
       ) : sourceLoading ? (
-        <p className="project-source-panel__loading">{t("projects.source.loading")}</p>
+        <p className="project-source-panel__loading page-stack__block">{t("projects.source.loading")}</p>
       ) : null}
 
       {isComplete ? (
-        <ProjectCompletionBanner onExport={() => void handleExport()} exporting={exporting} />
+        <div className="page-stack__block">
+          <ProjectCompletionBanner onExport={() => void handleExport()} exporting={exporting} />
+        </div>
       ) : null}
 
-      {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
+      {error ? (
+        <div className="page-stack__block">
+          <InlineAlert variant="danger">{error}</InlineAlert>
+        </div>
+      ) : null}
 
-      <div className="project-workspace">
+      <div className="project-workspace page-stack__block">
+        <div className="project-workspace__mobile">
+          {sortedPhases.map((phase, index) => (
+            <ProjectPhaseSection
+              key={phase.id}
+              phase={phase}
+              phaseIndex={index}
+              withCoachPhase={index === 0}
+              withCoachTasks={index === 0}
+              {...phaseSectionProps}
+            />
+          ))}
+        </div>
+
         <aside className="project-workspace__sidebar">
           <PhaseTimeline
             project={project}
@@ -295,85 +322,35 @@ export function ProjectWorkspacePage() {
           />
         </aside>
 
-        <section className="project-workspace__main" aria-labelledby="project-phase-heading">
+        <div className="project-workspace__main">
           {activePhase ? (
-            <>
-              <div className="project-workspace__phase-header">
-                <h2 id="project-phase-heading" className="project-workspace__phase-title">
-                  {activePhase.title}
-                </h2>
-                {activePhase.description ? (
-                  <p className="project-workspace__phase-description">{activePhase.description}</p>
-                ) : null}
-              </div>
-
-              {hiddenCompletedCount > 0 || showCompleted ? (
-                <div className="project-workspace__task-toolbar">
-                  <button
-                    type="button"
-                    className={`btn btn-sm project-workspace__filter-btn${
-                      showCompleted
-                        ? " project-workspace__filter-btn--active"
-                        : " btn-outline-secondary"
-                    }`}
-                    aria-pressed={showCompleted}
-                    onClick={() => setShowCompleted((value) => !value)}
-                  >
-                    {showCompleted
-                      ? t("projects.hideCompleted")
-                      : t("projects.showCompletedCount", { count: hiddenCompletedCount })}
-                  </button>
-                </div>
-              ) : null}
-
-              {visibleTasks.length === 0 ? (
-                <div className="project-workspace__empty-phase">
-                  <p>{t("projects.phaseComplete")}</p>
-                  {hiddenCompletedCount > 0 ? (
-                    <button
-                      type="button"
-                      className="btn btn-link btn-sm"
-                      onClick={() => setShowCompleted(true)}
-                    >
-                      {t("projects.showCompletedCount", { count: hiddenCompletedCount })}
-                    </button>
-                  ) : null}
-                </div>
-              ) : (
-                <div className="project-workspace__tasks">
-                  {visibleTasks.map((task, index) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      taskNumber={task.order_index + 1 || index + 1}
-                      justCompleted={justCompletedTaskId === task.id}
-                      defaultExpanded={task.status === "in_progress"}
-                      updating={updatingTaskId === task.id}
-                      onStatusChange={(taskId, status) => void updateTaskStatus(taskId, status)}
-                      onNotesChange={(taskId, notes) => void handleNotesChange(taskId, notes)}
-                      onNavigateToField={recommendation ? navigateToField : undefined}
-                    />
-                  ))}
-                </div>
-              )}
-            </>
+            <ProjectPhaseSection
+              phase={activePhase}
+              phaseIndex={activePhaseIndex >= 0 ? activePhaseIndex : 0}
+              headingId="project-phase-heading"
+              withCoachPhase
+              withCoachTasks
+              {...phaseSectionProps}
+            />
           ) : (
             <p>{t("projects.noPhase")}</p>
           )}
-        </section>
+        </div>
       </div>
     </>
   );
 
   return (
     <PageShell pageClass="project-workspace-page" width="wide">
-      {recommendation ? (
-        <PaperRefProvider index={paperRefIndex} onNavigateToPaper={navigateToPaper}>
-          {workspaceBody}
-        </PaperRefProvider>
-      ) : (
-        workspaceBody
-      )}
+      <div className="page-stack page-stack--tight">
+        {recommendation ? (
+          <PaperRefProvider index={paperRefIndex} onNavigateToPaper={navigateToPaper}>
+            {workspaceBody}
+          </PaperRefProvider>
+        ) : (
+          workspaceBody
+        )}
+      </div>
     </PageShell>
   );
 }

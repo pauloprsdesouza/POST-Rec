@@ -57,71 +57,79 @@ export function AdminUsersPage() {
   }
 
   if (loading) {
-    return <LoadingSpinner label={t("admin.loading")} />;
+    return (
+      <PageShell pageClass="admin-page">
+        <div className="page-stack page-stack--tight">
+          <LoadingSpinner label={t("admin.loading")} />
+        </div>
+      </PageShell>
+    );
   }
 
   return (
     <PageShell pageClass="admin-page">
-      <PageHeader
-        title={t("admin.users.title")}
-        subtitle={t("admin.users.subtitle", { count: total })}
-      />
+      <div className="page-stack page-stack--tight">
+        <PageHeader
+          title={t("admin.users.title")}
+          subtitle={t("admin.users.subtitle", { count: total })}
+        />
 
-      {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
+        {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
 
-      <Panel as="section" className="admin-section">
-        <div className="table-responsive">
-          <table className="table table-sm admin-table">
-            <thead>
-              <tr>
-                <th>{t("admin.users.name")}</th>
-                <th>{t("admin.users.email")}</th>
-                <th>{t("admin.users.role")}</th>
-                <th>{t("admin.users.status")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((row) => {
-                const isSelf = row.id === currentUser?.userId;
-                return (
-                  <tr key={row.id}>
-                    <td>
-                      <span className="admin-table__primary">{row.full_name ?? t("common.unknown")}</span>
-                      {isSelf ? (
-                        <span className="admin-table__secondary text-muted">{t("admin.users.you")}</span>
-                      ) : null}
-                    </td>
-                    <td>{row.email ?? "—"}</td>
-                    <td>
-                      <select
-                        className="form-select form-select-sm admin-role-select"
-                        value={row.role}
-                        disabled={updatingId === row.id || (isSelf && row.role === "admin")}
-                        aria-label={t("admin.users.roleFor", { name: row.full_name ?? row.email ?? row.id })}
-                        onChange={(event) => {
-                          void handleRoleChange(row.id, event.target.value as UserRole);
-                        }}
-                      >
-                        <option value="researcher">{t("admin.users.researcher")}</option>
-                        <option value="admin">{t("admin.users.admin")}</option>
-                      </select>
-                    </td>
-                    <td>
-                      {row.is_active ? (
-                        <span className="admin-status-pill admin-status-pill--ok">{t("admin.users.active")}</span>
-                      ) : (
-                        <span className="admin-status-pill admin-status-pill--warn">
-                          {t("admin.users.inactive")}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </Panel>
+        <Panel as="section" className="admin-section">
+          <div className="table-responsive">
+            <table className="table table-sm admin-table">
+              <thead>
+                <tr>
+                  <th>{t("admin.users.name")}</th>
+                  <th>{t("admin.users.email")}</th>
+                  <th>{t("admin.users.role")}</th>
+                  <th>{t("admin.users.status")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((row) => {
+                  const isSelf = row.id === currentUser?.userId;
+                  return (
+                    <tr key={row.id}>
+                      <td data-label={t("admin.users.name")}>
+                        <span className="admin-table__primary">{row.full_name ?? t("common.unknown")}</span>
+                        {isSelf ? (
+                          <span className="admin-table__secondary">{t("admin.users.you")}</span>
+                        ) : null}
+                      </td>
+                      <td data-label={t("admin.users.email")}>{row.email ?? "—"}</td>
+                      <td data-label={t("admin.users.role")}>
+                        <select
+                          className="form-select form-select-sm admin-role-select"
+                          value={row.role}
+                          disabled={updatingId === row.id || (isSelf && row.role === "admin")}
+                          aria-label={t("admin.users.roleFor", { name: row.full_name ?? row.email ?? row.id })}
+                          onChange={(event) => {
+                            void handleRoleChange(row.id, event.target.value as UserRole);
+                          }}
+                        >
+                          <option value="researcher">{t("admin.users.researcher")}</option>
+                          <option value="admin">{t("admin.users.admin")}</option>
+                        </select>
+                      </td>
+                      <td data-label={t("admin.users.status")}>
+                        {row.is_active ? (
+                          <span className="admin-status-pill admin-status-pill--ok">{t("admin.users.active")}</span>
+                        ) : (
+                          <span className="admin-status-pill admin-status-pill--warn">
+                            {t("admin.users.inactive")}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Panel>
+      </div>
     </PageShell>
   );
 }

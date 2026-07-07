@@ -58,65 +58,79 @@ export function AdminOverviewPage() {
   }, [accessToken, t]);
 
   if (loading) {
-    return <LoadingSpinner label={t("admin.loading")} />;
+    return (
+      <PageShell pageClass="admin-page">
+        <div className="page-stack page-stack--tight">
+          <LoadingSpinner label={t("admin.loading")} />
+        </div>
+      </PageShell>
+    );
   }
 
   if (error || !overview) {
-    return <InlineAlert variant="danger">{error ?? t("admin.loadError")}</InlineAlert>;
+    return (
+      <PageShell pageClass="admin-page">
+        <div className="page-stack page-stack--tight">
+          <InlineAlert variant="danger">{error ?? t("admin.loadError")}</InlineAlert>
+        </div>
+      </PageShell>
+    );
   }
 
   return (
     <PageShell pageClass="admin-page">
-      <PageHeader title={t("admin.overview.title")} subtitle={t("admin.overview.subtitle")} />
+      <div className="page-stack page-stack--tight">
+        <PageHeader title={t("admin.overview.title")} subtitle={t("admin.overview.subtitle")} />
 
-      <div className="admin-page__actions">
-        <Link to="/admin/evaluation" className="btn btn-outline-primary btn-sm">
-          {t("admin.overview.openEvaluation")}
-        </Link>
-        <Link to="/admin/research-report" className="btn btn-outline-primary btn-sm">
-          {t("admin.overview.openReport")}
-        </Link>
-      </div>
-
-      <section className="admin-section">
-        <h2 className="admin-section__title">{t("admin.overview.platform")}</h2>
-        <div className="admin-metric-grid">
-          <MetricCard label={t("admin.overview.users")} value={String(overview.users.total)} />
-          <MetricCard label={t("admin.overview.activeUsers")} value={String(overview.users.active)} />
-          <MetricCard label={t("admin.overview.admins")} value={String(overview.users.admins)} />
-          <MetricCard
-            label={t("admin.overview.totalRuns")}
-            value={String(overview.runs.total)}
-            hint={t("admin.overview.completionHint", {
-              rate: formatPercent(overview.runs.completion_rate, locale),
-            })}
-          />
-          <MetricCard label={t("admin.overview.feedback")} value={String(overview.feedback_total)} />
-          <MetricCard
-            label={t("admin.overview.llmCost")}
-            value={`$${formatDecimal(overview.llm_cost_usd_total, locale, 2)}`}
-          />
+        <div className="admin-page__actions">
+          <Link to="/admin/evaluation" className="btn btn-outline-primary btn-sm">
+            {t("admin.overview.openEvaluation")}
+          </Link>
+          <Link to="/admin/research-report" className="btn btn-outline-primary btn-sm">
+            {t("admin.overview.openReport")}
+          </Link>
         </div>
-      </section>
 
-      <Panel
-        as="section"
-        className="admin-section"
-        title={t("admin.overview.systemHealth")}
-        headingLevel="h2"
-        headerExtra={
-          <span
-            className={`admin-status-pill admin-status-pill--${overview.system_status === "ready" ? "ok" : "warn"}`}
-          >
-            {overview.system_status}
-          </span>
-        }
-      >
-        <p className="text-muted mb-3">
-          {t("admin.overview.environment")}: <strong>{overview.app_env}</strong>
-        </p>
-        <HealthCheckList checks={overview.health_checks} />
-      </Panel>
+        <section className="admin-section">
+          <h2 className="admin-section__title">{t("admin.overview.platform")}</h2>
+          <div className="admin-metric-grid">
+            <MetricCard label={t("admin.overview.users")} value={String(overview.users.total)} />
+            <MetricCard label={t("admin.overview.activeUsers")} value={String(overview.users.active)} />
+            <MetricCard label={t("admin.overview.admins")} value={String(overview.users.admins)} />
+            <MetricCard
+              label={t("admin.overview.totalRuns")}
+              value={String(overview.runs.total)}
+              hint={t("admin.overview.completionHint", {
+                rate: formatPercent(overview.runs.completion_rate, locale),
+              })}
+            />
+            <MetricCard label={t("admin.overview.feedback")} value={String(overview.feedback_total)} />
+            <MetricCard
+              label={t("admin.overview.llmCost")}
+              value={`$${formatDecimal(overview.llm_cost_usd_total, locale, 2)}`}
+            />
+          </div>
+        </section>
+
+        <Panel
+          as="section"
+          className="admin-section"
+          title={t("admin.overview.systemHealth")}
+          headingLevel="h2"
+          headerExtra={
+            <span
+              className={`admin-status-pill admin-status-pill--${overview.system_status === "ready" ? "ok" : "warn"}`}
+            >
+              {overview.system_status}
+            </span>
+          }
+        >
+          <p className="text-muted mb-3">
+            {t("admin.overview.environment")}: <strong>{overview.app_env}</strong>
+          </p>
+          <HealthCheckList checks={overview.health_checks} />
+        </Panel>
+      </div>
     </PageShell>
   );
 }

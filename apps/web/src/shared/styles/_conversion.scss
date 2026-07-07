@@ -24,6 +24,16 @@
   margin-bottom: var(--researchly-space-4);
 }
 
+.new-run-page .page-stack {
+  gap: var(--researchly-page-stack-gap-mobile);
+}
+
+@include up(md) {
+  .new-run-page .page-stack {
+    gap: var(--researchly-page-stack-gap-tight);
+  }
+}
+
 .new-run-value-strip {
   align-items: center;
   background: var(--researchly-surface-muted);

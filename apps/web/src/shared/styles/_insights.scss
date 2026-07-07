@@ -1,9 +1,34 @@
 @use "./mixins" as *;
+@use "./breakpoints" as *;
 
 // Validation metrics dashboard — panel grouping, flat metrics.
 
 .insights-page .page-stack {
-  gap: var(--researchly-space-8);
+  gap: var(--researchly-page-stack-gap-mobile);
+}
+
+@include up(md) {
+  .insights-page .page-stack {
+    gap: var(--researchly-page-stack-gap-tight);
+  }
+}
+
+.insights-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--researchly-space-2);
+}
+
+.insights-page__actions .btn {
+  min-height: var(--researchly-touch-min);
+}
+
+@include down(md) {
+  .insights-page__actions .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: min(100%, 14rem);
+  }
 }
 
 .insight-section {

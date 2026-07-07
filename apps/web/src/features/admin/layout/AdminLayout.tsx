@@ -20,7 +20,6 @@ export function AdminLayout() {
         <div className="admin-shell__brand">
           <span className="admin-shell__badge">{t("admin.badge")}</span>
           <h1 className="admin-shell__title">{t("admin.title")}</h1>
-          <p className="admin-shell__subtitle text-muted">{t("admin.subtitle")}</p>
         </div>
         <nav className="admin-shell__nav">
           {ADMIN_NAV.map((item) => (

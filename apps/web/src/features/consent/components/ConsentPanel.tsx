@@ -1,5 +1,5 @@
 import { Badge } from "react-bootstrap";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 import { CONSENT_VERSION } from "@/shared/constants";
 import { useConsentStrings } from "@/shared/i18n/useConsentStrings";
@@ -32,9 +32,6 @@ export function ConsentPanel({ status, readOnly = true }: ConsentPanelProps) {
         </Badge>
       </div>
 
-      <p className="consent-panel__intro">
-        <Trans i18nKey="consent.panelIntro" components={{ strong: <strong /> }} />
-      </p>
       <ul className="consent-panel__list">
         {summary.map((item) => (
           <li key={item}>{item}</li>

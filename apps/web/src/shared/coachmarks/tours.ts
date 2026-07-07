@@ -149,6 +149,48 @@ export const COACH_MARK_TOURS: Record<string, CoachMarkTour> = {
       },
     ],
   },
+  projects: {
+    id: "projects",
+    steps: [
+      {
+        target: "coach-projects-header",
+        titleKey: "coachmarks.projects.header.title",
+        bodyKey: "coachmarks.projects.header.body",
+        placement: "bottom",
+        align: "start",
+        spotlightPadding: 10,
+      },
+      {
+        target: "coach-projects-list",
+        titleKey: "coachmarks.projects.list.title",
+        bodyKey: "coachmarks.projects.list.body",
+        placement: "top",
+        align: "start",
+        targetPreference: "largest",
+        spotlightPadding: 12,
+        skipIfHidden: true,
+      },
+      {
+        target: "coach-projects-phases",
+        titleKey: "coachmarks.projects.phases.title",
+        bodyKey: "coachmarks.projects.phases.body",
+        placement: "bottom",
+        align: "start",
+        spotlightPadding: 10,
+        skipIfHidden: true,
+      },
+      {
+        target: "coach-projects-tasks",
+        titleKey: "coachmarks.projects.tasks.title",
+        bodyKey: "coachmarks.projects.tasks.body",
+        placement: "top",
+        align: "start",
+        targetPreference: "largest",
+        spotlightPadding: 12,
+        skipIfHidden: true,
+      },
+    ],
+  },
 };
 
 export function tourForPath(pathname: string): CoachMarkTour | null {
@@ -166,6 +208,12 @@ export function tourForPath(pathname: string): CoachMarkTour | null {
   }
   if (pathname === "/insights" || pathname.startsWith("/admin/evaluation")) {
     return COACH_MARK_TOURS.insights;
+  }
+  if (pathname === "/projects") {
+    return COACH_MARK_TOURS.projects;
+  }
+  if (/^\/projects\/[^/]+$/.test(pathname)) {
+    return COACH_MARK_TOURS.projects;
   }
   return null;
 }

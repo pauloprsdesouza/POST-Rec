@@ -195,7 +195,7 @@ export function ResearchReportPage() {
 
   if (loading) {
     return (
-      <PageShell>
+      <PageShell pageClass="admin-page research-report-page">
         <LoadingSpinner label={t("researchReport.loading")} />
       </PageShell>
     );
@@ -203,9 +203,16 @@ export function ResearchReportPage() {
 
   if (error || !report || !narrative) {
     return (
-      <PageShell>
-        <PageHeader title={t("researchReport.title")} subtitle={t("researchReport.subtitle")} />
-        <InlineAlert variant="danger">{error ?? t("researchReport.unavailable")}</InlineAlert>
+      <PageShell pageClass="admin-page research-report-page">
+        <div className="page-stack page-stack--tight">
+          <header className="page-stack__block research-report__hero">
+            <PageHeader title={t("researchReport.title")} subtitle={t("researchReport.subtitle")} />
+            <Link to="/admin/evaluation" className="research-report__back-link">
+              {t("researchReport.backToInsights")}
+            </Link>
+          </header>
+          <InlineAlert variant="danger">{error ?? t("researchReport.unavailable")}</InlineAlert>
+        </div>
       </PageShell>
     );
   }
@@ -218,9 +225,9 @@ export function ResearchReportPage() {
   const nextChapter = () => ++chapter;
 
   return (
-    <PageShell pageClass="research-report-page">
-      <div className="page-stack">
-        <div className="research-report__hero">
+    <PageShell pageClass="admin-page research-report-page">
+      <div className="page-stack page-stack--tight">
+        <header className="page-stack__block research-report__hero">
           <PageHeader title={t("researchReport.title")} subtitle={t("researchReport.subtitle")} />
           <div className="research-report__meta">
             <span>{t("researchReport.generatedAt", { date: generatedLabel })}</span>
@@ -228,7 +235,7 @@ export function ResearchReportPage() {
               {t("researchReport.backToInsights")}
             </Link>
           </div>
-        </div>
+        </header>
 
         <ReportTableOfContents items={tocItems} />
 

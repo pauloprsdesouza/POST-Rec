@@ -79,7 +79,7 @@ export function InsightsPage() {
 
   if (isLoading) {
     return (
-      <PageShell>
+      <PageShell pageClass="admin-page insights-page">
         <LoadingSpinner label={t("common.loadingInsights")} />
       </PageShell>
     );
@@ -88,9 +88,11 @@ export function InsightsPage() {
   if (error || !dashboard) {
     const message = error instanceof Error ? error.message : t("common.couldNotLoadMetrics");
     return (
-      <PageShell>
-        <PageHeader title={t("insights.title")} subtitle={t("insights.subtitle")} />
-        <InlineAlert variant="danger">{message}</InlineAlert>
+      <PageShell pageClass="admin-page insights-page">
+        <div className="page-stack page-stack--tight">
+          <PageHeader title={t("insights.title")} subtitle={t("insights.subtitle")} />
+          <InlineAlert variant="danger">{message}</InlineAlert>
+        </div>
       </PageShell>
     );
   }
@@ -100,8 +102,8 @@ export function InsightsPage() {
   const ranking = dashboard.ranking_summary;
 
   return (
-    <PageShell pageClass="insights-page">
-      <div className="page-stack">
+    <PageShell pageClass="admin-page insights-page">
+      <div className="page-stack page-stack--tight">
         <div data-coach="coach-insights-overview" className="insights-coach-target">
           <PageHeader
             title={t("admin.evaluation.title")}

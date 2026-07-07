@@ -1,7 +1,7 @@
 {
   "common": {
     "appName": "Researchly",
-    "appTagline": "Investiga mejor",
+    "appTagline": "De artículos a ideas",
     "loading": "Cargando…",
     "loadingRuns": "Cargando ejecuciones…",
     "loadingInsights": "Cargando métricas…",
@@ -95,39 +95,40 @@
   },
   "coachmarks": {
     "progress": "Paso {{current}} de {{total}}",
-    "next": "Siguiente",
+    "next": "Continuar",
     "back": "Atrás",
-    "done": "Entendido",
+    "done": "Listo",
     "skip": "Saltar tour",
     "replay": "Tour guiado",
     "replayAll": "Reiniciar todos los tours",
-    "targetMissing": "Este consejo no está disponible en tu pantalla actual. Continúa al siguiente paso.",
+    "targetMissingTitle": "No en esta pantalla",
+    "targetMissing": "Este consejo aplica a otra parte de la app. Toca Continuar para seguir.",
     "runsHome": {
       "newRun": {
-        "title": "Iniciar una nueva ejecución",
-        "body": "Crea una ejecución cuando quieras nuevas ideas de investigación a partir de la literatura."
+        "title": "Empieza aquí",
+        "body": "Toca Nueva ejecución cuando quieras ideas de investigación respaldadas por la literatura."
       },
       "filters": {
         "title": "Filtrar ejecuciones",
-        "body": "Cambia entre todas, listas para revisar y aún en generación."
+        "body": "Muestra todas, solo las listas para revisar o las que aún se están generando."
       },
       "ready": {
         "title": "Listas para revisar",
-        "body": "Las ejecuciones completadas con ideas aparecen aquí. Ábrelas para leer recomendaciones y valorarlas."
+        "body": "Abre una ejecución terminada para explorar y valorar ideas."
       },
       "mobileNav": {
         "title": "Navegación rápida",
-        "body": "En móvil, usa la barra inferior para cambiar entre ejecuciones, nueva ejecución, admin y perfil."
+        "body": "En móvil, la barra inferior te lleva a ejecuciones, proyectos, nueva ejecución y perfil."
       }
     },
     "newRun": {
       "topics": {
-        "title": "Temas semilla",
-        "body": "Describe lo que quieres explorar. Researchly usa estos temas para buscar y analizar artigos."
+        "title": "Qué explorar",
+        "body": "Describe temas o preguntas. Researchly los usa para buscar y analizar artículos reales."
       },
       "mode": {
-        "title": "Modo de generación",
-        "body": "Elige la profundidad del análisis. SOTA-grounded es una buena opción por defecto."
+        "title": "Profundidad de búsqueda",
+        "body": "Elige el modo de generación. Con respaldo en la literatura funciona bien como predeterminado."
       },
       "submit": {
         "title": "Generar ideas",
@@ -137,35 +138,53 @@
     "runReview": {
       "carousel": {
         "title": "Explorar ideas",
-        "body": "Cambia entre las ideas generadas. Las marcas muestran ideas que ya valoraste."
+        "body": "Desliza o toca para cambiar entre ideas. Una marca indica que ya la valoraste."
       },
       "rating": {
         "title": "Valora cada idea",
-        "body": "Usa estrellas e indica si usarías la idea en un artículo. Tu feedback mejora futuras recomendaciones."
+        "body": "Usa estrellas e indica si seguirías con la idea. Tu feedback mejora futuras recomendaciones."
       },
       "sources": {
-        "title": "Evidencia detrás de las ideas",
-        "body": "Expande las fuentes para ver los artículos usados. Cada idea debe basarse en literatura real."
+        "title": "Ver la evidencia",
+        "body": "Expande las fuentes para ver los artículos detrás de cada idea."
       }
     },
     "profile": {
       "tabs": {
-        "title": "Centro de perfil",
-        "body": "Gestiona cuenta, investigación, preferencias de recomendación y consentimiento en un solo lugar."
+        "title": "Pestañas del perfil",
+        "body": "Cambia entre cuenta, investigación, preferencias y consentimiento."
       },
       "research": {
         "title": "Perfil de investigación",
-        "body": "Abre la pestaña Investigación para definir tu campo y experiencia."
+        "body": "Define tu campo y experiencia para que las ideas encajen en tu contexto."
       },
       "preferences": {
         "title": "Preferencias predeterminadas",
-        "body": "Abre Preferencias para definir temas, profundidad y filtros por defecto."
+        "body": "Guarda temas, profundidad y filtros por defecto para nuevas ejecuciones."
       }
     },
     "insights": {
       "overview": {
-        "title": "Tus métricas de investigación",
-        "body": "Sigue tasas de aprobación, alineación y resultados de ejecuciones con el tiempo."
+        "title": "Tus métricas",
+        "body": "Sigue tasas de aprobación, alineación y resultados de tus ejecuciones."
+      }
+    },
+    "projects": {
+      "header": {
+        "title": "Proyectos de investigación",
+        "body": "Abre un proyecto para continuar su hoja de ruta."
+      },
+      "list": {
+        "title": "Tus hojas de ruta",
+        "body": "Cada proyecto sigue fases y tareas de la idea al artículo. Abre uno para continuar."
+      },
+      "phases": {
+        "title": "Fases del proyecto",
+        "body": "Cada fase lista sus tareas. Desplázate para recorrer la hoja de ruta."
+      },
+      "tasks": {
+        "title": "Tareas accionables",
+        "body": "Completa tareas una a una, añade notas y vuelve a la recomendación de origen cuando lo necesites."
       }
     }
   },
@@ -231,7 +250,7 @@
   },
   "consent": {
     "pageTitle": "Configuración inicial",
-    "pageSubtitle": "Lee y acepta antes de usar Researchly. No volverás a ver esto — siempre está disponible en tu perfil.",
+    "pageSubtitle": "Revise en cualquier momento en Perfil → Consentimiento.",
     "intro": "Researchly es una <strong>herramienta experimental de investigación</strong>. Al continuar reconoces que:",
     "acceptAndContinue": "Aceptar y continuar",
     "errorSave": "No se pudo guardar el consentimiento.",
@@ -306,18 +325,21 @@
     "researchAreaPlaceholder": "p. ej. Sistemas de recomendación y LLM",
     "researchAreaHint": "Se usa en cada ejecución para acotar la búsqueda bibliográfica.",
     "seedTopicsWhy": "Estas frases orientan la búsqueda — sé específico sobre métodos o problemas.",
+    "seedTopicsRun": "Temas semilla",
     "depthHint": "Qué tan detallado debe ser el plan de cada idea.",
     "expectedOutputHint": "Opcional — describe cómo sería una idea útil para ti.",
+    "expectedOutputPlaceholder": "p. ej. ideas para conferencia con datos públicos",
     "seedTopics": "Temas semilla predeterminados",
     "seedTopicsPlaceholder": "Escribe un tema y pulsa Enter",
+    "seedTopicsPlaceholderShort": "Añade tema, Enter",
     "seedTopicsHint": "Cada tema aparece como una etiqueta. Pulsa Enter para añadir; las frases pueden incluir espacios.",
     "seedTopicsRemove": "Eliminar {{topic}}",
     "expectedOutput": "Resultado esperado",
-    "defaultExpectedOutput": "Ideas que puedan convertirse en un artículo real usando conjuntos de datos públicos.",
-    "defaultDepth": "Profundidad predeterminada",
-    "depthShallow": "Superficial — visión general rápida",
-    "depthMedium": "Media — equilibrada",
-    "depthDeep": "Profunda — planes detallados",
+    "defaultExpectedOutput": "",
+    "defaultDepth": "Profundidad",
+    "depthShallow": "Superficial",
+    "depthMedium": "Media",
+    "depthDeep": "Profunda",
     "maxArticleAge": "Antigüedad máxima de artículos",
     "maxArticleAgeOption": "Últimos {{years}} años",
     "maxArticleAgeHint": "Solo recuperar artículos publicados dentro de este período.",
@@ -349,7 +371,7 @@
       "step3": "Revisa ideas respaldadas por evidencia y valora las que te ayuden."
     },
     "runMode": {
-      "label": "Modo de generación",
+      "label": "Modo",
       "recommended": "Predeterminado",
       "auto": {
         "label": "Auto",
@@ -415,7 +437,7 @@
     "searchResults": "{{count}} resultado(s) para “{{query}}”",
     "searchEmpty": "Ninguna ejecución o idea coincidió con tu búsqueda. Prueba otras palabras.",
     "searchMatchCount": "{{count}} idea(s) coincidente(s)",
-    "readyBannerTitle": "{{count}} ejecución(es) esperando tu feedback",
+    "readyBannerTitle": "{{count}} ejecución(es) lista(s) — abre una para valorar ideas",
     "readyBannerText": "Valoraciones rápidas nos ayudan a personalizar tus próximas recomendaciones.",
     "reviewFirst": "Revisar primera ejecución",
     "reviewAndRate": "Revisar y valorar",
@@ -470,6 +492,7 @@
     "score": "Puntuación {{value}}",
     "rateIdea": "Valorar esta idea",
     "quickRatingLabel": "¿Qué tan útil es esta idea?",
+    "feedbackUsefulnessShort": "Utilidad",
     "readGuide": "Después de leer, valora con estrellas e indica si lo usarías en un artículo.",
     "sectionAboutIntro": "La brecha de investigación, la pregunta y la contribución esperada.",
     "sectionSummaryIntro": "Contexto y encuadre de esta dirección de investigación.",
@@ -519,6 +542,7 @@
     "metrics": "Métricas",
     "risks": "Riesgos",
     "useInPaper": "¿Usar en un artículo?",
+    "useInPaperShort": "¿En artículo?",
     "decision": "Decisión",
     "comments": "Comentarios",
     "submitFeedback": "Enviar feedback",
@@ -651,6 +675,8 @@
     "generatedAt": "Generado {{date}}",
     "schemaVersion": "Schema v{{version}}",
     "backToInsights": "← Volver a métricas",
+    "tocNavLabel": "Secciones del informe",
+    "tocTitle": "En este informe",
     "sampleTitle": "Descripción de la muestra",
     "sessions": "Sesiones",
     "runs": "Ejecuciones",
@@ -864,10 +890,15 @@
   "survey": {
     "title": "Feedback de sesión",
     "subtitle": "Ayúdanos a mejorar Researchly con una breve encuesta final.",
-    "subtitleShort": "Dos toques — listo.",
+    "subtitleShort": "Un toque — listo.",
     "quickPrompt": "¿Cómo fue esta sesión?",
+    "sessionPositive": "Sí, estuvo bien",
+    "sessionNegative": "No, no estuvo bien",
+    "quickPromptShort": "Feedback rápido",
     "quickSatisfaction": "Satisfacción general",
+    "quickSatisfactionShort": "Satisfacción",
     "quickUseAgain": "¿Usarías Researchly de nuevo?",
+    "quickUseAgainShort": "¿Usar de nuevo?",
     "quickSubmit": "Listo",
     "autoSaveHint": "Se guarda automáticamente al responder ambas preguntas.",
     "sessionFeedbackIntro": "Tus respuestas mejoran ejecuciones futuras y nos ayudan a medir la utilidad de Researchly.",
@@ -1289,6 +1320,7 @@
     "workspaceLabel": "Hoja de ruta",
     "breadcrumb": "Navegación del proyecto",
     "loading": "Cargando proyecto…",
+    "loadingList": "Cargando proyectos…",
     "loadError": "No se pudieron cargar los proyectos.",
     "createError": "No se pudo crear la hoja de ruta de implementación.",
     "updateError": "No se pudo actualizar la tarea.",
@@ -1349,7 +1381,7 @@
     "hideCompleted": "Ocultar tareas completadas",
     "phaseTaskCount": "{{visible}} de {{total}} tareas visibles",
     "showCompletedCount": "Mostrar {{count}} completadas",
-    "phaseComplete": "Todas las tareas de esta fase están hechas. Selecciona la siguiente fase o muestra las completadas.",
+    "phaseComplete": "Todas las tareas de esta fase están hechas.",
     "ctaLabel": "Hoja de ruta de implementación",
     "ctaBadgeNew": "Siguiente paso",
     "ctaBadgeReady": "Hoja de ruta lista",

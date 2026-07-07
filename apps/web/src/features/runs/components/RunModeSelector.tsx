@@ -11,6 +11,8 @@ interface RunModeSelectorProps {
   menuPlacement?: "top" | "bottom";
   showLabel?: boolean;
   hideHint?: boolean;
+  /** Mode label only — no secondary hint lines. */
+  minimal?: boolean;
 }
 
 const MODE_OPTIONS: RunModeSelection[] = ["auto", "sota", "quick", "exploratory", "fggv"];
@@ -23,6 +25,7 @@ export function RunModeSelector({
   menuPlacement = "bottom",
   showLabel = true,
   hideHint = false,
+  minimal = false,
 }: RunModeSelectorProps) {
   const { t } = useTranslation();
   const menuId = useId();
@@ -61,6 +64,7 @@ export function RunModeSelector({
   const modeHint = t(`newRun.runMode.${value}.hint`, {
     defaultValue: t(`newRun.runMode.${value}.shortHint`),
   });
+  const showModeHint = !hideHint && !minimal;
 
   return (
     <div
@@ -85,7 +89,7 @@ export function RunModeSelector({
       >
         <span className="run-mode-picker__trigger-text">
           <span className="run-mode-picker__trigger-label">{t(`newRun.runMode.${value}.label`)}</span>
-          {!compact ? (
+          {!compact && !minimal ? (
             <span className="run-mode-picker__trigger-hint">{t(`newRun.runMode.${value}.shortHint`)}</span>
           ) : null}
         </span>
@@ -119,7 +123,9 @@ export function RunModeSelector({
                       <span className="run-mode-picker__option-badge">{t("newRun.runMode.recommended")}</span>
                     ) : null}
                   </span>
-                  <span className="run-mode-picker__option-hint">{t(`newRun.runMode.${mode}.shortHint`)}</span>
+                  {!minimal ? (
+                    <span className="run-mode-picker__option-hint">{t(`newRun.runMode.${mode}.shortHint`)}</span>
+                  ) : null}
                 </span>
                 {selected ? (
                   <span className="run-mode-picker__option-check" aria-hidden>
@@ -132,7 +138,7 @@ export function RunModeSelector({
         </div>
       ) : null}
 
-      {!hideHint ? (
+      {showModeHint ? (
         <p className={`run-mode-picker__hint ${compact ? "run-mode-picker__hint--compact" : ""}`}>{modeHint}</p>
       ) : null}
     </div>

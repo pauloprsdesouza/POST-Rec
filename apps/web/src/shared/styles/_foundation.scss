@@ -22,7 +22,24 @@ body {
   line-height: var(--researchly-leading);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color var(--researchly-duration-medium) var(--researchly-ease),
+    color var(--researchly-duration-medium) var(--researchly-ease);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--researchly-primary) 22%, transparent);
+  color: var(--researchly-text);
+}
+
+a:not(.btn):not(.nav-link):not(.dropdown-item):not(.bottom-nav__item) {
+  color: var(--researchly-primary-dark);
+  text-decoration-skip-ink: auto;
+  transition: color var(--researchly-duration) var(--researchly-ease);
+}
+
+a:not(.btn):not(.nav-link):not(.dropdown-item):not(.bottom-nav__item):hover {
+  color: var(--researchly-primary);
 }
 
 button,
@@ -393,10 +410,14 @@ h1, h2, h3, h4, h5, h6 {
   transition: border-color var(--researchly-duration), box-shadow var(--researchly-duration);
 }
 
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
 .form-control:focus,
 .form-select:focus {
   border-color: var(--researchly-primary);
   box-shadow: var(--researchly-shadow-focus);
+  outline: none;
 }
 
 .form-control::placeholder {

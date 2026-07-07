@@ -20,7 +20,6 @@ export function RunsReadyBanner({ count, firstRunId }: RunsReadyBannerProps) {
       id="runs-ready-banner-title"
       variant="success"
       title={t("runs.readyBannerTitle", { count })}
-      description={t("runs.readyBannerText")}
       actions={
         firstRunId ? (
           <Link to={`/runs/${firstRunId}`} className="btn btn-primary promo-banner__cta">

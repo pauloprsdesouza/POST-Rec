@@ -15,8 +15,10 @@ export function RefinementPanel({ items }: RefinementPanelProps) {
 
   return (
     <aside className="refinement-panel">
-      <h3 className="refinement-panel__title">{t("ideas.refinement.title")}</h3>
-      <p className="refinement-panel__subtitle">{t("ideas.refinement.subtitle", { count: items.length })}</p>
+      <h3 className="refinement-panel__title">
+        {t("ideas.refinement.title")}
+        <span className="refinement-panel__count">{items.length}</span>
+      </h3>
       <ul className="refinement-panel__list">
         {items.map((item) => (
           <li key={item.id} className="refinement-panel__item">

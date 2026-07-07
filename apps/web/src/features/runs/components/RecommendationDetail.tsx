@@ -182,7 +182,6 @@ export function RecommendationDetail({
             aria-labelledby={`idea-tab-${recommendation.id}-about`}
             className="idea-tab-panel"
           >
-            <p className="idea-tab-panel__intro">{t("ideas.sectionAboutIntro")}</p>
             <Section label={t("ideas.researchGap")} value={recommendation.research_gap} />
             <Section label={t("ideas.researchQuestion")} value={recommendation.research_question} />
             <Section label={t("ideas.contribution")} value={recommendation.expected_contribution} />
@@ -212,7 +211,6 @@ export function RecommendationDetail({
             aria-labelledby={`idea-tab-${recommendation.id}-summary`}
             className="idea-tab-panel"
           >
-            <p className="idea-tab-panel__intro">{t("ideas.sectionSummaryIntro")}</p>
             <Section label={t("ideas.hypothesis")} value={recommendation.hypothesis} />
             <Section label={t("ideas.relatedWork")} value={recommendation.related_work_summary} />
           </div>
@@ -225,7 +223,6 @@ export function RecommendationDetail({
             aria-labelledby={`idea-tab-${recommendation.id}-method`}
             className="idea-tab-panel"
           >
-            <p className="idea-tab-panel__intro">{t("ideas.sectionMethodIntro")}</p>
             <Section label={t("ideas.proposedMethod")} value={recommendation.proposed_method} />
             <Section label={t("ideas.experimentalPlan")} value={recommendation.experimental_plan} />
             <ListSection label={t("ideas.datasets")} items={recommendation.datasets} />
@@ -242,14 +239,12 @@ export function RecommendationDetail({
             aria-labelledby={`idea-tab-${recommendation.id}-evidence`}
             className="idea-tab-panel"
           >
-            <p className="idea-tab-panel__intro">{t("ideas.sectionEvidenceIntro")}</p>
             <EvidenceList papers={recommendation.evidence_papers} />
           </div>
         ) : null}
       </div>
 
-      <div className="idea-detail__feedback-dock" data-coach="coach-run-rating">
-        <p className="idea-detail__guide">{t("ideas.readGuide")}</p>
+      <div className="idea-detail__actions" data-coach="coach-run-rating">
         <QuickFeedbackPanel
           rating={savedRating}
           wouldUse={wouldUse}

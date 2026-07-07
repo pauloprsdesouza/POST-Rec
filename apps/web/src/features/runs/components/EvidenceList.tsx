@@ -28,7 +28,6 @@ export function EvidenceList({ papers, title }: EvidenceListProps) {
           {t("evidence.articlesCited", { count: papers.length })}
           {explainedCount > 0 ? ` · ${t("evidence.explainedCount", { count: explainedCount })}` : null}
         </p>
-        <p className="evidence-section__hint">{t("evidence.intro")}</p>
       </div>
       <ul className="evidence-section__list">
         {papers.map((paper, index) => (

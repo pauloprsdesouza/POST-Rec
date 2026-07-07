@@ -57,6 +57,11 @@ interface RecommendationPreferencesFormProps {
 
   hideRunModeOnMobile?: boolean;
 
+  hideInlineSubmitOnMobile?: boolean;
+
+  /** Labels and placeholders only — no helper paragraphs under fields. */
+  hintLevel?: "default" | "minimal";
+
 }
 
 
@@ -91,6 +96,10 @@ export function RecommendationPreferencesForm({
 
   hideRunModeOnMobile = false,
 
+  hideInlineSubmitOnMobile = false,
+
+  hintLevel = "default",
+
 }: RecommendationPreferencesFormProps) {
 
   const { t } = useTranslation();
@@ -98,6 +107,8 @@ export function RecommendationPreferencesForm({
   const seedTopicsRef = useRef<SeedTopicsInputHandle>(null);
 
   const buttonLabel = submitLabel ?? t("profile.savePreferences");
+
+  const minimalHints = hintLevel === "minimal";
 
 
 
@@ -147,7 +158,7 @@ export function RecommendationPreferencesForm({
 
           />
 
-          <Form.Text>{t("preferences.researchAreaHint")}</Form.Text>
+          {minimalHints ? null : <Form.Text>{t("preferences.researchAreaHint")}</Form.Text>}
 
         </Form.Group>
 
@@ -157,9 +168,13 @@ export function RecommendationPreferencesForm({
 
       <Form.Group className="field-group">
 
-        <Form.Label htmlFor="seed-topics-input">{t("preferences.seedTopics")}</Form.Label>
+        <Form.Label htmlFor="seed-topics-input">
 
-        <p className="form-field-intro">{t("preferences.seedTopicsWhy")}</p>
+          {minimalHints ? t("preferences.seedTopicsRun") : t("preferences.seedTopics")}
+
+        </Form.Label>
+
+        {minimalHints ? null : <p className="form-field-intro">{t("preferences.seedTopicsWhy")}</p>}
 
         <SeedTopicsInput
 
@@ -171,13 +186,17 @@ export function RecommendationPreferencesForm({
 
           onChange={(seed_topics) => update({ seed_topics })}
 
-          placeholder={t("preferences.seedTopicsPlaceholder")}
+          placeholder={
+
+            minimalHints ? t("preferences.seedTopicsPlaceholderShort") : t("preferences.seedTopicsPlaceholder")
+
+          }
 
           disabled={submitting}
 
         />
 
-        <Form.Text>{t("preferences.seedTopicsHint")}</Form.Text>
+        {minimalHints ? null : <Form.Text>{t("preferences.seedTopicsHint")}</Form.Text>}
 
       </Form.Group>
 
@@ -188,8 +207,6 @@ export function RecommendationPreferencesForm({
         <div
 
           className={`field-group ${hideRunModeOnMobile ? "d-none d-lg-block" : ""}`}
-
-          data-coach="coach-newrun-mode"
 
         >
 
@@ -203,6 +220,8 @@ export function RecommendationPreferencesForm({
 
             menuPlacement="bottom"
 
+            minimal={minimalHints}
+
           />
 
         </div>
@@ -215,7 +234,7 @@ export function RecommendationPreferencesForm({
 
         <Form.Label>{t("preferences.defaultDepth")}</Form.Label>
 
-        <Form.Text className="d-block mb-2">{t("preferences.depthHint")}</Form.Text>
+        {minimalHints ? null : <Form.Text className="d-block mb-2">{t("preferences.depthHint")}</Form.Text>}
 
         <div className="depth-chips" role="group" aria-label={t("preferences.defaultDepth")}>
 
@@ -275,7 +294,7 @@ export function RecommendationPreferencesForm({
 
         </Form.Select>
 
-        <Form.Text>{t("preferences.maxArticleAgeHint")}</Form.Text>
+        {minimalHints ? null : <Form.Text>{t("preferences.maxArticleAgeHint")}</Form.Text>}
 
       </Form.Group>
 
@@ -295,15 +314,17 @@ export function RecommendationPreferencesForm({
 
             rows={2}
 
-            value={defaults.expected_output ?? t("preferences.defaultExpectedOutput")}
+            value={defaults.expected_output ?? ""}
 
             onChange={(e) => update({ expected_output: e.target.value })}
 
             disabled={submitting}
 
+            placeholder={t("preferences.expectedOutputPlaceholder")}
+
           />
 
-          <Form.Text>{t("preferences.expectedOutputHint")}</Form.Text>
+          {minimalHints ? null : <Form.Text>{t("preferences.expectedOutputHint")}</Form.Text>}
 
         </Form.Group>
 
@@ -315,7 +336,17 @@ export function RecommendationPreferencesForm({
 
         <div
 
-          className={`run-composer-footer ${submitDataCoach ? "d-none d-lg-block" : ""}`}
+          className={[
+
+            "run-composer-footer",
+
+            submitDataCoach || hideInlineSubmitOnMobile ? "d-none d-lg-block" : "",
+
+          ]
+
+            .filter(Boolean)
+
+            .join(" ")}
 
           {...(submitDataCoach ? { "data-coach": submitDataCoach } : {})}
 
@@ -329,7 +360,7 @@ export function RecommendationPreferencesForm({
 
             </Button>
 
-            {submitHint ? <p className="form-submit-hint">{submitHint}</p> : null}
+            {!minimalHints && submitHint ? <p className="form-submit-hint">{submitHint}</p> : null}
 
           </div>
 
@@ -347,7 +378,7 @@ export function RecommendationPreferencesForm({
 
     return (
 
-      <Form id={formId} className="form-stack" onSubmit={handleSubmit}>
+      <Form id={formId} className="form-stack preferences-form" onSubmit={handleSubmit}>
 
         {formBody}
 
@@ -359,7 +390,7 @@ export function RecommendationPreferencesForm({
 
 
 
-  return <div className="form-stack">{formBody}</div>;
+  return <div className="form-stack preferences-form">{formBody}</div>;
 
 }
 

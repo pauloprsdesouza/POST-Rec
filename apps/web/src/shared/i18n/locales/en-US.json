@@ -1,14 +1,14 @@
 {
   "common": {
     "appName": "Researchly",
-    "appTagline": "Research smarter",
+    "appTagline": "From papers to ideas",
     "loading": "Loading…",
-    "loadingRuns": "Loading runs…",
+    "loadingRuns": "Loading your runs…",
     "loadingInsights": "Loading insights…",
     "loadingRun": "Loading run…",
     "loadingIdeas": "Loading ideas…",
     "loadingProfile": "Loading profile…",
-    "loadingPreferences": "Loading your preferences…",
+    "loadingPreferences": "Loading preferences…",
     "researcher": "Researcher",
     "newRun": "New run",
     "save": "Save",
@@ -66,8 +66,8 @@
     "pt-BR": "Português (Brasil)"
   },
   "setup": {
-    "title": "Setup:",
-    "timeEstimate": "~2 min setup",
+    "title": "Quick setup",
+    "timeEstimate": "About 2 minutes",
     "consentMessage": "Accept the participation consent to unlock personalized recommendations.",
     "profileMessage": "Tell us your research area — we'll tailor every idea to your field.",
     "reviewConsent": "Review consent",
@@ -95,77 +95,96 @@
   },
   "coachmarks": {
     "progress": "Step {{current}} of {{total}}",
-    "next": "Next",
+    "next": "Continue",
     "back": "Back",
-    "done": "Got it",
+    "done": "Done",
     "skip": "Skip tour",
     "replay": "Guided tour",
     "replayAll": "Restart all tours",
-    "targetMissing": "This tip is not available on your current screen. Continue to the next step.",
+    "targetMissingTitle": "Not on this screen",
+    "targetMissing": "This tip applies to another part of the app. Tap Continue to move on.",
     "runsHome": {
       "newRun": {
-        "title": "Start a new run",
-        "body": "Create a run whenever you want fresh research ideas from the literature."
+        "title": "Start here",
+        "body": "Tap New run whenever you want fresh, literature-backed research ideas."
       },
       "filters": {
         "title": "Filter your runs",
-        "body": "Switch between all runs, ones ready to review, and runs still generating."
+        "body": "Show all runs, only those ready to review, or ones still generating."
       },
       "ready": {
         "title": "Ready to review",
-        "body": "Completed runs with ideas appear here. Open one to read evidence-backed recommendations and rate them."
+        "body": "Open a finished run to browse and rate ideas."
       },
       "mobileNav": {
         "title": "Quick navigation",
-        "body": "On mobile, use the bottom tab bar to switch between runs, start a new run, admin tools, and your profile."
+        "body": "On mobile, the tab bar lets you jump between runs, projects, a new run, and your profile."
       }
     },
     "newRun": {
       "topics": {
-        "title": "Seed topics",
-        "body": "Describe what you want to explore. Researchly uses these topics to search and analyze papers."
+        "title": "What to explore",
+        "body": "Describe topics or questions. Researchly uses them to search and analyze real papers."
       },
       "mode": {
-        "title": "Generation mode",
-        "body": "Choose how deeply Researchly analyzes the literature. SOTA-grounded is a good default for most researchers."
+        "title": "How deep to search",
+        "body": "Pick a generation mode. Literature-grounded works well as a default for most researchers."
       },
       "submit": {
         "title": "Generate ideas",
-        "body": "Start the run here. Results usually take a few minutes — you can track progress on the run page."
+        "body": "Start your run here. Results usually take a few minutes — track progress on the run page."
       }
     },
     "runReview": {
       "carousel": {
         "title": "Browse ideas",
-        "body": "Move between generated research ideas. Checkmarks show ideas you already rated."
+        "body": "Swipe or tap to move between ideas. A checkmark means you already rated that one."
       },
       "rating": {
         "title": "Rate each idea",
-        "body": "Use stars and tell us if you'd use an idea in a paper. Your feedback improves future recommendations."
+        "body": "Use stars and say whether you'd pursue the idea. Your feedback sharpens future recommendations."
       },
       "sources": {
-        "title": "Evidence behind ideas",
-        "body": "Expand sources to see the papers Researchly used. Every idea should trace back to real literature."
+        "title": "See the evidence",
+        "body": "Expand sources to view the papers behind each idea. Every suggestion ties back to real literature."
       }
     },
     "profile": {
       "tabs": {
-        "title": "Your profile hub",
-        "body": "Manage account details, research background, recommendation defaults, and consent in one place."
+        "title": "Profile tabs",
+        "body": "Switch tabs to edit account, research, preferences, or consent."
       },
       "research": {
         "title": "Research background",
-        "body": "Open the Research tab to set your field and experience. This shapes how ideas are framed for you."
+        "body": "Set your field and experience so ideas are framed for your context."
       },
       "preferences": {
-        "title": "Recommendation defaults",
-        "body": "Open Preferences to set default topics, depth, and filters for new runs."
+        "title": "Default preferences",
+        "body": "Save default topics, depth, and filters so new runs start with your usual settings."
       }
     },
     "insights": {
       "overview": {
         "title": "Your research metrics",
-        "body": "Track approval rates, alignment scores, and run outcomes as you use Researchly over time."
+        "body": "Track approval rates, alignment scores, and run outcomes as you use Researchly."
+      }
+    },
+    "projects": {
+      "header": {
+        "title": "Research projects",
+        "body": "Open a project to continue its task roadmap."
+      },
+      "list": {
+        "title": "Your roadmaps",
+        "body": "Each project tracks phases and tasks from idea to paper. Open one to continue where you left off."
+      },
+      "phases": {
+        "title": "Project phases",
+        "body": "Each phase lists its tasks. Scroll to move through the roadmap."
+      },
+      "tasks": {
+        "title": "Actionable tasks",
+        "body": "Complete tasks one at a time, add notes, and link back to the source recommendation when you need context."
       }
     }
   },
@@ -231,7 +250,7 @@
   },
   "consent": {
     "pageTitle": "One-time setup",
-    "pageSubtitle": "Please read and accept before using Researchly. You won't see this again — it's always available in your profile.",
+    "pageSubtitle": "Review anytime under Profile → Consent.",
     "intro": "Researchly is an <strong>experimental research tool</strong>. By continuing you acknowledge:",
     "acceptAndContinue": "Accept and continue",
     "errorSave": "Could not save consent.",
@@ -303,21 +322,24 @@
   },
   "preferences": {
     "researchArea": "Research area",
-    "researchAreaPlaceholder": "e.g. Recommender Systems and LLMs",
+    "researchAreaPlaceholder": "e.g. Recommender systems & LLMs",
     "researchAreaHint": "Shown on every run and used to scope literature search.",
     "seedTopicsWhy": "These phrases drive paper search — be specific about methods or problems.",
+    "seedTopicsRun": "Seed topics",
     "depthHint": "How detailed each idea's plan should be.",
     "expectedOutputHint": "Optional — describe what a useful idea looks like for you.",
+    "expectedOutputPlaceholder": "e.g. conference-ready ideas with public datasets",
     "seedTopics": "Default seed topics",
     "seedTopicsPlaceholder": "Type a topic and press Enter",
+    "seedTopicsPlaceholderShort": "Add topic, press Enter",
     "seedTopicsHint": "Each topic appears as a tag. Press Enter to add; phrases can include spaces.",
     "seedTopicsRemove": "Remove {{topic}}",
     "expectedOutput": "Expected output",
-    "defaultExpectedOutput": "Ideas that can become a real paper using public datasets.",
-    "defaultDepth": "Default depth",
-    "depthShallow": "Shallow — quick overview",
-    "depthMedium": "Medium — balanced",
-    "depthDeep": "Deep — detailed plans",
+    "defaultExpectedOutput": "",
+    "defaultDepth": "Depth",
+    "depthShallow": "Shallow",
+    "depthMedium": "Medium",
+    "depthDeep": "Deep",
     "maxArticleAge": "Maximum article age",
     "maxArticleAgeOption": "Last {{years}} years",
     "maxArticleAgeHint": "Only retrieve papers published within this window.",
@@ -349,7 +371,7 @@
       "step3": "Review evidence-backed research ideas and rate what helps."
     },
     "runMode": {
-      "label": "Generation mode",
+      "label": "Mode",
       "recommended": "Default",
       "auto": {
         "label": "Auto",
@@ -384,12 +406,12 @@
     "subtitleEmpty": "Start a run to generate research ideas backed by real papers.",
     "subtitleStats": "{{total}} total · {{active}} in progress · {{completed}} ready to review",
     "emptyHeroEyebrow": "Get started",
-    "emptyHeroTitle": "Generate your first research ideas",
-    "emptyHeroSubtitle": "Researchly searches real papers, finds gaps, and suggests ideas you can turn into research — in minutes.",
-    "emptyHeroStep1": "Add a few topics you want to explore",
+    "emptyHeroTitle": "Your first research ideas",
+    "emptyHeroSubtitle": "Researchly searches real papers, finds gaps, and suggests directions you can explore — in minutes.",
+    "emptyHeroStep1": "Add topics you want to explore",
     "emptyHeroStep2": "We search and analyze the literature",
-    "emptyHeroStep3": "Review evidence-backed ideas and rate what helps",
-    "emptyHeroCta": "Generate recommendations",
+    "emptyHeroStep3": "Review evidence-backed ideas and rate what fits",
+    "emptyHeroCta": "Start a run",
     "emptyHeroLearnMore": "How it works →",
     "noRunsTitle": "No runs yet",
     "noRunsDescription": "Create your first run and we'll search papers, analyze gaps, and suggest ideas you can turn into research.",
@@ -415,7 +437,7 @@
     "searchResults": "{{count}} result(s) for “{{query}}”",
     "searchEmpty": "No runs or ideas matched your search. Try different keywords.",
     "searchMatchCount": "{{count}} matching idea(s)",
-    "readyBannerTitle": "{{count}} run(s) waiting for your feedback",
+    "readyBannerTitle": "{{count}} run(s) ready — open one to rate ideas",
     "readyBannerText": "Quick thumb ratings help us personalize your next recommendations.",
     "reviewFirst": "Review first run",
     "reviewAndRate": "Review & rate",
@@ -470,6 +492,7 @@
     "score": "Score {{value}}",
     "rateIdea": "Rate this idea",
     "quickRatingLabel": "How useful is this idea?",
+    "feedbackUsefulnessShort": "Usefulness",
     "readGuide": "After reading, rate with stars and tell us if you'd use this in a paper.",
     "sectionAboutIntro": "The research gap, question, and expected contribution.",
     "sectionSummaryIntro": "Background and framing for this research direction.",
@@ -519,6 +542,7 @@
     "metrics": "Metrics",
     "risks": "Risks",
     "useInPaper": "Use in a paper?",
+    "useInPaperShort": "In paper?",
     "decision": "Decision",
     "comments": "Comments",
     "submitFeedback": "Submit feedback",
@@ -651,6 +675,8 @@
     "generatedAt": "Updated {{date}}",
     "schemaVersion": "Schema v{{version}}",
     "backToInsights": "← Back to Insights",
+    "tocNavLabel": "Report sections",
+    "tocTitle": "In this report",
     "sampleTitle": "Sample description",
     "sessions": "Sessions",
     "runs": "Runs",
@@ -864,10 +890,15 @@
   "survey": {
     "title": "Session feedback",
     "subtitle": "Help us improve Researchly with a short closing survey.",
-    "subtitleShort": "Two taps — that's it.",
+    "subtitleShort": "One tap — that's it.",
     "quickPrompt": "How was this session?",
+    "sessionPositive": "Yes, it was good",
+    "sessionNegative": "No, not good",
+    "quickPromptShort": "Quick feedback",
     "quickSatisfaction": "Overall satisfaction",
+    "quickSatisfactionShort": "Satisfaction",
     "quickUseAgain": "Would you use Researchly again?",
+    "quickUseAgainShort": "Use again?",
     "quickSubmit": "Done",
     "autoSaveHint": "Saves automatically when you answer both questions.",
     "sessionFeedbackIntro": "Your answers improve future runs and help us measure Researchly's usefulness.",
@@ -1289,6 +1320,7 @@
     "workspaceLabel": "Roadmap",
     "breadcrumb": "Project navigation",
     "loading": "Loading project…",
+    "loadingList": "Loading projects…",
     "loadError": "Could not load projects.",
     "createError": "Could not create the implementation roadmap.",
     "updateError": "Could not update the task.",
@@ -1349,7 +1381,7 @@
     "hideCompleted": "Hide completed tasks",
     "phaseTaskCount": "{{visible}} of {{total}} tasks shown",
     "showCompletedCount": "Show {{count}} completed",
-    "phaseComplete": "All tasks in this phase are done. Select the next phase or show completed tasks.",
+    "phaseComplete": "All tasks in this phase are done.",
     "ctaLabel": "Implementation roadmap",
     "ctaBadgeNew": "Next step",
     "ctaBadgeReady": "Roadmap ready",

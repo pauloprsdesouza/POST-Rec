@@ -36,30 +36,43 @@ export function AdminSystemPage() {
   }, [accessToken, t]);
 
   if (loading) {
-    return <LoadingSpinner label={t("admin.loading")} />;
+    return (
+      <PageShell pageClass="admin-page">
+        <div className="page-stack page-stack--tight">
+          <LoadingSpinner label={t("admin.loading")} />
+        </div>
+      </PageShell>
+    );
   }
 
   if (error || !config) {
-    return <InlineAlert variant="danger">{error ?? t("admin.loadError")}</InlineAlert>;
+    return (
+      <PageShell pageClass="admin-page">
+        <div className="page-stack page-stack--tight">
+          <InlineAlert variant="danger">{error ?? t("admin.loadError")}</InlineAlert>
+        </div>
+      </PageShell>
+    );
   }
 
   const entries = Object.entries(config.environment).sort(([a], [b]) => a.localeCompare(b));
 
   return (
     <PageShell pageClass="admin-page">
-      <PageHeader title={t("admin.system.title")} subtitle={t("admin.system.subtitle")} />
+      <div className="page-stack page-stack--tight">
+        <PageHeader title={t("admin.system.title")} subtitle={t("admin.system.subtitle")} />
 
-      <Panel as="section" className="admin-section">
-        <p className="text-muted">{t("admin.system.readOnlyNote")}</p>
-        <dl className="admin-config-list admin-config-list--grid">
-          {entries.map(([key, value]) => (
-            <div key={key}>
-              <dt>{key}</dt>
-              <dd>{formatConfigValue(value)}</dd>
-            </div>
-          ))}
-        </dl>
-      </Panel>
+        <Panel as="section" className="admin-section">
+          <dl className="admin-config-list admin-config-list--grid">
+            {entries.map(([key, value]) => (
+              <div key={key}>
+                <dt>{key}</dt>
+                <dd>{formatConfigValue(value)}</dd>
+              </div>
+            ))}
+          </dl>
+        </Panel>
+      </div>
     </PageShell>
   );
 }

@@ -122,9 +122,21 @@
   --researchly-shadow-sm: none;
   --researchly-shadow-focus: 0 0 0 3px rgba(67, 56, 202, 0.25);
 
-  // Motion
+  // Motion — Apple HIG-inspired: quick feedback, smooth layout shifts
   --researchly-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --researchly-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --researchly-ease-spring: cubic-bezier(0.34, 1.2, 0.64, 1);
   --researchly-duration: 0.15s;
+  --researchly-duration-medium: 0.25s;
+  --researchly-duration-slow: 0.35s;
+
+  // Overlays & elevation
+  --researchly-overlay: rgba(15, 23, 42, 0.48);
+  --researchly-overlay-blur: 8px;
+  --researchly-z-sticky: 1020;
+  --researchly-z-nav: 1030;
+  --researchly-z-toast: 1040;
+  --researchly-z-modal: 1050;
 
   // Illustrations
   --illus-surface: #ffffff;
@@ -189,6 +201,8 @@
 
   --researchly-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35);
   --researchly-shadow-focus: 0 0 0 3px rgba(165, 180, 252, 0.35);
+
+  --researchly-overlay: rgba(2, 6, 23, 0.62);
 
   --illus-surface: #222736;
   --illus-border: #3d4659;

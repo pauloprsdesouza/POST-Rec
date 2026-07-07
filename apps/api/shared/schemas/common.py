@@ -228,9 +228,9 @@ class FinalSurveyCreate(BaseModel):
     run_id: UUID | None = None
     user_id: UUID | None = None
     expectation_met_score: int = Field(ge=1, le=5)
-    would_use_again: bool
-    would_recommend: bool
-    would_use_any_recommendation_in_real_paper: str
+    would_use_again: bool | None = None
+    would_recommend: bool | None = None
+    would_use_any_recommendation_in_real_paper: str | None = None
     most_useful_recommendation_id: UUID | None = None
     what_helped_most: str | None = None
     what_hurt_most: str | None = None

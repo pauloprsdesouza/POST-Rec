@@ -9,7 +9,6 @@ import {
   RecommendationPreferencesForm,
 } from "@/features/profile/components/RecommendationPreferencesForm";
 import { RunModeSelector } from "@/features/runs/components/RunModeSelector";
-import { GettingStartedSteps } from "@/features/runs/components/GettingStartedSteps";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { PageShell } from "@/shared/ui/PageShell";
 import { StickyFooter } from "@/shared/ui/StickyFooter";
@@ -18,17 +17,15 @@ import { InlineAlert } from "@/shared/ui/InlineAlert";
 import { LoadingSpinner } from "@/shared/ui/LoadingSpinner";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useRuns } from "@/features/runs/context/RunsContext";
-import i18n from "@/shared/i18n";
 import { profileService, runService, sessionService } from "@/shared/api";
 import { getErrorMessage } from "@/shared/api/errors";
-import type { RecommendationDefaults, RunModeSelection, UserProfile } from "@/shared/types/api";
+import type { RecommendationDefaults, RunModeSelection } from "@/shared/types/api";
 
 export function NewRunPage() {
   const { t } = useTranslation();
   const { accessToken, user, sessionId, setSessionId, setSelectedRunId } = useAuth();
   const { invalidateRuns } = useRuns();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<UserProfile>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +43,6 @@ export function NewRunPage() {
     profileService
       .getProfile(accessToken)
       .then((data) => {
-        setProfile(data);
         setResearchArea(data.research_area ?? "");
         const preferredMode = data.recommendation_defaults?.preferred_run_mode;
         if (
@@ -62,7 +58,7 @@ export function NewRunPage() {
           mergeRecommendationDefaults(
             data.recommendation_defaults,
             data.learned_topics,
-            i18n.t("preferences.defaultExpectedOutput"),
+            "",
           ),
         );
       })
@@ -129,16 +125,13 @@ export function NewRunPage() {
   }
 
   return (
-    <PageShell withStickyFooter>
-      <div className="page-stack">
+    <PageShell withStickyFooter pageClass="new-run-page">
+      <div className="page-stack page-stack--tight">
         <header className="page-stack__block">
-          <PageHeader title={t("newRun.title")} subtitle={t("newRun.subtitle")} />
-          <p className="inline-meta new-run-meta">{t("newRun.valueStripInline")}</p>
+          <PageHeader title={t("newRun.title")} />
         </header>
 
         {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
-
-        <GettingStartedSteps />
 
         <Surface>
           <div className="form-stack">
@@ -149,7 +142,6 @@ export function NewRunPage() {
                 onChange={setPreferences}
                 onSubmit={handleSubmit}
                 submitLabel={submitting ? t("newRun.starting") : t("newRun.generate")}
-                submitHint={t("newRun.generateHint")}
                 submitting={submitting}
                 showResearchArea
                 researchArea={researchArea}
@@ -158,16 +150,11 @@ export function NewRunPage() {
                 runMode={runMode}
                 onRunModeChange={setRunMode}
                 hideRunModeOnMobile
+                hintLevel="minimal"
               />
             </div>
           </div>
         </Surface>
-
-        {(profile.learned_topics?.length ?? 0) > 0 ? (
-          <p className="inline-meta mb-0">
-            {t("newRun.learnedTopicsNote", { count: profile.learned_topics?.length ?? 0 })}
-          </p>
-        ) : null}
       </div>
 
       <StickyFooter variant="fixed" visibleClass="d-lg-none">
@@ -180,7 +167,7 @@ export function NewRunPage() {
             layout="compact"
             menuPlacement="top"
             showLabel={false}
-            hideHint
+            minimal
           />
         </div>
         <Button
@@ -193,7 +180,6 @@ export function NewRunPage() {
         >
           {submitting ? t("newRun.starting") : t("newRun.generateShort")}
         </Button>
-        <p className="sticky-footer__hint">{t("newRun.stickyHint")}</p>
       </StickyFooter>
     </PageShell>
   );

@@ -51,20 +51,37 @@ export function ProjectsPage() {
 
   return (
     <PageShell pageClass="projects-page" width="list">
-      <PageHeader title={t("projects.pageTitle")} />
+      <div className="page-stack page-stack--tight">
+        <header className="page-stack__block" data-coach="coach-projects-header">
+          <PageHeader title={t("projects.pageTitle")} />
+        </header>
 
-      {loading ? <LoadingSpinner label={t("projects.loading")} /> : null}
-      {error ? <InlineAlert variant="danger">{error}</InlineAlert> : null}
+        {loading ? (
+          <div className="page-stack__block">
+            <LoadingSpinner label={t("projects.loadingList")} />
+          </div>
+        ) : null}
 
-      {!loading && !error && projects.length === 0 ? <ProjectsEmptyHero /> : null}
+        {error ? (
+          <div className="page-stack__block">
+            <InlineAlert variant="danger">{error}</InlineAlert>
+          </div>
+        ) : null}
 
-      {!loading && projects.length > 0 ? (
-        <ul className="projects-list">
-          {projects.map((project) => (
-            <ProjectListCard key={project.id} project={project} />
-          ))}
-        </ul>
-      ) : null}
+        {!loading && !error && projects.length === 0 ? (
+          <div className="page-stack__block" data-coach="coach-projects-list">
+            <ProjectsEmptyHero />
+          </div>
+        ) : null}
+
+        {!loading && projects.length > 0 ? (
+          <ul className="projects-list page-stack__block" data-coach="coach-projects-list">
+            {projects.map((project) => (
+              <ProjectListCard key={project.id} project={project} />
+            ))}
+          </ul>
+        ) : null}
+      </div>
     </PageShell>
   );
 }

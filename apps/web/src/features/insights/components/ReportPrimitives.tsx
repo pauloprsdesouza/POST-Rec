@@ -85,13 +85,15 @@ export function ReportTableOfContents({
 }: {
   items: { id: string; label: string }[];
 }) {
+  const { t } = useTranslation();
+
   if (!items.length) {
     return null;
   }
 
   return (
-    <Panel as="nav" className="research-report__toc" aria-label="Report sections">
-      <p className="research-report__toc-title">In this report</p>
+    <Panel as="nav" className="research-report__toc" aria-label={t("researchReport.tocNavLabel")}>
+      <p className="research-report__toc-title">{t("researchReport.tocTitle")}</p>
       <ol className="research-report__toc-list">
         {items.map((item) => (
           <li key={item.id}>

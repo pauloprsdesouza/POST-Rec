@@ -11,15 +11,18 @@
 
 .auth-shell__topbar {
   align-items: center;
-  background: var(--researchly-surface);
+  background: var(--researchly-chrome-surface);
+  backdrop-filter: blur(var(--researchly-chrome-blur));
+  -webkit-backdrop-filter: blur(var(--researchly-chrome-blur));
   border-bottom: 1px solid var(--researchly-border-subtle);
   display: flex;
   gap: var(--researchly-space-4);
   justify-content: space-between;
-  padding: var(--researchly-space-4) var(--researchly-space-5);
+  padding: calc(var(--researchly-space-3) + var(--researchly-safe-top)) var(--researchly-page-gutter)
+    var(--researchly-space-3);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: var(--researchly-z-sticky);
 }
 
 .auth-shell__logo {
@@ -34,9 +37,9 @@
 
 .auth-shell__logo-mark {
   align-items: center;
-  background: linear-gradient(135deg, var(--researchly-primary) 0%, var(--researchly-accent-soft) 100%);
+  background: var(--researchly-primary);
   border-radius: var(--researchly-radius-sm);
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--researchly-primary) 35%, transparent);
+  box-shadow: none;
   color: var(--researchly-on-primary);
   display: inline-flex;
   font-size: 0.9375rem;
@@ -94,12 +97,12 @@
   align-items: center;
   display: flex;
   justify-content: center;
-  padding: 2rem 1.5rem;
+  padding: var(--researchly-space-6) var(--researchly-page-gutter);
 }
 
-@media (min-width: 992px) {
+@include up(lg) {
   .auth-shell__panel {
-    padding: 2.5rem 2rem;
+    padding: var(--researchly-space-10) var(--researchly-space-8);
   }
 }
 
@@ -277,12 +280,15 @@
   align-self: flex-start;
   background: none;
   border: none;
+  border-radius: var(--researchly-radius-sm);
   color: var(--researchly-muted);
   cursor: pointer;
   font-size: var(--researchly-text-sm);
   font-weight: 500;
   margin: calc(var(--researchly-space-2) * -1) 0 0;
-  padding: var(--researchly-space-2) 0;
+  min-height: var(--researchly-touch-min);
+  padding: var(--researchly-space-2) var(--researchly-space-3);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .auth-otp-step__back:hover:not(:disabled) {
@@ -380,8 +386,9 @@
   font-family: var(--researchly-font-mono);
   font-size: 1.25rem;
   font-weight: 600;
-  height: 3rem;
+  height: var(--researchly-touch-min);
   line-height: 1;
+  min-width: 0;
   padding: 0;
   text-align: center;
   transition:

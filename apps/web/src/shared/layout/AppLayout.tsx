@@ -42,7 +42,6 @@ export function AppLayout() {
           key={item.to}
           end={item.to === "/runs"}
           onClick={closeNav}
-          {...(item.to === "/runs/new" ? { "data-coach": "coach-nav-new-run" } : {})}
         >
           {t(item.labelKey)}
         </Nav.Link>

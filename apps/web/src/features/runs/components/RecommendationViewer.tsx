@@ -177,9 +177,8 @@ export function RecommendationViewer({
       <RefinementPanel items={refinementRecommendations} />
 
       {showSessionFeedback ? (
-        <aside className="feedback-footer">
-          <p className="feedback-footer__title">{t("survey.quickPrompt")}</p>
-          <SessionQuickFeedback runId={runId} visible compact />
+        <aside className="feedback-strip">
+          <SessionQuickFeedback runId={runId} visible />
         </aside>
       ) : null}
 
