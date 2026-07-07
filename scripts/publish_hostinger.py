@@ -124,6 +124,10 @@ def merge_remote_env(
     if "EVOLUTION_CORS_ORIGIN=" not in env:
         cors_origin = local.get("EVOLUTION_CORS_ORIGIN", "").strip() or f"https://{domain}"
         env = upsert_env_line(env, "EVOLUTION_CORS_ORIGIN", cors_origin)
+    if "PORTAINER_ADMIN_PASSWORD_HASH=" not in env:
+        portainer_hash = local.get("PORTAINER_ADMIN_PASSWORD_HASH", "").strip()
+        if portainer_hash:
+            env = upsert_env_line(env, "PORTAINER_ADMIN_PASSWORD_HASH", portainer_hash)
     return env
 
 
@@ -274,6 +278,17 @@ def main() -> int:
             timeout=30,
         )
         grafana_password_fallback = grafana_password_fallback.strip()
+
+    if "PORTAINER_ADMIN_PASSWORD_HASH=" not in remote_env and not local_env.get("PORTAINER_ADMIN_PASSWORD_HASH", "").strip():
+        _, portainer_hash_out = ssh_run(
+            client,
+            "docker inspect postrec-portainer --format '{{range .Config.Cmd}}{{println .}}{{end}}' 2>/dev/null "
+            "| grep '^--admin-password=' | cut -d= -f2-",
+            timeout=30,
+        )
+        portainer_hash = portainer_hash_out.strip()
+        if portainer_hash:
+            remote_env = upsert_env_line(remote_env, "PORTAINER_ADMIN_PASSWORD_HASH", portainer_hash)
 
     merged = merge_remote_env(
         remote_env,
