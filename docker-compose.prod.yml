@@ -1,25 +1,15 @@
 # Production overrides — use with:
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 #
-# Public access via Traefik (Coolify proxy on 80/443).
+# Public access via standalone Traefik on 80/443.
 # See deploy/traefik/apps.yaml for domain routing.
 
 services:
   postgres:
     ports: !reset []
-    networks:
-      default:
-      coolify:
-        aliases:
-          - shared-postgres
 
   redis:
     ports: !reset []
-    networks:
-      default:
-      coolify:
-        aliases:
-          - shared-redis
 
   rabbitmq:
     ports: !reset []
@@ -31,7 +21,7 @@ services:
     ports: !reset []
     networks:
       default:
-      coolify:
+      proxy:
         aliases:
           - postrec-evolution-api
     environment:
@@ -66,7 +56,7 @@ services:
     ports: !reset []
     networks:
       default:
-      coolify:
+      proxy:
         aliases:
           - postrec-web
 
@@ -75,14 +65,14 @@ services:
     container_name: postrec-landing
     restart: unless-stopped
     networks:
-      - coolify
+      - proxy
 
   unknown-app:
     build: ./deploy/unknown-app
     container_name: postrec-unknown-app
     restart: unless-stopped
     networks:
-      - coolify
+      - proxy
 
   portainer:
     image: portainer/portainer-ce:2.27.9
@@ -108,7 +98,7 @@ services:
       - portainer
     networks:
       default:
-      coolify:
+      proxy:
         aliases:
           - postrec-portainer-proxy
 
@@ -171,10 +161,29 @@ services:
       - grafana
     networks:
       default:
-      coolify:
+      proxy:
         aliases:
           - postrec-grafana-proxy
 
+  traefik:
+    image: traefik:v3.3
+    container_name: postrec-traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-admin@${DEPLOY_DOMAIN}}
+    volumes:
+      - ./deploy/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./deploy/traefik/apps.yaml:/etc/traefik/dynamic/apps.yaml:ro
+      - postrec_traefik_certs:/etc/traefik/acme
+    networks:
+      - proxy
+
 networks:
-  coolify:
-    external: true
+  proxy:
+    driver: bridge
+
+volumes:
+  postrec_traefik_certs:

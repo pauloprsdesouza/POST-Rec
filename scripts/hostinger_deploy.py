@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bootstrap Hostinger VPS: Docker, Coolify, and Researchly full stack."""
+"""Bootstrap Hostinger VPS: Docker and Researchly full stack."""
 
 from __future__ import annotations
 
@@ -107,8 +107,7 @@ def main() -> int:
         default=os.environ.get("ADMIN_BOOTSTRAP_EMAILS", ""),
         help="Comma-separated admin bootstrap emails (ADMIN_BOOTSTRAP_EMAILS)",
     )
-    parser.add_argument("--skip-coolify", action="store_true", help="Only install Docker + compose stack")
-    parser.add_argument("--skip-deploy", action="store_true", help="Install Coolify/Docker only")
+    parser.add_argument("--skip-deploy", action="store_true", help="Install Docker only")
     parser.add_argument(
         "--from-local",
         action="store_true",
@@ -152,24 +151,12 @@ def main() -> int:
             "install prerequisites",
             "export DEBIAN_FRONTEND=noninteractive && apt-get install -y -qq git curl ca-certificates",
         ),
+        (
+            "install docker",
+            "curl -fsSL https://get.docker.com | sh && systemctl enable --now docker",
+        ),
+        ("docker version", "docker --version && docker compose version"),
     ]
-
-    if not args.skip_coolify:
-        steps.append(
-            (
-                "install coolify (includes docker)",
-                "curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash",
-            )
-        )
-    else:
-        steps.append(
-            (
-                "install docker",
-                "curl -fsSL https://get.docker.com | sh && systemctl enable --now docker",
-            )
-        )
-
-    steps.append(("docker version", "docker --version && docker compose version"))
 
     for name, cmd in steps:
         code, out, err = run(client, cmd)
@@ -193,8 +180,7 @@ def main() -> int:
 
     if args.skip_deploy:
         client.close()
-        print("\nCoolify/Docker installed. Skipping Researchly deploy (--skip-deploy).")
-        print(f"Coolify UI: http://{args.host}:8000")
+        print("\nDocker installed. Skipping Researchly deploy (--skip-deploy).")
         return 0
 
     env_content = f"""APP_ENV=production
@@ -293,9 +279,8 @@ GRAFANA_ADMIN_USER=admin
     print("=" * 60)
     print(f"Web UI:        {base_url}")
     print(f"API health:    {base_url}/api/v1/health")
-    print(f"Coolify:       http://{args.host}:8000")
     print(f"Evolution QR:  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d evolution-manager")
-    print(f"               then expose port 3000 temporarily or use Coolify to proxy")
+    print(f"               then expose port 3000 temporarily or route via Traefik")
     if not args.gemini_api_key:
         print("\nWARNING: GEMINI_API_KEY is empty — LLM runs in fallback/dev mode.")
     if not healthy:

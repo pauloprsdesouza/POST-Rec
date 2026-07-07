@@ -56,9 +56,10 @@ def main() -> int:
         cwd=PROJECT_ROOT,
     )
 
-    traefik = (PROJECT_ROOT / "deploy" / "traefik" / "apps.yaml").read_text(encoding="utf-8")
     upload_paths = [
         "deploy/apps/registry.json",
+        "deploy/traefik/traefik.yml",
+        "deploy/traefik/apps.yaml",
         "docker-compose.prod.yml",
         "docker-compose.yml",
         "deploy/landing/index.html",
@@ -87,9 +88,6 @@ def main() -> int:
     )
 
     sftp = client.open_sftp()
-    with sftp.open("/data/coolify/proxy/dynamic/apps.yaml", "w") as f:
-        f.write(traefik.replace("\r\n", "\n"))
-
     for rel in upload_paths:
         local = PROJECT_ROOT / rel
         remote = f"{args.remote_dir}/{rel}"
@@ -101,7 +99,7 @@ def main() -> int:
     compose_cmd = (
         f"cd {args.remote_dir} && "
         "docker compose -f docker-compose.yml -f docker-compose.prod.yml "
-        "up -d --build grafana grafana-proxy prometheus loki promtail landing"
+        "up -d --build grafana grafana-proxy prometheus loki promtail landing traefik"
     )
     code, out, err = run(client, compose_cmd, timeout=600)
     print((out + err)[-5000:])
@@ -109,8 +107,10 @@ def main() -> int:
         client.close()
         return code
 
-    run(client, "docker network connect --alias postrec-grafana-proxy coolify postrec-grafana-proxy 2>/dev/null || true")
-    run(client, "docker restart coolify-proxy")
+    run(
+        client,
+        f"cd {args.remote_dir} && docker compose -f docker-compose.yml -f docker-compose.prod.yml restart traefik",
+    )
 
     grafana_url = f"https://{domain}/grafana"
     grafana_user = os.environ.get("GRAFANA_USER", "admin")

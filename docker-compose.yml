@@ -77,10 +77,8 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        for f in /init/01-evolution.sql /init/02-coolify.sql; do
-          psql -h postgres -U postrec -d postgres -v ON_ERROR_STOP=1 -f "$$f"
-        done
-        echo 'Shared PostgreSQL databases ready (evolution, coolify)'
+        psql -h postgres -U postrec -d postgres -v ON_ERROR_STOP=1 -f /init/01-evolution.sql
+        echo 'Shared PostgreSQL databases ready (evolution)'
     volumes:
       - ./docker/postgres/init:/init:ro
     restart: "no"
@@ -88,7 +86,7 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    # Redis logical DBs: 0=postrec, 1=celery, 2=cache, 3=evolution, 4=coolify, 5=coolify-cache
+    # Redis logical DBs: 0=postrec, 1=celery, 2=cache, 3=evolution
     command: redis-server --appendonly yes --save 60 1 --loglevel warning
     ports:
       - "6379:6379"

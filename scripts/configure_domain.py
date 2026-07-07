@@ -93,8 +93,6 @@ def main() -> int:
         return 1
 
     generate_assets(args.domain)
-    traefik_content = (PROJECT_ROOT / "deploy" / "traefik" / "apps.yaml").read_text(encoding="utf-8")
-    app_url = f"https://{args.domain}/{args.app}"
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -113,11 +111,9 @@ def main() -> int:
     print(f"Connecting to {args.user}@{args.host}...")
     client.connect(**kwargs)
 
-    sftp = client.open_sftp()
-    with sftp.open("/data/coolify/proxy/dynamic/apps.yaml", "w") as f:
-        f.write(traefik_content.replace("\r\n", "\n"))
-    print("Wrote /data/coolify/proxy/dynamic/apps.yaml")
+    app_url = f"https://{args.domain}/{args.app}"
 
+    sftp = client.open_sftp()
     if args.upload_project:
         print(f"Uploading project to {args.remote_dir}...")
         run(client, f"mkdir -p {args.remote_dir}")
@@ -136,7 +132,7 @@ def main() -> int:
         "docker stop post-rec-evolution-manager-1 2>/dev/null || true && "
         "docker rm post-rec-evolution-manager-1 2>/dev/null || true && "
         "docker compose -f docker-compose.yml -f docker-compose.prod.yml "
-        "up -d --build landing unknown-app web api worker evolution-api portainer portainer-proxy"
+        "up -d --build landing unknown-app web api worker evolution-api portainer portainer-proxy traefik"
     )
     code, out, err = run(client, compose, timeout=1800)
     text = (out + err)[-6000:]
@@ -148,8 +144,10 @@ def main() -> int:
         client.close()
         return code
 
-    run(client, "docker restart coolify-proxy")
-    run(client, "docker network connect --alias postrec-web coolify post-rec-web-1 2>/dev/null || true")
+    run(
+        client,
+        f"cd {args.remote_dir} && docker compose -f docker-compose.yml -f docker-compose.prod.yml restart traefik",
+    )
 
     client.close()
 

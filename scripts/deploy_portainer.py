@@ -53,11 +53,16 @@ def main() -> int:
         cwd=PROJECT_ROOT,
     )
 
-    traefik = (PROJECT_ROOT / "deploy" / "traefik" / "apps.yaml").read_text(encoding="utf-8")
     files = {
         f"{args.remote_dir}/deploy/apps/registry.json": (PROJECT_ROOT / "deploy/apps/registry.json").read_text(
             encoding="utf-8"
         ),
+        f"{args.remote_dir}/deploy/traefik/traefik.yml": (
+            PROJECT_ROOT / "deploy/traefik/traefik.yml"
+        ).read_text(encoding="utf-8"),
+        f"{args.remote_dir}/deploy/traefik/apps.yaml": (
+            PROJECT_ROOT / "deploy/traefik/apps.yaml"
+        ).read_text(encoding="utf-8"),
         f"{args.remote_dir}/docker-compose.prod.yml": (PROJECT_ROOT / "docker-compose.prod.yml").read_text(
             encoding="utf-8"
         ),
@@ -85,9 +90,7 @@ def main() -> int:
     )
 
     sftp = client.open_sftp()
-    with sftp.open("/data/coolify/proxy/dynamic/apps.yaml", "w") as f:
-        f.write(traefik.replace("\r\n", "\n"))
-    run(client, f"mkdir -p {args.remote_dir}/deploy/portainer")
+    run(client, f"mkdir -p {args.remote_dir}/deploy/portainer {args.remote_dir}/deploy/traefik")
     for remote, content in files.items():
         with sftp.open(remote, "w") as f:
             f.write(content.replace("\r\n", "\n"))
@@ -97,7 +100,7 @@ def main() -> int:
     compose_cmd = (
         f"cd {args.remote_dir} && "
         "docker compose -f docker-compose.yml -f docker-compose.prod.yml "
-        "up -d --build portainer portainer-proxy landing"
+        "up -d --build portainer portainer-proxy landing traefik"
     )
     code, out, err = run(client, compose_cmd, timeout=300)
     print((out + err)[-4000:])
@@ -105,8 +108,10 @@ def main() -> int:
         client.close()
         return code
 
-    run(client, "docker network connect --alias postrec-portainer-proxy coolify postrec-portainer-proxy 2>/dev/null || true")
-    run(client, "docker restart coolify-proxy")
+    run(
+        client,
+        f"cd {args.remote_dir} && docker compose -f docker-compose.yml -f docker-compose.prod.yml restart traefik",
+    )
 
     verify_cmds = [
         "docker ps --filter name=postrec-portainer --format '{{.Names}} {{.Status}}'",

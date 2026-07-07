@@ -169,6 +169,33 @@ def upload_tree(sftp: paramiko.SFTPClient, client: paramiko.SSHClient, local_roo
                 continue
             sftp.put(str(Path(root) / name), f"{remote_dir}/{name}")
 
+COOLIFY_CONTAINERS = (
+    "coolify-proxy",
+    "coolify",
+    "coolify-realtime",
+    "coolify-db",
+    "coolify-redis",
+)
+
+
+def cleanup_coolify(client: paramiko.SSHClient) -> None:
+    """Stop legacy Coolify containers if present (does not delete /data/coolify)."""
+    for name in COOLIFY_CONTAINERS:
+        ssh_run(client, f"docker stop {name} 2>/dev/null || true")
+        ssh_run(client, f"docker rm {name} 2>/dev/null || true")
+    print("Cleaned up legacy Coolify containers (if any)")
+
+
+def restart_traefik(client: paramiko.SSHClient) -> None:
+    ssh_run(
+        client,
+        f"cd {REMOTE_DIR} && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d traefik",
+    )
+    ssh_run(
+        client,
+        f"cd {REMOTE_DIR} && docker compose -f docker-compose.yml -f docker-compose.prod.yml restart traefik",
+    )
+
 
 def generate_assets() -> None:
     subprocess.run(
@@ -212,7 +239,6 @@ def main() -> int:
 
     print("Generating Traefik assets...")
     generate_assets()
-    traefik_yaml = (PROJECT_ROOT / "deploy" / "traefik" / "apps.yaml").read_text(encoding="utf-8")
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -252,10 +278,9 @@ def main() -> int:
     synced = [k for k in SYNC_KEYS if k not in SKIP_SYNC_KEYS and local_env.get(k, "").strip()]
     print(f"Merged .env (synced {len(synced)} keys from local .env, APP_ENV=production)")
 
-    with sftp.open("/data/coolify/proxy/dynamic/apps.yaml", "w") as f:
-        f.write(traefik_yaml.replace("\r\n", "\n"))
-    print("Updated Traefik apps.yaml")
     sftp.close()
+
+    cleanup_coolify(client)
 
     compose = (
         f"cd {REMOTE_DIR} && "
@@ -283,8 +308,7 @@ def main() -> int:
         client.close()
         return code
 
-    ssh_run(client, "docker restart coolify-proxy")
-    ssh_run(client, "docker network connect --alias postrec-web coolify post-rec-web-1 2>/dev/null || true")
+    restart_traefik(client)
     time.sleep(12)
 
     print("Running in-container stack verification...")
