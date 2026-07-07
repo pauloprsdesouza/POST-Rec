@@ -5,11 +5,16 @@
 # See deploy/traefik/apps.yaml for domain routing.
 
 services:
+  # Bound to loopback only — reachable from the VPS host (and thus via SSH
+  # tunnel), never published to the public internet. !override replaces the
+  # base port list instead of merging (which would also keep the public bind).
   postgres:
-    ports: !reset []
+    ports: !override
+      - "127.0.0.1:5432:5432"
 
   redis:
-    ports: !reset []
+    ports: !override
+      - "127.0.0.1:6379:6379"
 
   rabbitmq:
     ports: !reset []
