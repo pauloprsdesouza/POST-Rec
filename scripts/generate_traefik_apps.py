@@ -272,6 +272,37 @@ def generate_traefik(domain: str, apps: dict) -> str:
     return "\n".join(lines)
 
 
+def generate_traefik_static(domain: str) -> str:
+    return f"""# Auto-generated static Traefik config — do not edit manually.
+# Re-run: python scripts/generate_traefik_apps.py --write
+
+api:
+  dashboard: false
+
+log:
+  level: INFO
+
+entryPoints:
+  http:
+    address: ":80"
+  https:
+    address: ":443"
+
+providers:
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: admin@{domain}
+      storage: /etc/traefik/acme/acme.json
+      httpChallenge:
+        entryPoint: http
+"""
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--registry", type=Path, default=REGISTRY_PATH)
@@ -283,17 +314,21 @@ def main() -> int:
     apps = reg["apps"]
 
     traefik = generate_traefik(domain, apps)
+    traefik_static = generate_traefik_static(domain)
     landing = generate_landing(domain, apps)
     unknown = generate_unknown_page(apps)
 
     if args.write:
         out_traefik = PROJECT_ROOT / "deploy" / "traefik" / "apps.yaml"
+        out_static = PROJECT_ROOT / "deploy" / "traefik" / "traefik.yml"
         out_landing = PROJECT_ROOT / "deploy" / "landing" / "index.html"
         out_unknown = PROJECT_ROOT / "deploy" / "unknown-app" / "index.html"
         out_traefik.write_text(traefik.replace("\r\n", "\n"), encoding="utf-8", newline="\n")
+        out_static.write_text(traefik_static.replace("\r\n", "\n"), encoding="utf-8", newline="\n")
         out_landing.write_text(landing, encoding="utf-8", newline="\n")
         out_unknown.write_text(unknown, encoding="utf-8", newline="\n")
         print(f"Wrote {out_traefik}")
+        print(f"Wrote {out_static}")
         print(f"Wrote {out_landing}")
         print(f"Wrote {out_unknown}")
     else:
